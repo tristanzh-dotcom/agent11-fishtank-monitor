@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>第一缸 ESP32-S3 温度监控｜零基础无焊接制作手册</title>
+  <style>
+    :root{--ink:#17202a;--muted:#59636e;--blue:#0969da;--blue2:#eaf3ff;--green:#16784b;--green2:#eaf8f1;--amber:#945600;--amber2:#fff5dc;--red:#b42318;--red2:#fff0ee;--line:#d7dee7;--paper:#fff;--bg:#f3f6fa}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    a{color:var(--blue)}code{background:#eef2f6;border-radius:5px;padding:.1em .35em}header{background:linear-gradient(135deg,#0c3f78,#0c745d);color:#fff;padding:52px 24px 42px}header .wrap{max-width:1080px;margin:auto}h1{font-size:clamp(30px,5vw,52px);line-height:1.15;margin:0 0 16px}header p{max-width:800px;margin:8px 0;color:#e8f2ff}.badge{display:inline-block;border:1px solid #ffffff66;border-radius:999px;padding:4px 12px;margin:4px 8px 4px 0;font-size:14px}
+    .layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);gap:26px;padding:26px 20px 80px}nav{position:sticky;top:16px;align-self:start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;max-height:calc(100vh - 32px);overflow:auto}nav strong{display:block;margin-bottom:8px}nav a{display:block;text-decoration:none;color:#344054;padding:4px 0;font-size:14px}nav a:hover{color:var(--blue)}main{min-width:0}section{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:clamp(20px,4vw,38px);margin-bottom:22px;box-shadow:0 4px 16px #1c2b3a0b}h2{font-size:29px;line-height:1.3;margin:0 0 18px;padding-top:2px}h3{font-size:21px;margin:26px 0 10px}.lead{font-size:19px;color:#334155}.callout{border-left:5px solid var(--blue);background:var(--blue2);padding:14px 16px;border-radius:8px;margin:16px 0}.warn{border-color:#f0a000;background:var(--amber2)}.stop{border-color:var(--red);background:var(--red2)}.ok{border-color:var(--green);background:var(--green2)}
+    .step{border:1px solid var(--line);border-radius:12px;padding:18px;margin:16px 0}.step h3{margin:0 0 9px}.state{display:inline-block;background:#263849;color:#fff;border-radius:7px;padding:2px 9px;font-size:14px;margin-bottom:8px}.check{font-weight:700;color:var(--green)}.stopline{font-weight:700;color:var(--red)}table{width:100%;border-collapse:collapse;margin:14px 0;display:block;overflow-x:auto}th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}th{background:#edf3f8;white-space:nowrap}.diagram{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px;margin:18px 0;overflow-x:auto}.diagram svg{display:block;max-width:100%;height:auto;margin:auto}.caption{font-size:14px;color:var(--muted);text-align:center;margin-top:6px}.photo{border:2px dashed #a66500;background:#fff9ea;border-radius:12px;padding:16px;margin:20px 0}.labels{display:flex;flex-wrap:wrap;gap:8px}.label{border:1px solid var(--line);border-radius:7px;background:#fff;padding:5px 9px;font-family:ui-monospace,monospace}.video-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.video{border:1px solid var(--line);border-radius:12px;padding:16px}.video a{font-weight:700}.tiny{font-size:14px;color:var(--muted)}ul,ol{padding-left:1.35em}.wiring{font:700 16px/1.9 ui-monospace,SFMono-Regular,Menlo,monospace;background:#132333;color:#e8f3ff;border-radius:12px;padding:17px;overflow:auto;white-space:pre}footer{max-width:1080px;margin:0 auto 50px;padding:0 24px;color:var(--muted)}
+    @media(max-width:820px){.layout{display:block}nav{position:static;max-height:none;margin-bottom:22px}.layout{padding:18px 12px 60px}section{border-radius:12px}}
+    @media print{body{background:#fff;font-size:11pt}header{padding:24px;color:#000;background:#fff;border-bottom:2px solid #000}header p{color:#000}.layout{display:block;max-width:none;padding:0}nav{display:none}section{box-shadow:none;border:0;border-bottom:1px solid #bbb;break-inside:avoid;padding:18px 0}.step,.diagram,.callout{break-inside:avoid}a{color:#000;text-decoration:none}a:after{content:" (" attr(href) ")";font-size:8pt}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <span class="badge">零基础</span><span class="badge">无焊接</span><span class="badge">纯低压</span>
+    <h1>第一缸 ESP32-S3 温度监控</h1>
+    <p>从一桌零件开始，逐件认识、逐线连接、逐步检查。两支 DFRobot KIT0021 共用一条 OneWire 总线，主缸负责报警依据，底滤负责循环诊断。</p>
+    <p><strong>永远不连接继电器、加热棒、水泵、插排或任何 220V 控制。</strong></p>
+  </div>
+</header>
+
+<div class="layout">
+<nav aria-label="章节导航">
+  <strong>按顺序执行</strong>
+  <a href="#safety">0 安全和断电</a><a href="#parts">1 清点零件</a><a href="#breadboard">2 面包板</a><a href="#meter">3 万用表</a><a href="#board">4 ESP32 单板上电</a><a href="#bus">5–6 插板与三条总线</a><a href="#probe-a">7 探头 A</a><a href="#probe-b">8 探头 B 与校准</a><a href="#wago">9–10 剥线、WAGO、RVV</a><a href="#box">11–12 防水盒与 USB-C</a><a href="#tank">13 下缸观察</a><a href="#videos">14 教学视频</a><a href="#final">15 最终验收</a>
+</nav>
+
+<main>
+<section id="safety">
+  <h2>0. 先把“断电”练熟</h2>
+  <div class="callout stop"><strong>看到以下任一情况都立即停止：</strong>看不清丝印、线色与说明冲突、零件发热、闻到焦味、出现火花、万用表持续蜂鸣、ESP32 反复重启。立刻拔掉板端 USB-C，拍清晰照片。</div>
+  <div class="step"><span class="state">电源状态：ESP32 未接 USB</span><h3>清空并擦干桌面</h3><p>移走水杯、鱼缸工具、金属屑和 220V 插排。把零件分成“现在使用”“备用”“工具”三区。</p><p class="check">□ 桌面干燥；第二块 ESP32、第三支探头和第十个 WAGO 已放入备用区。</p></div>
+  <div class="step"><span class="state">练习动作</span><h3>断电 = 拔板端 USB-C</h3><p>一手扶 ESP32，另一手捏插头外壳平直拔出，不拉软线。板灯熄灭后，才算确认 <strong>USB 已拔掉</strong>。</p><p class="check">□ 我能区分“软件关闭”和“物理拔掉 USB”。</p></div>
+  <div class="callout warn"><strong>本手册不会猜实物。</strong> ESP32 针脚位置、面包板电源轨断点、KIT0021 类型、RVV 颜色、ANENG 616 图标以及开孔直径，都必须看实物标签或测量后确定。</div>
+</section>
+
+<section id="parts">
+  <h2>1. 从购买物中逐件认零件</h2>
+  <table><thead><tr><th>实物</th><th>数量</th><th>用途/注意</th></tr></thead><tbody>
+    <tr><td>微雪 ESP32-S3-DEV-KIT-N16R8-M</td><td>2</td><td>主用 1、备用 1；已焊排针</td></tr><tr><td>DFRobot KIT0021</td><td>3</td><td>A 主缸、B 底滤、1 支备用；三线非寄生供电</td></tr><tr><td>MB-102 830 孔面包板</td><td>1</td><td>无焊接原型；电源轨可能中间断开</td></tr><tr><td>4.7kΩ 1/4W 金属膜电阻</td><td>1 包</td><td>只用 1 只，接 DATA–3V3</td></tr><tr><td>杜邦线套装</td><td>1</td><td>短接开发板与面包板</td></tr><tr><td>WAGO 221-413</td><td>10</td><td>9 个工作，第十个 WAGO 备用</td></tr><tr><td>RVV 三芯 0.3平方</td><td>5m</td><td>探头延长；0.3 mm² 是截面积</td></tr><tr><td>2.0USB-C 公对母面板数据线</td><td>1</td><td>把盒内 USB-C 延到盒外</td></tr><tr><td>ABS 盒 / M12或PG7</td><td>2 / 10</td><td>先实测，再开孔</td></tr><tr><td>ANENG 616 / 8PK-3001D</td><td>各 1</td><td>低压检查 / 剥线</td></tr>
+  </tbody></table>
+  <div class="diagram">
+    <svg viewBox="0 0 1000 510" role="img" aria-label="本项目主要零件识别图：ESP32、面包板、探头、电阻、杜邦线、WAGO、RVV、万用表、剥线钳、USB-C面板线、防水接头和ABS盒">
+      <g font-family="sans-serif" font-size="16" text-anchor="middle">
+        <g transform="translate(25 25)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><rect x="52" y="24" width="106" height="68" rx="8" fill="#203746"/><rect x="87" y="92" width="36" height="20" rx="5" fill="#ccd7e0"/><text x="105" y="122">ESP32-S3（USB-C）</text></g>
+        <g transform="translate(265 25)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><rect x="28" y="25" width="154" height="70" rx="8" fill="#fff" stroke="#7e8b97"/><path d="M105 28V92" stroke="#c8d0d8" stroke-width="12"/><g fill="#304352"><circle cx="53" cy="50" r="4"/><circle cx="73" cy="50" r="4"/><circle cx="93" cy="50" r="4"/><circle cx="117" cy="50" r="4"/><circle cx="137" cy="50" r="4"/><circle cx="157" cy="50" r="4"/></g><text x="105" y="122">MB-102 面包板</text></g>
+        <g transform="translate(505 25)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><rect x="27" y="42" width="90" height="24" rx="12" fill="#aeb9c3"/><path d="M117 54H180" stroke="#344054" stroke-width="6"/><text x="105" y="95">KIT0021 探头</text><text x="105" y="120" fill="#b42318">只有金属头入水</text></g>
+        <g transform="translate(745 25)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><path d="M25 58H70M140 58H185" stroke="#555" stroke-width="3"/><rect x="70" y="43" width="70" height="30" rx="14" fill="#72bcd4"/><path d="M85 43V73M98 43V73M111 43V73M125 43V73" stroke="#513c2d" stroke-width="5"/><text x="105" y="105">4.7kΩ 电阻</text><text x="105" y="125">无正负，只用一只</text></g>
+        <g transform="translate(25 185)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><path d="M35 55C85 20 125 90 175 55" fill="none" stroke="#0969da" stroke-width="8"/><path d="M28 45V65M182 45V65" stroke="#333" stroke-width="5"/><rect x="170" y="42" width="24" height="26" fill="#111"/><text x="105" y="105">杜邦：公针 / 母孔</text><text x="105" y="125">线色不代表角色</text></g>
+        <g transform="translate(265 185)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><rect x="42" y="35" width="126" height="55" rx="10" fill="#e5eaef" stroke="#667582"/><rect x="52" y="18" width="28" height="42" rx="5" fill="#f49b21"/><rect x="91" y="18" width="28" height="42" rx="5" fill="#f49b21"/><rect x="130" y="18" width="28" height="42" rx="5" fill="#f49b21"/><text x="105" y="108">WAGO 221-413</text><text x="105" y="127">3 杠杆 / 3 进线孔</text></g>
+        <g transform="translate(505 185)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><path d="M30 50H175" stroke="#303942" stroke-width="30"/><path d="M100 50H175" stroke="#fff" stroke-width="23"/><path d="M115 35V65M140 35V65M165 35V65" stroke="#b42318" stroke-width="6"/><text x="105" y="105">RVV 三芯 0.3平方</text><text x="105" y="125">外护套 + 三根内芯</text></g>
+        <g transform="translate(745 185)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><rect x="65" y="16" width="80" height="85" rx="12" fill="#263746"/><rect x="80" y="28" width="50" height="25" fill="#d9ead2"/><circle cx="88" cy="82" r="9" fill="#111"/><circle cx="122" cy="82" r="9" fill="#b42318"/><text x="105" y="122">ANENG 616</text></g>
+        <g transform="translate(25 345)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><path d="M55 35L105 80L155 35M105 80L80 110M105 80L130 110" stroke="#435666" stroke-width="12" fill="none"/><text x="105" y="125">8PK-3001D 剥线钳</text></g>
+        <g transform="translate(265 345)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><path d="M25 62H85M125 62H185" stroke="#0969da" stroke-width="9"/><rect x="76" y="45" width="28" height="34" rx="7" fill="#cdd9e2"/><rect x="105" y="45" width="34" height="34" rx="7" fill="#cdd9e2"/><text x="105" y="110">USB-C 面板延长线</text><text x="105" y="130">公头（盒内）/ 母口（盒外）</text></g>
+        <g transform="translate(505 345)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><path d="M55 48H155" stroke="#303942" stroke-width="18"/><path d="M75 25V90H135V25" fill="#cfd7df" stroke="#677785" stroke-width="4"/><text x="105" y="112">M12 / PG7 接头</text><text x="105" y="132">夹住线缆外护套</text></g>
+        <g transform="translate(745 345)"><rect width="210" height="130" rx="14" fill="#eef3f7" stroke="#9aa7b5"/><rect x="37" y="25" width="136" height="74" rx="10" fill="#f6f8fa" stroke="#405261" stroke-width="4"/><path d="M37 44H173" stroke="#9aa7b5" stroke-width="3"/><text x="105" y="122">ABS 防水盒（先干摆）</text></g>
+      </g>
+    </svg>
+    <div class="caption">示意轮廓只帮助认类别，不代表实物针脚、孔径或比例。</div>
+  </div>
+  <p><strong>容易混淆：</strong>公对公两端都是外露针；公对母只有一端外露针。WAGO 夹裸铜，不夹杜邦塑料头。RVV 不直接插 ESP32。阶梯钻只钻空盒。</p>
+  <div class="photo"><strong>📷 实物确认点 1</strong><br>拍 ESP32 正反面、MB-102 俯拍、三套 KIT0021 标签和线端、ANENG 616 正面。文字必须能放大看清。未确认前，不执行具体孔位和线色接线。</div>
+</section>
+
+<section id="breadboard">
+  <h2>2. 面包板：先理解孔，再插零件</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 760 250" role="img" aria-label="面包板五孔组示意图">
+      <rect x="25" y="25" width="710" height="190" rx="18" fill="#fff" stroke="#9aa7b5" stroke-width="3"/><rect x="345" y="42" width="70" height="155" fill="#dfe6ee"/><text x="380" y="125" text-anchor="middle" fill="#52606d" font-size="20">中沟</text>
+      <g fill="#233648"> <circle cx="90" cy="80" r="9"/><circle cx="140" cy="80" r="9"/><circle cx="190" cy="80" r="9"/><circle cx="240" cy="80" r="9"/><circle cx="290" cy="80" r="9"/><circle cx="470" cy="80" r="9"/><circle cx="520" cy="80" r="9"/><circle cx="570" cy="80" r="9"/><circle cx="620" cy="80" r="9"/><circle cx="670" cy="80" r="9"/></g>
+      <path d="M90 80H290M470 80H670" stroke="#16784b" stroke-width="5"/><text x="190" y="145" text-anchor="middle" font-size="20" fill="#16784b">同一行 a–e 相通</text><text x="570" y="145" text-anchor="middle" font-size="20" fill="#16784b">同一行 f–j 相通</text><text x="380" y="235" text-anchor="middle" font-size="18" fill="#b42318">左右被中沟分开</text>
+    </svg>
+    <div class="caption">典型结构，不代替对你的 MB-102 做通断实测。</div>
+  </div>
+  <div class="step"><span class="state">电源状态：完全无电</span><h3>练插一根公对公杜邦线</h3><p>捏塑料头垂直插入；拔出时也捏塑料头，不拉软线。弯曲的针不要硬塞。</p><p class="check">□ 已完成一次插入与拔出。</p></div>
+</section>
+
+<section id="meter">
+  <h2>3. ANENG 616 万用表，从表笔开始</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 760 330" role="img" aria-label="万用表表笔插口和通断示意图">
+      <rect x="190" y="22" width="380" height="270" rx="30" fill="#263746"/><rect x="250" y="55" width="260" height="85" rx="8" fill="#d9ead2"/><text x="380" y="108" text-anchor="middle" font-size="34">0.0 / OL</text>
+      <circle cx="300" cy="230" r="34" fill="#111" stroke="#fff" stroke-width="3"/><circle cx="460" cy="230" r="34" fill="#b42318" stroke="#fff" stroke-width="3"/><circle cx="540" cy="190" r="24" fill="#8b1a10" stroke="#fff" stroke-width="3"/><text x="540" y="197" text-anchor="middle" fill="#fff" font-size="14">A</text><path d="M515 165L565 215M565 165L515 215" stroke="#ffcfcc" stroke-width="6"/><text x="300" y="285" text-anchor="middle" fill="#fff" font-size="20">COM</text><text x="460" y="285" text-anchor="middle" fill="#fff" font-size="20">V / Ω</text>
+      <path d="M300 230C220 310 120 280 70 315" fill="none" stroke="#111" stroke-width="8"/><path d="M460 230C540 310 640 280 690 315" fill="none" stroke="#b42318" stroke-width="8"/><text x="95" y="75" font-size="20">黑表笔</text><text x="590" y="75" font-size="20" fill="#b42318">红表笔</text>
+      <text x="380" y="25" text-anchor="middle" fill="#945600" font-size="17">通用示意：等待 ANENG 616 实物正面照片对齐</text>
+    </svg>
+  </div>
+  <div class="step"><span class="state">被测物：无电</span><h3>插表笔</h3><p><strong>黑表笔插 COM</strong>；红表笔插标有 VΩ、VΩmA 或同时含 V 和 Ω 的孔。不要插 10A、A、mA 或任何电流孔；本项目不测电流。</p><p class="check">□ 黑在 COM，红在 V/Ω。</p></div>
+  <div class="step"><span class="state">通断档只测无电零件</span><h3>先互碰，再测面包板</h3><ol><li>长按电源开机，短按 SELECT 找到蜂鸣/二极管/Ω 模式。</li><li>表笔分开时应为开路；尖端互碰时接近 0Ω并可能蜂鸣。</li><li>测同一行 a–e，再测跨中沟 e–f。</li><li>测 +/− 长条的上端和下端，记录中间是否断开。</li></ol><p class="stopline">表笔分开仍持续响，或界面不一致：停止并拍万用表照片。</p></div>
+  <div class="callout">带电时只在指定步骤测 ESP32 的低压直流：选择 V⎓，黑接 GND、红接 3V3。不要测电流，也不要接触插座。</div>
+</section>
+
+<section id="board">
+  <h2>4. ESP32 单板上电</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 900 255" role="img" aria-label="ESP32 从单板USB上电到拔线再跨面包板中沟的顺序">
+      <defs><marker id="seq" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#52606d"/></marker></defs>
+      <g text-anchor="middle" font-family="sans-serif"><text x="140" y="32" font-size="20">① 单板接电脑</text><rect x="55" y="60" width="170" height="90" rx="14" fill="#203746"/><rect x="115" y="150" width="50" height="24" rx="5" fill="#cad5df"/><path d="M140 174V220H30" stroke="#0969da" stroke-width="8"/><text x="140" y="245" font-size="16">识别串口 / 烧录</text>
+      <text x="450" y="32" font-size="20">② 拔掉 USB-C</text><rect x="365" y="60" width="170" height="90" rx="14" fill="#203746"/><rect x="425" y="150" width="50" height="24" rx="5" fill="#cad5df"/><path d="M450 190V220" stroke="#0969da" stroke-width="8" stroke-dasharray="8 8"/><path d="M420 192L450 220L480 192" fill="none" stroke="#b42318" stroke-width="6"/><text x="450" y="245" font-size="16" fill="#b42318">灯熄灭才接线</text>
+      <text x="760" y="32" font-size="20">③ 横跨中沟</text><rect x="650" y="105" width="220" height="105" rx="12" fill="#fff" stroke="#7e8b97"/><rect x="744" y="108" width="32" height="98" fill="#dfe6ee"/><rect x="680" y="58" width="160" height="95" rx="12" fill="#203746"/><path d="M700 153V195M730 153V195M790 153V195M820 153V195" stroke="#222" stroke-width="6"/><text x="760" y="235" font-size="16">先轻放拍照，再均匀压入</text></g>
+      <path d="M250 125H335M560 125H625" stroke="#52606d" stroke-width="4" marker-end="url(#seq)"/>
+    </svg>
+  </div>
+  <div class="step"><span class="state">先断电观察</span><h3>找 USB-C 和丝印</h3><p>寻找 USB-C、<code>3V3</code>、<code>GND</code>、<code>GPIO4</code> 或数字 4。看不清就停止；不要把相邻数字当 GPIO4。</p></div>
+  <div class="step"><span class="state">可以插 USB：第一次单板上电</span><h3>只接电脑，不接探头</h3><ol><li>USB-C 插开发板，USB-A 插电脑。</li><li>确认电脑出现新串口。</li><li>按固件任务流烧录最小程序。</li></ol><p class="check">□ 正确现象：串口可见、烧录成功、重启正常。</p><p class="stopline">没有串口：先换另一根数据线或电脑 USB 口；不要开始探头接线。</p></div>
+  <div class="step"><span class="state">可选低压测量</span><h3>测 3.3V</h3><p>ESP32 单板上电，万用表选 V⎓。黑接已确认 GND，红接已确认 3V3，预期约 3.2–3.4V。先移开表笔，再拔 USB。</p></div>
+</section>
+
+<section id="bus">
+  <h2>5–6. 插入面包板，建立三条总线</h2>
+  <div class="photo"><strong>📷 实物确认点 2｜实物照片确认后填写</strong><br>先让 ESP32 横跨 MB-102 中沟轻放、不压入，从正上方拍照。确认两排针能落在中沟两侧且仍有可用孔后，才均匀压入。孔距不合就停止，不硬压。</div>
+  <div class="diagram">
+    <svg viewBox="0 0 900 430" role="img" aria-label="ESP32 两支 DS18B20 总线接线示意图">
+      <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#52606d"/></marker></defs>
+      <rect x="45" y="90" width="210" height="250" rx="20" fill="#1e2f3d"/><text x="150" y="135" text-anchor="middle" fill="#fff" font-size="23">ESP32-S3</text><text x="150" y="172" text-anchor="middle" fill="#ffd36b" font-size="20">3V3</text><text x="150" y="235" text-anchor="middle" fill="#fff" font-size="20">GND</text><text x="150" y="298" text-anchor="middle" fill="#78c7ff" font-size="20">GPIO4</text>
+      <rect x="365" y="42" width="190" height="92" rx="16" fill="#fff" stroke="#16784b" stroke-width="4"/><text x="460" y="78" text-anchor="middle" font-size="21">总-VCC</text><text x="460" y="108" text-anchor="middle" fill="#16784b">3.3V 电源</text>
+      <rect x="365" y="169" width="190" height="92" rx="16" fill="#fff" stroke="#333" stroke-width="4"/><text x="460" y="205" text-anchor="middle" font-size="21">总-GND</text><text x="460" y="235" text-anchor="middle">地</text>
+      <rect x="365" y="296" width="190" height="92" rx="16" fill="#fff" stroke="#0969da" stroke-width="4"/><text x="460" y="332" text-anchor="middle" font-size="21">总-DATA</text><text x="460" y="362" text-anchor="middle" fill="#0969da">OneWire</text>
+      <path d="M255 170L365 88M255 235L365 215M255 298L365 342" stroke="#52606d" stroke-width="4" fill="none" marker-end="url(#arr)"/>
+      <rect x="650" y="65" width="205" height="118" rx="18" fill="#eaf8f1" stroke="#16784b"/><text x="752" y="100" text-anchor="middle" font-size="22">探头 A：主缸</text><text x="752" y="132" text-anchor="middle">VCC / GND / DATA</text><text x="752" y="160" text-anchor="middle" font-size="15">main_tank_sensor</text>
+      <rect x="650" y="250" width="205" height="118" rx="18" fill="#eaf3ff" stroke="#0969da"/><text x="752" y="285" text-anchor="middle" font-size="22">探头 B：底滤</text><text x="752" y="317" text-anchor="middle">VCC / GND / DATA</text><text x="752" y="345" text-anchor="middle" font-size="15">sump_return_sensor</text>
+      <path d="M555 88L650 105M555 215L650 135M555 342L650 160M555 88L650 285M555 215L650 315M555 342L650 345" stroke="#778899" stroke-width="3" fill="none"/>
+      <path d="M455 296C455 270 530 255 530 135" stroke="#d26a00" stroke-width="6" fill="none"/><rect x="500" y="128" width="60" height="18" fill="#e3c39c" stroke="#945600"/><text x="590" y="140" font-size="16" fill="#945600">4.7kΩ：DATA → 3V3，仅一只</text>
+    </svg>
+  </div>
+  <div class="step"><span class="state">USB 已拔掉</span><h3>建立并贴标签</h3><p>从已确认的 3V3、GND、GPIO4 各引出短线，落到三个互不相通的面包板节点，分别贴：</p><div class="labels"><span class="label">总-VCC</span><span class="label">总-GND</span><span class="label">总-DATA</span></div><p>把实际行号写在纸上。任何两条线落在同一相通行就拔掉重来。</p></div>
+  <div class="step"><span class="state">USB 已拔掉</span><h3>放一只 4.7kΩ</h3><p>电阻无正反；一脚进总-DATA，另一脚进总-VCC。只能一只。通断档检查总-VCC 与总-GND不应持续蜂鸣。</p></div>
+</section>
+
+<section id="probe-a">
+  <h2>7. 第一支探头 A：先判类型，再逐字配对</h2>
+  <table><thead><tr><th>DFRobot 类型</th><th>VCC</th><th>GND</th><th>DATA</th></tr></thead><tbody><tr><td>Type A</td><td>红</td><td>黑</td><td>黄</td></tr><tr><td>Type B</td><td>红</td><td>黄</td><td>绿</td></tr></tbody></table>
+  <div class="diagram">
+    <svg viewBox="0 0 900 260" role="img" aria-label="DFRobot KIT0021 Type A 与 Type B 三线角色对照图">
+      <g font-family="sans-serif"><text x="220" y="35" text-anchor="middle" font-size="25">Type A（只在实物确认后选）</text><text x="680" y="35" text-anchor="middle" font-size="25">Type B（只在实物确认后选）</text>
+      <path d="M80 85H360" stroke="#d22" stroke-width="16"/><text x="220" y="78" text-anchor="middle" fill="#8f1010" font-size="18">红 = VCC</text><path d="M80 145H360" stroke="#111" stroke-width="16"/><text x="220" y="137" text-anchor="middle" fill="#fff" font-size="18">黑 = GND</text><path d="M80 205H360" stroke="#e5bf00" stroke-width="16"/><text x="220" y="197" text-anchor="middle" fill="#553f00" font-size="18">黄 = DATA</text>
+      <path d="M540 85H820" stroke="#d22" stroke-width="16"/><text x="680" y="78" text-anchor="middle" fill="#8f1010" font-size="18">红 = VCC</text><path d="M540 145H820" stroke="#e5bf00" stroke-width="16"/><text x="680" y="137" text-anchor="middle" fill="#553f00" font-size="18">黄 = GND</text><path d="M540 205H820" stroke="#19924a" stroke-width="16"/><text x="680" y="197" text-anchor="middle" fill="#075526" font-size="18">绿 = DATA</text></g>
+    </svg>
+    <div class="caption">角色文字比颜色更重要；两支探头要分别判型。</div>
+  </div>
+  <div class="callout stop">只有包装、说明书或实物可确认 Type A / Type B 时才用此表。颜色不同、端头不明或信息冲突：不剪线，立即停止并拍照。</div>
+  <div class="step"><span class="state">USB 已拔掉</span><h3>贴 A 标签</h3><div class="labels"><span class="label">A-VCC</span><span class="label">A-GND</span><span class="label">A-DATA</span></div><p>若为 Type A：红/黑/黄；若为 Type B：红/黄/绿。每一根都贴文字。</p></div>
+  <div class="step"><span class="state">USB 已拔掉</span><h3>按 GND → VCC → DATA 接</h3><ol><li>A-GND → 总-GND</li><li>A-VCC → 总-VCC</li><li>A-DATA → 总-DATA</li></ol><p>KIT0021 若带 DFR0055 上拉转接板，本方案暂不接入，因为已使用外置 4.7kΩ。</p></div>
+  <div class="step"><span class="state">复核后才上电</span><h3>拍照，再读取第一个 ROM</h3><p>上电前拍一张能看见 ESP32 丝印、电阻、三个总标签和 A 三个标签的照片。确认后接 USB；串口应只发现一个 ROM 和合理温度。记录：<code>________________</code></p><p class="stopline">无设备、固定异常值、重启或发热：拔 USB，再检查三线与电阻。</p></div>
+</section>
+
+<section id="probe-b">
+  <h2>8. 第二支探头 B、ROM、15 分钟校准、120 分钟干跑</h2>
+  <div class="step"><span class="state">先拔 USB</span><h3>B 也要独立判型</h3><p>不要假定两支同型。贴 <span class="label">B-VCC</span> <span class="label">B-GND</span> <span class="label">B-DATA</span>，分别并入三个总节点；不要增加第二只电阻。</p></div>
+  <div class="step"><span class="state">复核后上电</span><h3>确认两个不同 ROM</h3><p>应稳定发现两个设备。断电后暂时拔 B-DATA，再上电扫描，剩余 ROM 即 A；再次断电并恢复 B-DATA。</p><table><tr><th>A 主缸 / main_tank_sensor</th><td>ROM：________________</td></tr><tr><th>B 底滤 / sump_return_sensor</th><td>ROM：________________</td></tr></table></div>
+  <div class="step"><span class="state">线端和电路保持干燥</span><h3>同杯水静置 15 分钟</h3><p>两只金属探头和独立温度计放在同一杯、同一深度，探头不贴杯壁。15 分钟后记录三者。明显跳变、固定 -127°C/85°C 或差异异常的探头不下缸，换备用探头。</p><table><tr><th>独立温度计</th><th>探头 A / 偏差</th><th>探头 B / 偏差</th></tr><tr><td>____°C</td><td>____°C / ____°C</td><td>____°C / ____°C</td></tr></table></div>
+  <div class="step"><span class="state">连续低压运行</span><h3>干态运行 120 分钟</h3><table><tr><th>已运行</th><th>A</th><th>B</th><th>2 个 ROM？</th><th>重启/掉线/发热</th></tr><tr><td>0 分钟</td><td>____°C</td><td>____°C</td><td>是/否</td><td>____</td></tr><tr><td>15 分钟</td><td>____°C</td><td>____°C</td><td>是/否</td><td>____</td></tr><tr><td>30 分钟</td><td>____°C</td><td>____°C</td><td>是/否</td><td>____</td></tr><tr><td>60 分钟</td><td>____°C</td><td>____°C</td><td>是/否</td><td>____</td></tr><tr><td>120 分钟</td><td>____°C</td><td>____°C</td><td>是/否</td><td>____</td></tr></table><p>完成且稳定后才延长和装盒。</p></div>
+</section>
+
+<section id="wago">
+  <h2>9–10. 先用废 RVV 练习，再接 9 个 WAGO</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 900 310" role="img" aria-label="WAGO 221 操作步骤">
+      <g font-size="19" text-anchor="middle"><text x="110" y="35">1 剥约 11mm</text><text x="330" y="35">2 杠杆完全掀起</text><text x="560" y="35">3 铜丝插到底</text><text x="790" y="35">4 压平并轻拉</text></g>
+      <path d="M40 135H160" stroke="#344054" stroke-width="18"/><path d="M160 135H215" stroke="#c77d24" stroke-width="8"/><line x1="165" y1="95" x2="210" y2="95" stroke="#b42318" stroke-width="2"/><text x="188" y="88" text-anchor="middle" fill="#b42318">约11mm</text>
+      <g transform="translate(245 85)"><rect width="170" height="105" rx="14" fill="#e8edf2" stroke="#6d7a88"/><rect x="20" y="-30" width="42" height="70" rx="7" fill="#f49b21" transform="rotate(-35 40 35)"/><circle cx="115" cy="53" r="15" fill="#fff" stroke="#6d7a88"/></g>
+      <g transform="translate(475 85)"><rect width="170" height="105" rx="14" fill="#e8edf2" stroke="#6d7a88"/><rect x="20" y="-30" width="42" height="70" rx="7" fill="#f49b21" transform="rotate(-35 40 35)"/><path d="M160 53H90" stroke="#c77d24" stroke-width="8"/><path d="M90 53H30" stroke="#344054" stroke-width="18"/></g>
+      <g transform="translate(705 85)"><rect width="170" height="105" rx="14" fill="#e8edf2" stroke="#6d7a88"/><rect x="20" y="8" width="60" height="32" rx="7" fill="#f49b21"/><path d="M160 53H90" stroke="#c77d24" stroke-width="8"/><path d="M90 53H30" stroke="#344054" stroke-width="18"/></g>
+      <text x="450" y="265" text-anchor="middle" font-size="20" fill="#16784b">外面无裸铜 · 杠杆压平 · 透明壳内可见导体 · 轻拉不松</text>
+    </svg>
+  </div>
+  <div class="step"><span class="state">RVV 不连接任何设备</span><h3>废线练习</h3><p>先剥外护套，不伤三根内芯；0.3平方内芯可先试 8PK-3001D 接近 0.6mm 档。剥约 11mm，铜丝不缺、不散、不上锡。用一个 WAGO 练“掀—插—压—看—拉”。</p></div>
+  <div class="step"><span class="state">先定义颜色，不凭颜色猜</span><h3>记录 RVV 三芯角色</h3><table><tr><th>实际颜色</th><th>角色</th></tr><tr><td>________</td><td>VCC</td></tr><tr><td>________</td><td>GND</td></tr><tr><td>________</td><td>DATA</td></tr></table><p>两段 RVV 两端都贴文字标签。</p></div>
+  <div class="step"><span class="state">USB 已拔掉</span><h3>九个固定名字</h3><div class="labels"><span class="label">A-VCC</span><span class="label">A-GND</span><span class="label">A-DATA</span><span class="label">B-VCC</span><span class="label">B-GND</span><span class="label">B-DATA</span><span class="label">总-VCC</span><span class="label">总-GND</span><span class="label">总-DATA</span></div><p>A 端三个各接探头同名线 + A 段 RVV 同名芯；B 端同理。每个控制盒总 WAGO 接 A RVV + B RVV + 去面包板的同名短线。第十个 WAGO 不接线。</p></div>
+  <table><thead><tr><th># / WAGO</th><th>孔 1</th><th>孔 2</th><th>孔 3</th></tr></thead><tbody><tr><td>1 A-VCC</td><td>A 探头 VCC</td><td>A-RVV VCC</td><td>空</td></tr><tr><td>2 A-GND</td><td>A 探头 GND</td><td>A-RVV GND</td><td>空</td></tr><tr><td>3 A-DATA</td><td>A 探头 DATA</td><td>A-RVV DATA</td><td>空</td></tr><tr><td>4 B-VCC</td><td>B 探头 VCC</td><td>B-RVV VCC</td><td>空</td></tr><tr><td>5 B-GND</td><td>B 探头 GND</td><td>B-RVV GND</td><td>空</td></tr><tr><td>6 B-DATA</td><td>B 探头 DATA</td><td>B-RVV DATA</td><td>空</td></tr><tr><td>7 总-VCC</td><td>A-RVV VCC</td><td>B-RVV VCC</td><td>去面包板</td></tr><tr><td>8 总-GND</td><td>A-RVV GND</td><td>B-RVV GND</td><td>去面包板</td></tr><tr><td>9 总-DATA</td><td>A-RVV DATA</td><td>B-RVV DATA</td><td>去面包板</td></tr></tbody></table>
+  <div class="callout stop"><strong>不要把杜邦塑料头塞进 WAGO。</strong> 去面包板的过渡线必须一端有可由 WAGO 可靠夹持的裸多股铜线，另一端有面包板公针。若没有这种安全成品线，停止并拍照，不剪随机杜邦线硬凑。</div>
+  <div class="step"><span class="state">全程无电</span><h3>通断逐线验收</h3><p>A-VCC 只到总-VCC，A-GND 只到总-GND，A-DATA 只到总-DATA；B 三线同理。最后总-VCC 与总-GND 不得持续导通。</p></div>
+</section>
+
+<section id="box">
+  <h2>11–12. 防水盒先干摆，再钻孔</h2>
+  <div class="photo"><strong>📷 实物确认点 3</strong><br>把 ESP32+面包板、9 个 WAGO、面板线、防水接头放在空盒旁拍俯视和四侧照片。不要先钻。PG7/M12 是名称，不等于开孔直径。</div>
+  <div class="diagram">
+    <svg viewBox="0 0 900 390" role="img" aria-label="接线盒和滴水弯示意图">
+      <rect x="250" y="40" width="450" height="280" rx="22" fill="#f7f9fb" stroke="#405261" stroke-width="5"/><text x="475" y="75" text-anchor="middle" font-size="22">ABS 盒：干燥区</text><rect x="315" y="105" width="180" height="115" rx="15" fill="#223746"/><text x="405" y="165" text-anchor="middle" fill="#fff" font-size="19">ESP32 + MB-102</text><rect x="535" y="105" width="110" height="115" rx="15" fill="#ffe6bd"/><text x="590" y="150" text-anchor="middle" font-size="18">9 个</text><text x="590" y="180" text-anchor="middle" font-size="18">WAGO</text>
+      <rect x="225" y="245" width="35" height="55" fill="#6f7d89"/><path d="M242 300V345C242 375 170 375 170 335V270" fill="none" stroke="#16784b" stroke-width="13"/><text x="95" y="240" font-size="19" fill="#16784b">RVV 滴水弯</text>
+      <rect x="690" y="245" width="38" height="55" fill="#6f7d89"/><path d="M710 300V348C710 378 790 378 790 335V260" fill="none" stroke="#0969da" stroke-width="13"/><text x="745" y="230" font-size="19" fill="#0969da">USB 滴水弯</text>
+      <path d="M405 220L405 290" stroke="#0969da" stroke-width="8"/><rect x="375" y="275" width="60" height="38" rx="8" fill="#d8eaff" stroke="#0969da"/><text x="405" y="303" text-anchor="middle" font-size="15">USB-C</text><text x="475" y="350" text-anchor="middle" font-size="18">盒体与电源固定在底柜外侧干燥位置</text>
+    </svg>
+  </div>
+  <div class="step"><span class="state">空盒、断电</span><h3>干摆与逐级开孔</h3><p>确认面板线内侧公头自然够到 ESP32、盒盖不压元件、WAGO 与板分区。用实物/卡尺确认螺纹，阶梯钻从小到大逐级扩孔，每一级都停下试装。清除全部塑料屑后才放回电子件。</p></div>
+  <div class="step"><span class="state">安装仍断电</span><h3>USB-C 面板线是什么</h3><div class="wiring">电脑或 5V USB-A 充电器
+ → USB-A 转 USB-C 数据线
+ → 盒外 USB-C 母口
+ → 0.3m 2.0USB-C 面板延长线
+ → 盒内 USB-C 公头
+ → ESP32</div><p>它只是把接口延到盒外，不是第二个电源。插线状态不能视为完整 IP65/IP67。</p></div>
+  <div class="step"><span class="state">机械检查</span><h3>密封、应力释放、滴水弯</h3><p>防水接头夹住 RVV 外护套，不只夹散开的三芯。盒内用固定座和扎带承力；每根外线先向下形成 U 形，再向上进入盒体。所有自制接头留在盒内干燥区。</p><p class="check">正确：线缆最低点低于进盒孔，水在 U 形最低处滴落。</p><p class="stopline">错误：线从高处斜向下直接进入孔，水会沿线流向盒内；必须重新走线。</p></div>
+</section>
+
+<section id="tank">
+  <h2>13. 下缸与 48–72 小时观察</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 900 360" role="img" aria-label="主缸探头、底滤探头、干燥控制盒和滴水弯位置示意图">
+      <rect x="35" y="45" width="470" height="230" rx="14" fill="#dff4ff" stroke="#357ca5" stroke-width="5"/><path d="M35 95H505" stroke="#55a9cf" stroke-width="5"/><text x="270" y="78" text-anchor="middle" font-size="23">主缸</text><rect x="410" y="115" width="28" height="120" rx="10" fill="#d0633d"/><text x="425" y="255" text-anchor="middle" font-size="15">加热棒</text><circle cx="205" cy="195" r="16" fill="#aeb9c3" stroke="#344054"/><path d="M205 195V305" stroke="#16784b" stroke-width="8"/><text x="205" y="175" text-anchor="middle" font-size="18" fill="#075526">A 主缸中下层</text><path d="M205 305C205 338 160 338 160 305" fill="none" stroke="#16784b" stroke-width="8"/><text x="145" y="352" font-size="15">滴水弯</text>
+      <rect x="555" y="145" width="180" height="130" rx="14" fill="#dff4ff" stroke="#357ca5" stroke-width="5"/><text x="645" y="180" text-anchor="middle" font-size="22">底滤回水仓</text><circle cx="625" cy="230" r="16" fill="#aeb9c3" stroke="#344054"/><text x="625" y="260" text-anchor="middle" font-size="16">B</text><circle cx="700" cy="230" r="25" fill="#667582"/><text x="700" y="237" text-anchor="middle" fill="#fff" font-size="14">泵</text>
+      <rect x="760" y="40" width="120" height="105" rx="14" fill="#fff8e8" stroke="#945600" stroke-width="4"/><text x="820" y="78" text-anchor="middle" font-size="17">控制盒</text><text x="820" y="105" text-anchor="middle" font-size="15">底柜外侧</text><text x="820" y="128" text-anchor="middle" font-size="15">干燥位置</text><path d="M625 214C660 105 735 100 760 100" fill="none" stroke="#0969da" stroke-width="6"/>
+      <text x="270" y="325" text-anchor="middle" fill="#b42318" font-size="18">A 避开加热棒和直冲水流；只有不锈钢头入水</text>
+    </svg>
+  </div>
+  <table><thead><tr><th>探头</th><th>位置</th><th>作用</th><th>避开</th></tr></thead><tbody><tr><td>A / main_tank_sensor</td><td>主缸中下层稳定水流处</td><td>唯一报警依据</td><td>加热棒、直冲、缸壁、底砂</td></tr><tr><td>B / sump_return_sensor</td><td>底滤回水/上水泵仓</td><td>循环诊断</td><td>泵体、局部热源、最低水位</td></tr></tbody></table>
+  <div class="callout warn">只有不锈钢探头入水。WAGO、RVV 拼接、面包板、ESP32、USB 接口都<strong>不能入水</strong>。盒体、ESP32 和 USB 充电器放在<strong>底柜外侧</strong>干燥位置。</div>
+  <div class="step"><span class="state">最终低压通电</span><h3>先接电脑观察，再合盖用充电器</h3><ol><li>复核标签，盒内无水汽、铜丝、塑料屑和工具。</li><li>从盒外 USB-C 口接电脑，确认双探头和串口。</li><li>断电、合盖，再改接已有 5V 2A 以上 USB-A 充电器。</li></ol></div>
+  <div class="step"><span class="state">只监控</span><h3>连续观察 48–72 小时</h3><p>每天至少一次记录。夏季稳定 26–27°C 不应误报警。底滤异常先查泵、水位、滤材堵塞和探头位置，不能用 B 代替 A。</p><table><tr><th>时间</th><th>主缸 A</th><th>独立温度计</th><th>底滤 B</th><th>泵/水位</th><th>告警/重启</th></tr><tr><td>____</td><td>____°C</td><td>____°C</td><td>____°C</td><td>____</td><td>____</td></tr><tr><td>____</td><td>____°C</td><td>____°C</td><td>____°C</td><td>____</td><td>____</td></tr><tr><td>____</td><td>____°C</td><td>____°C</td><td>____°C</td><td>____</td><td>____</td></tr></table></div>
+</section>
+
+<section id="videos">
+  <h2>14. YouTube 学习视频</h2>
+  <div class="callout stop"><strong>视频只作视觉补充，不是本项目接线依据。</strong> 视频可能使用不同板型、GPIO、电压、线色或市电示例。只观察动作，不照搬；本项目固定使用 3V3 / GND / GPIO4。</div>
+  <div class="video-grid">
+    <div class="video"><a href="https://www.youtube.com/watch?v=SLkPtmnglOI">How to Use a Multimeter</a><p>SparkFun Electronics。看 COM、V/Ω、通断和直流电压；跳过高压/电流。</p></div>
+    <div class="video"><a href="https://www.youtube.com/watch?v=MtiJz7gh1VU">How to Use a Breadboard</a><p>Science Buddies。看五孔组、中沟和电源轨；最后仍以万用表实测为准。</p></div>
+    <div class="video"><a href="https://www.youtube.com/watch?v=xPlN_Tk3VLQ">Introduction to ESP32</a><p>DroneBot Workshop。看 USB、串口、烧录；视频板型不是微雪 N16R8-M。</p></div>
+    <div class="video"><a href="https://www.youtube.com/watch?v=r7KW2QOfpN8">The Ultimate Guide to the Wago 221</a><p>eFIXX。看剥线、杠杆、插入、轻拉；视频的市电内容不属于本项目。</p></div>
+    <div class="video"><a href="https://www.youtube.com/watch?v=AGXIF9vyWuQ">Control DS18B20 using MicroPython</a><p>DonskyTech。看 VCC/GND/DATA 和上拉；GPIO、语言和线色不照搬。</p></div>
+  </div>
+</section>
+
+<section id="final">
+  <h2>15. 最终验收清单</h2>
+  <ul>
+    <li>□ 黑表笔在 COM，红表笔在 V/Ω，未使用 10A 口。</li><li>□ A、B 各自依据实物 Type A / Type B 贴好 VCC、GND、DATA。</li><li>□ 总-VCC→3V3；总-GND→GND；总-DATA→GPIO4。</li><li>□ GPIO4-DATA 与 3V3 之间只有一只 4.7kΩ。</li><li>□ 九个 WAGO 命名正确，第十个 WAGO 留作备用；外部无裸铜、轻拉不松。</li><li>□ 已记录两个 ROM，并确认 A 主缸、B 底滤。</li><li>□ 已完成 15 分钟校准和 120 分钟干态运行。</li><li>□ 自制接头全部干燥，进线有滴水弯和应力释放。</li><li>□ 盒体、ESP32、充电器在底柜外侧干燥位置。</li><li>□ 已完成 48–72 小时观察；没有改动加热棒或原 220V 布线。</li>
+  </ul>
+  <h3>资料来源</h3>
+  <ul><li><a href="https://www.dfrobot.com/product-1354.html/">DFRobot KIT0021 官方产品页</a>：供电和 Type A/Type B 线序。</li><li><a href="https://www.wago.com/us/221-handling-instructions">WAGO 221 操作说明</a>：剥线和杠杆操作。</li><li><a href="https://www.wago.com/no/installasjonsklemmer-og-koblinger/koblingsklemme-med-hendel/p/221-413">WAGO 221-413 产品信息</a>：导体范围。</li><li><a href="https://www.waveshare.com/wiki/ESP32-S3-DEV-KIT-N8R8">微雪开发板资料</a>：接口参考；针脚仍以 N16R8-M 实物丝印确认。</li></ul>
+  <p class="tiny">HTML 与 Markdown 版内容相互补充：HTML 适合浏览图示；Markdown 版包含更完整的逐步记录表。</p>
+</section>
+</main>
+</div>
+<footer>第一缸温度监控 MVP · 纯低压、只监控、不控制市电 · 2026-07-16 新手版</footer>
+</body>
+</html>

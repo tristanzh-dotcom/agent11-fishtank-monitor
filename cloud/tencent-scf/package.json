@@ -1,0 +1,22 @@
+{
+  "name": "fishtank-monitor-tencent-scf",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bounded-cost Tencent SCF heartbeat and offline detector for the aquarium monitor MVP",
+  "main": "monitor.js",
+  "files": [
+    "monitor.js",
+    "serializer.js",
+    "src/"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "build": "./scripts/build-package.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "cos-nodejs-sdk-v5": "3.0.0"
+  }
+}

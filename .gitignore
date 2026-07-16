@@ -1,0 +1,4 @@
+.pio/
+.build/
+cloud/tencent-scf/node_modules/
+include/secrets.hpp
