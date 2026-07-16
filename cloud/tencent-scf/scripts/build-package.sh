@@ -25,6 +25,10 @@ cp -R "$PACKAGE_DIR/src" "$STAGING/package/src"
   --no-fund)
 
 (cd "$STAGING/package" && zip -q -r "$STAGING/tencent-scf.zip" . \
-  -x '*/test/*' '*/tests/*' '*/__tests__/*')
+  -x '*/test/*' '*/tests/*' '*/__tests__/*' \
+     '*/test.js' '*/tests.js' '*/test-*.js' '*.test.js' \
+     '*/test.cjs' '*/tests.cjs' '*/test-*.cjs' '*.test.cjs' \
+     '*/test.mjs' '*/tests.mjs' '*/test-*.mjs' '*.test.mjs' \
+     '*/test.ts' '*/tests.ts' '*/test-*.ts' '*.test.ts')
 mv "$STAGING/tencent-scf.zip" "$OUTPUT_PATH"
 echo "$OUTPUT_PATH"
