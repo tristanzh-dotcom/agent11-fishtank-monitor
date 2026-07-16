@@ -4,7 +4,7 @@
 
 **Goal:** Deploy a cost-bounded Tencent Cloud heartbeat receiver and offline checker for `tank01` without enabling CLS.
 
-**Architecture:** An HTTP event function authenticates a compact ESP32 heartbeat with HMAC-SHA256, enforces a 1 KiB body limit and a 500 ms response floor, then overwrites one fixed COS state object per device. A timer-only function reads that state, sends Bark only on offline/recovery transitions, and writes the bounded state back to the same object. Both functions use an injected store in tests and a least-privilege SCF running role in production.
+**Architecture:** One serialized SCF event function owns both the Function URL and timer triggers. It authenticates compact ESP32 heartbeats with HMAC-SHA256, enforces a 1 KiB body limit and a 500 ms response floor, and overwrites one fixed COS state object. Timer events read the same state and send Bark on offline/recovery transitions. A 128 MB maximum exclusive quota on the single 128 MB function plus in-process serialization prevents timer/heartbeat read-modify-write races.
 
 **Tech Stack:** Node.js 20 ESM, built-in `node:test`, `node:crypto`, `fetch`, `cos-nodejs-sdk-v5`, Tencent SCF event functions, COS.
 
@@ -13,7 +13,7 @@
 - Region is `ap-shanghai` for COS, SCF, and all future cloud resources.
 - COS bucket is `fishtank-monitor-1454792551`, private, single-AZ, SSE-COS.
 - Do not open CLS and do not enable SCF log delivery.
-- Function memory is 128 MB; pre-provisioned concurrency is zero; maximum exclusive quota is 128 MB per function.
+- Exactly one function handles both triggers; memory is 128 MB, pre-provisioned concurrency is zero, and maximum exclusive quota is 128 MB.
 - Heartbeat request bodies are at most 1024 bytes and every public request takes at least 500 ms.
 - Device credentials and Bark keys are environment variables only and must never appear in source, tests, console output, URLs, or logs.
 - Do not perform Git write operations from this repository.
@@ -40,7 +40,8 @@
 **Files:**
 - Create: `cloud/tencent-scf/src/cos_state_store.mjs`
 - Create: `cloud/tencent-scf/src/heartbeat_handler.mjs`
-- Create: `cloud/tencent-scf/heartbeat.js`
+- Create: `cloud/tencent-scf/monitor.js`
+- Create: `cloud/tencent-scf/serializer.js`
 - Create: `cloud/tencent-scf/test/heartbeat_handler.test.mjs`
 - Create: `cloud/tencent-scf/test/cos_state_store.test.mjs`
 
@@ -60,7 +61,7 @@
 **Files:**
 - Create: `cloud/tencent-scf/src/offline_checker.mjs`
 - Create: `cloud/tencent-scf/src/bark_notifier.mjs`
-- Create: `cloud/tencent-scf/offline.js`
+- Consume timer events through `cloud/tencent-scf/monitor.js`
 - Create: `cloud/tencent-scf/test/offline_checker.test.mjs`
 - Create: `cloud/tencent-scf/package.json`
 - Create: `cloud/tencent-scf/README.md`
@@ -83,11 +84,11 @@
 
 **Interfaces:**
 - Consumes the tested package from Tasks 1-3.
-- Produces two inactive Shanghai SCF functions ready for private environment variables and triggers.
+- Produces one inactive Shanghai SCF function ready for private environment variables and two triggers.
 
 - [x] **Step 1: Build the ZIP** from the verified package without repository secrets or test fixtures.
 - [x] **Step 2: Inspect the ZIP manifest** and verify only runtime files and production dependencies are present.
 - [ ] **Step 3: Obtain TZ confirmation immediately before uploading the ZIP to Tencent Cloud.**
-- [ ] **Step 4: Create `fishtank-heartbeat` and `fishtank-offline-checker`** in Shanghai with log delivery disabled and no triggers initially.
+- [ ] **Step 4: Create one `fishtank-monitor` function** in Shanghai with log delivery disabled and no triggers initially.
 - [ ] **Step 5: Configure least-privilege COS access, 128 MB memory, three-second timeout, zero pre-provisioned concurrency, and 128 MB maximum exclusive quota.**
 - [ ] **Step 6: Stop before entering Bark/device secrets or enabling public/timer triggers; those require a separate credential checkpoint and live verification.**

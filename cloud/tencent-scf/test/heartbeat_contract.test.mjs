@@ -97,6 +97,13 @@ test('rejects unsupported methods, oversized bodies, and stale timestamps', () =
   );
 });
 
+test('rejects malformed JSON before authentication or storage', () => {
+  assert.throws(
+    () => authenticateHeartbeat(makeEvent({ body: '{bad json' }), options),
+    (error) => error instanceof RequestError && error.statusCode === 400,
+  );
+});
+
 test('rejects unknown devices, malformed fields, and invalid signatures', () => {
   const unknownPayload = {
     device_id: 'tank99',

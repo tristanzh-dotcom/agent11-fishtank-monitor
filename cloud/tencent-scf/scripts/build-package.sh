@@ -24,6 +24,7 @@ cp -R "$PACKAGE_DIR/src" "$STAGING/package/src"
   --no-audit \
   --no-fund)
 
-(cd "$STAGING/package" && zip -q -r "$STAGING/tencent-scf.zip" .)
+(cd "$STAGING/package" && zip -q -r "$STAGING/tencent-scf.zip" . \
+  -x '*/test/*' '*/tests/*' '*/__tests__/*')
 mv "$STAGING/tencent-scf.zip" "$OUTPUT_PATH"
 echo "$OUTPUT_PATH"

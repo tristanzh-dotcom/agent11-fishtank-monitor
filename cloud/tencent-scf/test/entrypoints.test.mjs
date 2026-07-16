@@ -9,3 +9,20 @@ test('exposes one serialized Tencent SCF handler for both triggers', () => {
 
   assert.equal(typeof monitor.main_handler, 'function');
 });
+
+test('redacts initialization failures and keeps the public 500ms response floor', async () => {
+  const monitor = require('../monitor.js');
+  const startedAt = Date.now();
+  const response = await monitor.main_handler({
+    requestContext: { http: { method: 'GET' } },
+    headers: {},
+    body: '',
+  }, {});
+
+  assert.equal(response.statusCode, 503);
+  assert.deepEqual(JSON.parse(response.body), {
+    ok: false,
+    error: 'service_unavailable',
+  });
+  assert.equal(Date.now() - startedAt >= 480, true);
+});
