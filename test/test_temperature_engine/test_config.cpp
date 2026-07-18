@@ -14,6 +14,8 @@ int main() {
   assert(std::string(config.aquarium_id) == "tank01");
   assert(config.bark_enabled);
   assert(!config.mqtt_enabled);
+  assert(config.heartbeat_enabled);
+  assert(config.heartbeat_interval_ms == 300000U);
   assert(!config.main_tank_sensor.configured());
   assert(!config.sump_return_sensor.configured());
 

@@ -3,21 +3,22 @@ import test from 'node:test';
 
 import { dispatchScfEvent } from '../src/scf_runtime.mjs';
 
-const env = {
+const baseEnv = {
   COS_BUCKET: 'fishtank-monitor-1454792551',
   COS_REGION: 'ap-shanghai',
   DEVICE_SECRETS_JSON: JSON.stringify({ tank01: '0123456789abcdef' }),
 };
 
-function context(secretId) {
+function envWithRoleCredentials(secretId) {
   return {
+    ...baseEnv,
     TENCENTCLOUD_SECRETID: secretId,
     TENCENTCLOUD_SECRETKEY: `${secretId}-key`,
     TENCENTCLOUD_SESSIONTOKEN: `${secretId}-token`,
   };
 }
 
-test('creates a fresh COS client from current invocation context credentials', async () => {
+test('creates a fresh COS client from current invocation environment credentials', async () => {
   const credentials = [];
   class FakeCos {
     constructor(value) { credentials.push(value); }
@@ -30,11 +31,11 @@ test('creates a fresh COS client from current invocation context credentials', a
     body: '',
   };
 
-  await dispatchScfEvent(event, context('first-id'), env, {
+  await dispatchScfEvent(event, {}, envWithRoleCredentials('first-id'), {
     CosCtor: FakeCos,
     minimumHeartbeatDurationMs: 0,
   });
-  await dispatchScfEvent(event, context('second-id'), env, {
+  await dispatchScfEvent(event, {}, envWithRoleCredentials('second-id'), {
     CosCtor: FakeCos,
     minimumHeartbeatDurationMs: 0,
   });

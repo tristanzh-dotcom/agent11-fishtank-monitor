@@ -88,7 +88,18 @@
 
 - [x] **Step 1: Build the ZIP** from the verified package without repository secrets or test fixtures.
 - [x] **Step 2: Inspect the ZIP manifest** and verify only runtime files and production dependencies are present.
-- [ ] **Step 3: Obtain TZ confirmation immediately before uploading the ZIP to Tencent Cloud.**
-- [ ] **Step 4: Create one `fishtank-monitor` function** in Shanghai with log delivery disabled and no triggers initially.
-- [ ] **Step 5: Configure least-privilege COS access, 128 MB memory, three-second timeout, zero pre-provisioned concurrency, and 128 MB maximum exclusive quota.**
-- [ ] **Step 6: Stop before entering Bark/device secrets or enabling public/timer triggers; those require a separate credential checkpoint and live verification.**
+- [x] **Step 3: Obtain TZ confirmation immediately before uploading the ZIP to Tencent Cloud.**
+- [x] **Step 4: Create one `fishtank-monitor` function** in Shanghai with log delivery disabled and no triggers initially.
+- [x] **Step 5: Configure least-privilege COS access, 128 MB memory, ten-second timeout, zero pre-provisioned concurrency, and 128 MB maximum exclusive quota.**
+- [x] **Step 6: Stop before entering Bark/device secrets or enabling public/timer triggers; those require a separate credential checkpoint and live verification.**
+
+### Task 5: Live Activation and Synthetic Acceptance
+
+- [x] Enter the private Bark key and temporary simulator device secret as masked environment variables.
+- [x] Enable the public Function URL with application-layer HMAC authentication.
+- [x] Enable the five-minute `fishtank-monitor-offline-check` Timer.
+- [x] Verify valid, replayed, invalid-signature and stale signed requests against the live function.
+- [x] Verify the single fixed COS state object and absence of invalid nonce mutations.
+- [x] Verify first offline, repeated offline no-op, heartbeat recovery, first recovery and repeated recovery no-op.
+- [x] Verify Bark accepts exactly one offline and one recovery transition before COS state is committed.
+- [ ] Rotate the final device secret immediately before real firmware installation.

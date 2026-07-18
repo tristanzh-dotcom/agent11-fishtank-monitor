@@ -53,6 +53,22 @@ for bark_primary_contract in \
   fi
 done
 
+for heartbeat_contract in \
+  "bool heartbeat_enabled = true" \
+  "heartbeat_interval_ms = 300000U" \
+  "devices/tank01/state.json" \
+  "X-Aquarium-Signature" \
+  "腾讯云心跳" \
+  "15 分钟"; do
+  if ! rg -F --quiet -- "$heartbeat_contract" \
+    include/config.hpp include/secrets.example.hpp src/main.cpp \
+    src/heartbeat_notifier.cpp README.md HANDOVER_SOFTWARE_20260716.md \
+    cloud/tencent-scf/README.md; then
+    echo "missing Tencent heartbeat contract: $heartbeat_contract" >&2
+    exit 1
+  fi
+done
+
 if rg -F --quiet \
   "固件内的 Bark 仅作临时可选兜底" \
   HANDOVER_SOFTWARE_20260716.md README.md docs/hardware-installation.md; then
@@ -169,6 +185,11 @@ fi
 if rg --glob '!include/secrets.hpp' --glob '!include/secrets.example.hpp' \
   'replace-with-wifi-password|replace-with-mqtt-password' src include; then
   echo "placeholder secret leaked outside secret files" >&2
+  exit 1
+fi
+
+if rg -F --quiet "setInsecure()" src include lib; then
+  echo "firmware must not disable TLS certificate verification" >&2
   exit 1
 fi
 

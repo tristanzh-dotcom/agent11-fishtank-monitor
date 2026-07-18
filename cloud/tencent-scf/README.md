@@ -54,6 +54,15 @@ v1\n<sent_at_ms>\n<nonce>\n<sha256(原始 JSON 请求体)>
 服务端允许设备时间与云端时间相差最多 5 分钟。设备密钥至少 16 字符，正式使用建议
 在本机执行 `openssl rand -hex 32` 生成，并只在 ESP32 私有配置和 SCF 环境变量中输入。
 
+软件模拟设备可用于硬件到货前的真实函数 URL 验证。变量只在当前终端进程中提供，
+脚本输出仅包含 HTTP 状态，不打印 URL、密钥、nonce 或签名：
+
+```bash
+FISHTANK_FUNCTION_URL='私有输入' \
+FISHTANK_DEVICE_SECRET='私有输入' \
+npm run simulate-heartbeat
+```
+
 ## 云函数环境变量
 
 单一函数 `fishtank-monitor` 配置以下全部变量：
@@ -65,24 +74,44 @@ v1\n<sent_at_ms>\n<nonce>\n<sha256(原始 JSON 请求体)>
 - `OFFLINE_AFTER_MS=900000`
 - `BARK_KEY`：在控制台私下输入，不写入代码、URL 或聊天。
 
-COS SDK 每次调用都只读取腾讯 SCF `context` 注入的最新临时凭据：
+COS SDK 每次调用都只读取腾讯 SCF 运行环境注入的最新临时凭据环境变量：
 `TENCENTCLOUD_SECRETID`、`TENCENTCLOUD_SECRETKEY`、
-`TENCENTCLOUD_SESSIONTOKEN`，不会缓存环境变量中的冷启动凭据。不要创建或配置长期
+`TENCENTCLOUD_SESSIONTOKEN`，不会从事件 `context` 读取凭据，也不会配置或缓存长期
 SecretId/SecretKey。
 
 ## 腾讯云配置硬约束
 
 只创建一个 `fishtank-monitor` 函数，选择上海区、Node.js 20、128 MB 内存；关闭日志
-投递，不开通 CLS，不配置预置并发，最大独占配额设置为 128 MB，超时设置为 3 秒。
+投递，不开通 CLS，不配置预置并发，最大独占配额设置为 128 MB，执行超时设置为
+10 秒。实测 Node.js 冷启动加首次 COS 写入可能超过 3 秒，因此不能继续使用 3 秒上限。
 COS 存储桶必须复核为私有读写、单可用区、SSE-COS、版本控制关闭。
 
 - 执行入口：`monitor.main_handler`。
-- 函数 URL：先不启用；最终作为 ESP32 心跳入口。
-- 定时器：先不启用；最终每 5 分钟运行一次，事件类型必须为 `Timer`。
+- 函数 URL：已启用 HTTPS 公网入口，由应用层 HMAC 鉴权。
+- 定时器：已启用 `fishtank-monitor-offline-check`，每 5 分钟运行一次，事件类型为
+  `Timer`，Cron 为 `0 */5 * * * * *`。
 - 运行角色：仅允许对
-  `fishtank-monitor-1454792551/devices/*/state.json` 执行 COS GetObject/PutObject。
+  `fishtank-monitor-1454792551/devices/tank01/state.json` 执行 COS
+  GetObject/PutObject。
 
 Bark 采用“提醒优先”的至少一次投递：若 Bark 已成功但紧随其后的 COS 状态写入失败，
 下一轮可能重复同一条状态切换提醒；这比漏掉离线报警更安全。
 
 上传部署包、输入 Bark/设备密钥、启用公网 URL 和启用定时器是四个独立确认点。
+
+## 2026-07-17 云端验收记录
+
+- 修复后的运行时已部署到上海区 `default/fishtank-monitor`。
+- 软件模拟的有效签名心跳返回 HTTP 200。
+- 同一有效请求再次发送返回 HTTP 409 `replay_detected`。
+- 无效签名返回 HTTP 401 `request_rejected`。
+- COS 中仅创建固定对象 `devices/tank01/state.json`；验收时为 278B，并保存
+  `tank01` 的 26.4/26.6°C、在线状态和单次有效 nonce。
+- 无效签名的 nonce 未写入状态对象。
+- `BARK_KEY` 已由用户在腾讯云控制台私下输入并以掩码显示；未写入代码或验收输出。
+- 五分钟 Timer 已启用。受控状态验收完成首次离线、重复离线不提醒、有效心跳恢复、
+  首次恢复提醒和重复恢复不提醒。
+- 离线与恢复状态都只在 Bark 请求成功后写回 COS；验收状态已写回，证明 Bark API
+  各接受一次离线和恢复通知，后续重复 Timer 均为 no-op。
+- 当前模拟设备密钥只用于无硬件验收；真机烧录前必须轮换，并仅同步到腾讯云环境变量
+  与本机忽略文件。

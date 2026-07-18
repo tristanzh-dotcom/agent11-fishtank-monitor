@@ -6,10 +6,10 @@ import { createHeartbeatHandler } from './heartbeat_handler.mjs';
 import { createOfflineChecker } from './offline_checker.mjs';
 import { readHeartbeatConfig, readOfflineConfig } from './runtime_config.mjs';
 
-function credentialsFromContext(context) {
-  const SecretId = context?.TENCENTCLOUD_SECRETID;
-  const SecretKey = context?.TENCENTCLOUD_SECRETKEY;
-  const SecurityToken = context?.TENCENTCLOUD_SESSIONTOKEN;
+function credentialsFromEnvironment(env) {
+  const SecretId = env?.TENCENTCLOUD_SECRETID;
+  const SecretKey = env?.TENCENTCLOUD_SECRETKEY;
+  const SecurityToken = env?.TENCENTCLOUD_SESSIONTOKEN;
   if (!SecretId || !SecretKey || !SecurityToken) {
     throw new Error('SCF invocation credentials are unavailable');
   }
@@ -20,9 +20,9 @@ function isHttpEvent(event) {
   return Boolean(event?.requestContext?.http?.method ?? event?.httpMethod);
 }
 
-function createStore(config, context, CosCtor) {
+function createStore(config, env, CosCtor) {
   return createCosStateStore({
-    cos: new CosCtor(credentialsFromContext(context)),
+    cos: new CosCtor(credentialsFromEnvironment(env)),
     bucket: config.bucket,
     region: config.region,
   });
@@ -41,7 +41,7 @@ export async function dispatchScfEvent(
   if (isHttpEvent(event)) {
     const config = readHeartbeatConfig(env);
     return createHeartbeatHandler({
-      store: createStore(config, context, CosCtor),
+      store: createStore(config, env, CosCtor),
       deviceSecrets: config.deviceSecrets,
       minimumDurationMs: minimumHeartbeatDurationMs,
     })(event);
@@ -50,7 +50,7 @@ export async function dispatchScfEvent(
   if (event?.Type === 'Timer') {
     const config = readOfflineConfig(env);
     return createOfflineChecker({
-      store: createStore(config, context, CosCtor),
+      store: createStore(config, env, CosCtor),
       notifier: createBarkNotifier({
         barkKey: config.barkKey,
         fetchImpl,

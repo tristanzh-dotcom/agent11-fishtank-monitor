@@ -11,7 +11,8 @@
   ],
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "build": "./scripts/build-package.sh"
+    "build": "./scripts/build-package.sh",
+    "simulate-heartbeat": "node scripts/send-signed-heartbeat.mjs"
   },
   "engines": {
     "node": ">=20"

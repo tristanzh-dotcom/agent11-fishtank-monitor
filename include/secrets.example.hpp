@@ -26,4 +26,10 @@ constexpr char kAliyunRootCaPem[] = "";
 constexpr char kBarkDeviceKey[] = "";
 constexpr char kBarkRootCaPem[] = "";
 
+// Tencent SCF is an independent heartbeat/offline-monitoring path. The
+// application-level HMAC secret must match DEVICE_SECRETS_JSON in SCF.
+constexpr char kTencentFunctionUrl[] = "";
+constexpr char kTencentDeviceSecret[] = "";
+constexpr char kTencentRootCaPem[] = "";
+
 }  // namespace aquarium::secrets

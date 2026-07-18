@@ -3,6 +3,8 @@
 #include "config.hpp"
 #include "delivery_coordinator.hpp"
 #include "ds18b20_reader.hpp"
+#include "heartbeat_contract.hpp"
+#include "heartbeat_notifier.hpp"
 #include "secrets.hpp"
 #include "retry_backoff.hpp"
 
@@ -19,9 +21,13 @@ aquarium::TemperatureEngine engine(runtime_config.policy);
 aquarium::firmware::Ds18b20Reader reader(kOneWirePin, runtime_config);
 aquarium::firmware::AliyunMqtt mqtt;
 aquarium::firmware::BarkNotifier bark;
+aquarium::firmware::HeartbeatNotifier heartbeat;
 aquarium::DeliveryCoordinator delivery(16, runtime_config.bark_enabled,
                                        runtime_config.mqtt_enabled);
 aquarium::RetryBackoff wifi_backoff(1000U, 60000U);
+aquarium::heartbeat::HeartbeatSchedule heartbeat_schedule(
+    runtime_config.heartbeat_interval_ms, 5000U,
+    runtime_config.heartbeat_interval_ms);
 
 std::uint64_t monotonic_millis() {
   static std::uint32_t previous = 0;
@@ -52,6 +58,7 @@ void connect_wifi(std::uint64_t now_ms) {
 void setup() {
   Serial.begin(115200);
   connect_wifi(monotonic_millis());
+  heartbeat.begin_time_sync();
   reader.begin();
 }
 
@@ -83,5 +90,17 @@ void loop() {
   }
   if (const auto* event = delivery.mqtt_front(); event != nullptr) {
     delivery.acknowledge_mqtt(mqtt.publish_event(*event, now_ms));
+  }
+
+  if (runtime_config.heartbeat_enabled && sample.display_c.has_value() &&
+      sample.return_c.has_value() && WiFi.status() == WL_CONNECTED &&
+      heartbeat_schedule.should_attempt(now_ms)) {
+    const bool delivered =
+        heartbeat.notify(*sample.display_c, *sample.return_c, now_ms);
+    if (delivered) {
+      heartbeat_schedule.record_success(now_ms);
+    } else {
+      heartbeat_schedule.record_failure(now_ms);
+    }
   }
 }

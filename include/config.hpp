@@ -29,6 +29,8 @@ struct RuntimeConfig {
   SensorRomAddress sump_return_sensor{};
   bool bark_enabled = true;
   bool mqtt_enabled = false;
+  bool heartbeat_enabled = true;
+  std::uint32_t heartbeat_interval_ms = 300000U;
 };
 
 constexpr RuntimeConfig default_runtime_config() {
