@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fishtank.local/contracts/fishtank-state-v1.schema.json",
+  "title": "FishTankStateV1",
+  "description": "Read-only latest-state snapshot shared by Agent11 and Agent12.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "device_id",
+    "timestamp_ms",
+    "display_c",
+    "return_c",
+    "connectivity_status",
+    "events"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "device_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$"
+    },
+    "timestamp_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "display_c": {
+      "$ref": "#/$defs/nullableTemperature"
+    },
+    "return_c": {
+      "$ref": "#/$defs/nullableTemperature"
+    },
+    "connectivity_status": {
+      "enum": [
+        "online",
+        "offline",
+        "unknown"
+      ]
+    },
+    "events": {
+      "type": "array",
+      "maxItems": 7,
+      "items": {
+        "$ref": "#/$defs/activeTemperatureEvent"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "events": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "sensor_fault"
+                }
+              },
+              "required": [
+                "type"
+              ]
+            }
+          }
+        },
+        "required": [
+          "events"
+        ]
+      },
+      "then": {
+        "properties": {
+          "display_c": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nullableTemperature": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "eventType": {
+      "enum": [
+        "high_temperature",
+        "high_temperature_critical",
+        "low_temperature",
+        "low_temperature_critical",
+        "sensor_fault",
+        "temperature_rapid_change",
+        "temperature_gradient"
+      ]
+    },
+    "activeTemperatureEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "state",
+        "severity",
+        "at_ms",
+        "display_c"
+      ],
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/eventType"
+        },
+        "state": {
+          "enum": [
+            "opened",
+            "escalated",
+            "reminder"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "n2",
+            "n3"
+          ]
+        },
+        "at_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "display_c": {
+          "$ref": "#/$defs/nullableTemperature"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "sensor_fault"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "display_c": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

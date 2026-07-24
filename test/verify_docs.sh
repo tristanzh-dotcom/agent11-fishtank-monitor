@@ -69,6 +69,19 @@ for heartbeat_contract in \
   fi
 done
 
+for event_closure_contract in \
+  ">=2.0°C" \
+  "<1.0°C" \
+  "<=0.6°C" \
+  "sensor_fault"; do
+  if ! rg -F --quiet -- "$event_closure_contract" \
+    HANDOVER_SOFTWARE_20260716.md README.md \
+    docs/superpowers/specs/2026-07-19-temperature-event-closure-design.md; then
+    echo "missing approved event-closure contract: $event_closure_contract" >&2
+    exit 1
+  fi
+done
+
 if rg -F --quiet \
   "固件内的 Bark 仅作临时可选兜底" \
   HANDOVER_SOFTWARE_20260716.md README.md docs/hardware-installation.md; then

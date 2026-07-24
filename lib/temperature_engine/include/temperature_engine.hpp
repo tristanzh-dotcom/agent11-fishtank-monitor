@@ -14,12 +14,12 @@ enum class EventType {
   low_temperature_critical,
   sensor_fault,
   temperature_rapid_change,
-  temperature_rapid_change_critical,
   temperature_gradient,
 };
 
 enum class EventState {
   opened,
+  escalated,
   reminder,
   resolved,
 };
@@ -45,11 +45,14 @@ struct TemperaturePolicy {
   double rapid_change_c = 1.0;
   double rapid_change_critical_c = 2.0;
   double gradient_c = 0.8;
+  double gradient_recovery_c = 0.6;
   std::uint64_t attention_duration_ms = 15U * 60U * 1000U;
   std::uint64_t critical_duration_ms = 5U * 60U * 1000U;
   std::uint64_t recovery_duration_ms = 15U * 60U * 1000U;
   std::uint64_t rapid_change_window_ms = 30U * 60U * 1000U;
+  std::uint64_t rapid_change_recovery_duration_ms = 30U * 60U * 1000U;
   std::uint64_t gradient_duration_ms = 10U * 60U * 1000U;
+  std::uint64_t gradient_recovery_duration_ms = 10U * 60U * 1000U;
   std::uint64_t reminder_interval_ms = 60U * 60U * 1000U;
 };
 
@@ -86,12 +89,18 @@ class TemperatureEngine {
 
   std::uint8_t consecutive_invalid_display_samples_ = 0;
   bool sensor_fault_open_ = false;
+  std::optional<std::uint64_t> sensor_fault_last_notified_at_ms_;
 
   std::deque<TemperatureSample> display_history_;
   bool rapid_change_open_ = false;
+  Severity rapid_change_peak_severity_ = Severity::n2;
+  std::optional<std::uint64_t> rapid_change_recovery_started_at_ms_;
+  std::optional<std::uint64_t> rapid_change_last_notified_at_ms_;
 
   std::optional<std::uint64_t> gradient_candidate_started_at_ms_;
   bool gradient_open_ = false;
+  std::optional<std::uint64_t> gradient_recovery_started_at_ms_;
+  std::optional<std::uint64_t> gradient_last_notified_at_ms_;
 };
 
 }  // namespace aquarium

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "device_id": "tank01",
+  "timestamp_ms": 1784557500000,
+  "display_c": null,
+  "return_c": 26.5,
+  "connectivity_status": "online",
+  "events": [
+    {
+      "type": "sensor_fault",
+      "state": "opened",
+      "severity": "n2",
+      "at_ms": 1784557500000,
+      "display_c": null
+    }
+  ]
+}

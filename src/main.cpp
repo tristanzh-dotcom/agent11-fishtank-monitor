@@ -40,6 +40,27 @@ std::uint64_t monotonic_millis() {
   return epoch + current;
 }
 
+void print_temperature(const char* label, const std::optional<double>& value) {
+  Serial.print(label);
+  Serial.print('=');
+  if (value.has_value()) {
+    Serial.print(*value, 2);
+    Serial.print("C");
+  } else {
+    Serial.print("invalid");
+  }
+}
+
+void print_sample(const aquarium::TemperatureSample& sample) {
+  Serial.print("sample at_ms=");
+  Serial.print(sample.at_ms);
+  Serial.print(' ');
+  print_temperature("main_tank", sample.display_c);
+  Serial.print(' ');
+  print_temperature("sump_tank", sample.return_c);
+  Serial.println();
+}
+
 void connect_wifi(std::uint64_t now_ms) {
   if (WiFi.status() == WL_CONNECTED) {
     wifi_backoff.record_success();
@@ -78,6 +99,7 @@ void loop() {
   last_sample_at_ms = now_ms;
 
   const auto sample = reader.read(now_ms);
+  print_sample(sample);
   if (runtime_config.mqtt_enabled) {
     mqtt.publish_telemetry(sample, now_ms);
   }

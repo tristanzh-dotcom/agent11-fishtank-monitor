@@ -34,7 +34,12 @@ struct RuntimeConfig {
 };
 
 constexpr RuntimeConfig default_runtime_config() {
-  return RuntimeConfig{};
+  RuntimeConfig config{};
+  config.main_tank_sensor =
+      SensorRomAddress{{0x28, 0x20, 0xD5, 0x6B, 0x11, 0x00, 0x00, 0xC1}};
+  config.sump_return_sensor =
+      SensorRomAddress{{0x28, 0x17, 0xAE, 0x6B, 0x11, 0x00, 0x00, 0xB4}};
+  return config;
 }
 
 }  // namespace aquarium::firmware

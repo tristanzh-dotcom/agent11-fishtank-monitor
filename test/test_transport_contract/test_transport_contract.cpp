@@ -33,6 +33,21 @@ int main() {
              "\"event_id\":\"high_temperature:opened:900000\"") !=
          std::string::npos);
 
+  const TemperatureEvent escalation{EventType::temperature_rapid_change,
+                                   EventState::escalated, Severity::n3,
+                                   1800000, 28.0};
+  const auto escalation_payload = aquarium::transport::event_json(escalation);
+  assert(escalation_payload.find(
+             "\"event_type\":\"temperature_rapid_change\"") !=
+         std::string::npos);
+  assert(escalation_payload.find("\"state\":\"escalated\"") !=
+         std::string::npos);
+  assert(escalation_payload.find("\"severity\":\"N3\"") !=
+         std::string::npos);
+  assert(escalation_payload.find(
+             "\"event_id\":\"temperature_rapid_change:escalated:1800000\"") !=
+         std::string::npos);
+
   const auto bark = aquarium::transport::bark_message(event, "tank01");
   assert(bark.title == "鱼缸温度告警");
   assert(bark.body.find("high_temperature") != std::string::npos);

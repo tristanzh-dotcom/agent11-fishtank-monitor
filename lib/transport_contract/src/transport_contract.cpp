@@ -65,8 +65,6 @@ const char* event_type_name(EventType type) {
       return "sensor_fault";
     case EventType::temperature_rapid_change:
       return "temperature_rapid_change";
-    case EventType::temperature_rapid_change_critical:
-      return "temperature_rapid_change_critical";
     case EventType::temperature_gradient:
       return "temperature_gradient";
   }
@@ -77,6 +75,8 @@ const char* event_state_name(EventState state) {
   switch (state) {
     case EventState::opened:
       return "opened";
+    case EventState::escalated:
+      return "escalated";
     case EventState::reminder:
       return "reminder";
     case EventState::resolved:
