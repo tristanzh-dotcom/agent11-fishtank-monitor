@@ -43,6 +43,7 @@ export function buildSignedHeartbeatRequest({
   mainC = 26.4,
   sumpC = 26.6,
   uptimeMs = 0,
+  activeEvents = [],
 }) {
   const safeUrl = requireHttpsUrl(url);
   const safeSecret = requireSecret(secret);
@@ -63,6 +64,7 @@ export function buildSignedHeartbeatRequest({
     main_c: requireFiniteNumber(mainC, 'Main temperature'),
     sump_c: requireFiniteNumber(sumpC, 'Sump temperature'),
     uptime_ms: uptimeMs,
+    active_events: activeEvents,
   });
   const bodyHash = createHash('sha256').update(body).digest('hex');
   const canonical = `v1\n${nowMs}\n${nonce}\n${bodyHash}`;
@@ -98,6 +100,7 @@ export async function runSignedHeartbeat({
     mainC: Number(env.FISHTANK_MAIN_C ?? '26.4'),
     sumpC: Number(env.FISHTANK_SUMP_C ?? '26.6'),
     uptimeMs: Number(env.FISHTANK_UPTIME_MS ?? '0'),
+    activeEvents: [],
   });
   const response = await fetchImpl(request.url, request.options);
   const result = { ok: response.ok, status: response.status };
@@ -119,4 +122,3 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     process.exitCode = 1;
   }
 }
-

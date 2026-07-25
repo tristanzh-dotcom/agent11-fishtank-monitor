@@ -27,7 +27,7 @@ function nextState(previous, payload, nowMs) {
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     deviceId: payload.deviceId,
     lastSeenAtMs: nowMs,
     sentAtMs: payload.sentAtMs,
@@ -35,10 +35,28 @@ function nextState(previous, payload, nowMs) {
     mainC: payload.mainC,
     sumpC: payload.sumpC,
     uptimeMs: payload.uptimeMs,
+    activeEvents: payload.activeEvents,
     connectivityStatus: 'online',
     recoveryPending: previous?.connectivityStatus === 'offline'
       || previous?.recoveryPending === true,
   };
+}
+
+function newlyActionableTemperatureEvents(previous, activeEvents) {
+  if (!Array.isArray(activeEvents)) return [];
+  const previousEvents = Array.isArray(previous?.activeEvents)
+    ? previous.activeEvents
+    : [];
+  return activeEvents
+    .filter((event) => event.state === 'opened' || event.state === 'escalated')
+    .filter((event) => previousEvents.every((prior) => (
+      prior.type !== event.type || prior.state !== event.state
+    )))
+    .map((event) => ({
+      type: 'temperature',
+      deviceId: 'tank01',
+      event,
+    }));
 }
 
 export function createHeartbeatHandler({
@@ -47,6 +65,7 @@ export function createHeartbeatHandler({
   clock = Date.now,
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   minimumDurationMs = 500,
+  notifier = null,
 }) {
   if (!store) throw new TypeError('A state store is required');
 
@@ -61,6 +80,18 @@ export function createHeartbeatHandler({
       });
       const { payload } = authenticated;
       const previous = await store.getDeviceState(payload.deviceId);
+      if (notifier && typeof notifier.send === 'function') {
+        const alerts = newlyActionableTemperatureEvents(previous, payload.activeEvents)
+          .map((alert) => ({
+            ...alert,
+            deviceId: payload.deviceId,
+            mainC: payload.mainC,
+            sumpC: payload.sumpC,
+          }));
+        for (const alert of alerts) {
+          await notifier.send(alert);
+        }
+      }
       const state = nextState(previous, payload, startedAt);
       await store.saveDeviceState(payload.deviceId, state);
 

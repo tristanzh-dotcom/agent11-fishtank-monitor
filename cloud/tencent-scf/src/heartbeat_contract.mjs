@@ -4,11 +4,23 @@ import {
   timingSafeEqual,
 } from 'node:crypto';
 
-const DEFAULT_MAX_BODY_BYTES = 1_024;
+const DEFAULT_MAX_BODY_BYTES = 2_048;
 const DEFAULT_MAX_CLOCK_SKEW_MS = 300_000;
 const DEVICE_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,31}$/;
 const NONCE_PATTERN = /^[a-fA-F0-9]{16,64}$/;
 const SIGNATURE_PATTERN = /^[a-fA-F0-9]{64}$/;
+const MAX_ACTIVE_EVENTS = 7;
+const EVENT_TYPES = new Set([
+  'high_temperature',
+  'high_temperature_critical',
+  'low_temperature',
+  'low_temperature_critical',
+  'sensor_fault',
+  'temperature_rapid_change',
+  'temperature_gradient',
+]);
+const EVENT_STATES = new Set(['opened', 'escalated', 'reminder']);
+const EVENT_SEVERITIES = new Set(['n2', 'n3']);
 
 export class RequestError extends Error {
   constructor(statusCode, message) {
@@ -57,6 +69,45 @@ function requireFiniteNumber(value, name, minimum, maximum) {
   return value;
 }
 
+function requireNullableTemperature(value, name) {
+  if (value === null) return null;
+  return requireFiniteNumber(value, name, -20, 60);
+}
+
+function normalizeActiveEvents(value) {
+  if (!Array.isArray(value) || value.length > MAX_ACTIVE_EVENTS) {
+    throw new RequestError(400, 'active_events is invalid');
+  }
+
+  const seenTypes = new Set();
+  return value.map((event) => {
+    if (!event || typeof event !== 'object' || Array.isArray(event)) {
+      throw new RequestError(400, 'active_events is invalid');
+    }
+    if (!EVENT_TYPES.has(event.type) || seenTypes.has(event.type)) {
+      throw new RequestError(400, 'active_events is invalid');
+    }
+    if (!EVENT_STATES.has(event.state) || !EVENT_SEVERITIES.has(event.severity)) {
+      throw new RequestError(400, 'active_events is invalid');
+    }
+    if (!Number.isSafeInteger(event.at_ms) || event.at_ms < 0) {
+      throw new RequestError(400, 'active_events is invalid');
+    }
+    const displayC = requireNullableTemperature(event.display_c, 'active_events');
+    if (event.type === 'sensor_fault' && displayC !== null) {
+      throw new RequestError(400, 'active_events is invalid');
+    }
+    seenTypes.add(event.type);
+    return {
+      type: event.type,
+      state: event.state,
+      severity: event.severity,
+      atMs: event.at_ms,
+      displayC,
+    };
+  });
+}
+
 function normalizePayload(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new RequestError(400, 'JSON body must be an object');
@@ -80,9 +131,10 @@ function normalizePayload(value) {
     deviceId,
     sentAtMs: value.sent_at_ms,
     nonce: value.nonce,
-    mainC: requireFiniteNumber(value.main_c, 'main_c', -20, 60),
-    sumpC: requireFiniteNumber(value.sump_c, 'sump_c', -20, 60),
+    mainC: requireNullableTemperature(value.main_c, 'main_c'),
+    sumpC: requireNullableTemperature(value.sump_c, 'sump_c'),
     uptimeMs: value.uptime_ms,
+    activeEvents: normalizeActiveEvents(value.active_events),
   };
 }
 

@@ -48,6 +48,15 @@ export function readHeartbeatConfig(env = process.env) {
   return { ...cos, deviceSecrets: parsed };
 }
 
+export function readStateApiConfig(env = process.env) {
+  const cos = readCosConfig(env);
+  const readToken = env.STATE_READ_TOKEN;
+  if (typeof readToken !== 'string' || readToken.length < 32 || readToken.length > 256) {
+    throw new Error('STATE_READ_TOKEN must contain 32 to 256 characters');
+  }
+  return { ...cos, readToken };
+}
+
 export function readOfflineConfig(env = process.env) {
   const cos = readCosConfig(env);
   const deviceIds = [...new Set(

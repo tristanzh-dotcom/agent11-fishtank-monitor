@@ -32,7 +32,7 @@ npm run build
 
 ## 心跳协议
 
-请求必须是 `POST application/json`，解码后不超过 1024 字节：
+请求必须是 `POST application/json`，解码后不超过 2,048 字节：
 
 ```json
 {
@@ -41,7 +41,8 @@ npm run build
   "nonce": "16至64位十六进制随机数",
   "main_c": 26.4,
   "sump_c": 26.6,
-  "uptime_ms": 123456
+  "uptime_ms": 123456,
+  "active_events": []
 }
 ```
 
@@ -53,6 +54,29 @@ v1\n<sent_at_ms>\n<nonce>\n<sha256(原始 JSON 请求体)>
 
 服务端允许设备时间与云端时间相差最多 5 分钟。设备密钥至少 16 字符，正式使用建议
 在本机执行 `openssl rand -hex 32` 生成，并只在 ESP32 私有配置和 SCF 环境变量中输入。
+
+`main_c`、`sump_c` 和每个事件的 `display_c` 都可以是 JSON `null`；缺测时绝不能用
+旧读数或 `0` 伪造。`active_events` 最多七项，按事件类型去重；`sensor_fault` 的
+`display_c` 必须为 `null`。心跳签名原文仍为 `v1`，并覆盖包含这些字段的原始请求体。
+
+成功心跳会覆盖私有 COS 对象 `devices/tank01/state.json`，内部状态版本为 2。该对象
+不是公开 API，且不会用作历史日志。
+
+## 只读状态 API
+
+同一函数 URL 提供下游消费者使用的只读接口：
+
+```text
+GET /api/v1/devices/tank01/state
+Authorization: Bearer <STATE_READ_TOKEN>
+```
+
+它只读取 COS 并投影为 `FishTankStateV1`，字段为 `schema_version`、`device_id`、
+`timestamp_ms`、`display_c`、`return_c`、`connectivity_status` 和 `events`。它不会暴露
+COS 内部字段、HMAC 设备密钥、Bark key 或云函数临时凭据。令牌比较使用常量时间比较；
+令牌长度必须为 32–256 个字符，且必须与设备 HMAC 密钥不同。错误保持为不含敏感信息的
+`401 unauthorized`、`404 state_not_found`、`405 method_not_allowed` 或
+`503 state_unavailable`。
 
 软件模拟设备可用于硬件到货前的真实函数 URL 验证。变量只在当前终端进程中提供，
 脚本输出仅包含 HTTP 状态，不打印 URL、密钥、nonce 或签名：
@@ -73,6 +97,8 @@ npm run simulate-heartbeat
 - `DEVICE_IDS=tank01`
 - `OFFLINE_AFTER_MS=900000`
 - `BARK_KEY`：在控制台私下输入，不写入代码、URL 或聊天。
+- `STATE_READ_TOKEN`：32–256 字符、独立于 `DEVICE_SECRETS_JSON` 的只读令牌；仅在
+  控制台私下输入，不能写入仓库、URL、聊天或设备固件。
 
 COS SDK 每次调用都只读取腾讯 SCF 运行环境注入的最新临时凭据环境变量：
 `TENCENTCLOUD_SECRETID`、`TENCENTCLOUD_SECRETKEY`、
@@ -98,6 +124,8 @@ Bark 采用“提醒优先”的至少一次投递：若 Bark 已成功但紧随
 下一轮可能重复同一条状态切换提醒；这比漏掉离线报警更安全。
 
 上传部署包、输入 Bark/设备密钥、启用公网 URL 和启用定时器是四个独立确认点。
+本次本地代码变更也尚未部署：上传新版部署包并私下配置 `STATE_READ_TOKEN` 是额外的
+确认点；之后仍需真机刷写、Wi-Fi/NTP、真实心跳、Bark 与下游读取验收。
 
 ## 2026-07-17 云端验收记录
 

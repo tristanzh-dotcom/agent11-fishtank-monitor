@@ -1,8 +1,11 @@
+#include "active_event_snapshot.hpp"
 #include "heartbeat_contract.hpp"
 
 #include <cassert>
 #include <iostream>
+#include <optional>
 #include <string>
+#include <vector>
 
 int main() {
   using aquarium::heartbeat::HeartbeatPayload;
@@ -12,19 +15,61 @@ int main() {
       "tank01",
       1750000000123ULL,
       "00112233445566778899aabbccddeeff",
-      26.4,
-      26.75,
+      std::optional<double>{26.4},
+      std::optional<double>{26.75},
       123456ULL,
+      {aquarium::ActiveTemperatureEvent{aquarium::EventType::high_temperature,
+                                        aquarium::EventState::escalated,
+                                        aquarium::Severity::n3, 123000ULL,
+                                        std::optional<double>{28.75}}},
   };
 
   const auto body = aquarium::heartbeat::heartbeat_json(payload);
   assert(body ==
          "{\"device_id\":\"tank01\",\"sent_at_ms\":1750000000123,"
          "\"nonce\":\"00112233445566778899aabbccddeeff\","
-         "\"main_c\":26.4,\"sump_c\":26.75,\"uptime_ms\":123456}");
+         "\"main_c\":26.4,\"sump_c\":26.75,\"uptime_ms\":123456,"
+         "\"active_events\":[{\"type\":\"high_temperature\","
+         "\"state\":\"escalated\",\"severity\":\"n3\","
+         "\"at_ms\":123000,\"display_c\":28.75}]}");
+
+  const auto fault_body = aquarium::heartbeat::heartbeat_json(
+      HeartbeatPayload{"tank01", 1, "0011223344556677", std::nullopt,
+                       std::nullopt, 2,
+                       {aquarium::ActiveTemperatureEvent{
+                           aquarium::EventType::sensor_fault,
+                           aquarium::EventState::opened,
+                           aquarium::Severity::n2,
+                           1,
+                           std::nullopt}}});
+  assert(fault_body.find("\"main_c\":null") != std::string::npos);
+  assert(fault_body.find("\"sump_c\":null") != std::string::npos);
+  assert(fault_body.find("\"display_c\":null") != std::string::npos);
+
+  const std::vector<aquarium::ActiveTemperatureEvent> all_events{
+      {aquarium::EventType::high_temperature, aquarium::EventState::opened,
+       aquarium::Severity::n2, 1, 26.0},
+      {aquarium::EventType::high_temperature_critical,
+       aquarium::EventState::opened, aquarium::Severity::n3, 2, 29.0},
+      {aquarium::EventType::low_temperature, aquarium::EventState::reminder,
+       aquarium::Severity::n2, 3, 23.0},
+      {aquarium::EventType::low_temperature_critical,
+       aquarium::EventState::opened, aquarium::Severity::n3, 4, 22.0},
+      {aquarium::EventType::sensor_fault, aquarium::EventState::opened,
+       aquarium::Severity::n2, 5, std::nullopt},
+      {aquarium::EventType::temperature_rapid_change,
+       aquarium::EventState::escalated, aquarium::Severity::n3, 6, 28.0},
+      {aquarium::EventType::temperature_gradient,
+       aquarium::EventState::reminder, aquarium::Severity::n2, 7, 26.0},
+  };
+  assert(aquarium::heartbeat::heartbeat_json(
+             HeartbeatPayload{"tank01", 1, "0011223344556677", 26.0,
+                              26.0, 1, all_events})
+             .size() <= 2048U);
 
   const auto escaped = aquarium::heartbeat::heartbeat_json(
-      HeartbeatPayload{"tank\\\"01", 1, "0011223344556677", -0.25, 30.0, 2});
+      HeartbeatPayload{"tank\\\"01", 1, "0011223344556677", -0.25, 30.0,
+                       2, {}});
   assert(escaped.find("\"device_id\":\"tank\\\\\\\"01\"") !=
          std::string::npos);
   assert(escaped.find("\"main_c\":-0.25") != std::string::npos);

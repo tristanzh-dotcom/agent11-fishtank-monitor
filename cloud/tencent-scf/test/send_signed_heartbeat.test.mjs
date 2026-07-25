@@ -28,7 +28,7 @@ test('builds the exact JSON body and HMAC header', () => {
     request.options.body,
     '{"device_id":"tank01","sent_at_ms":1750000000000,'
       + '"nonce":"00112233445566778899aabbccddeeff",'
-      + '"main_c":26.4,"sump_c":26.75,"uptime_ms":123456}',
+      + '"main_c":26.4,"sump_c":26.75,"uptime_ms":123456,"active_events":[]}',
   );
   const hash = createHash('sha256').update(request.options.body).digest('hex');
   const canonical = `v1\n${NOW_MS}\n${NONCE}\n${hash}`;
@@ -86,4 +86,3 @@ test('runner emits only a redacted status summary', async () => {
   assert.equal(output.join('\n').includes(NONCE), false);
   assert.match(output.join('\n'), /HTTP 200/);
 });
-

@@ -24,6 +24,7 @@ function makeEvent(overrides = {}) {
     main_c: 26.4,
     sump_c: 26.6,
     uptime_ms: 123_456,
+    active_events: [],
   };
   const body = overrides.body ?? JSON.stringify(payload);
   const signature = overrides.signature ?? sign(
@@ -59,8 +60,39 @@ test('accepts a valid signed heartbeat and normalizes its payload', () => {
     mainC: 26.4,
     sumpC: 26.6,
     uptimeMs: 123_456,
+    activeEvents: [],
   });
   assert.equal(result.rawBody.length > 0, true);
+});
+
+test('accepts nullable readings and a complete active event snapshot', () => {
+  const result = authenticateHeartbeat(makeEvent({
+    payload: {
+      device_id: 'tank01',
+      sent_at_ms: NOW_MS,
+      nonce: '0123456789abcdef',
+      main_c: null,
+      sump_c: 26.6,
+      uptime_ms: 123_456,
+      active_events: [{
+        type: 'sensor_fault',
+        state: 'opened',
+        severity: 'n2',
+        at_ms: NOW_MS,
+        display_c: null,
+      }],
+    },
+  }), options);
+
+  assert.equal(result.payload.mainC, null);
+  assert.equal(result.payload.sumpC, 26.6);
+  assert.deepEqual(result.payload.activeEvents, [{
+    type: 'sensor_fault',
+    state: 'opened',
+    severity: 'n2',
+    atMs: NOW_MS,
+    displayC: null,
+  }]);
 });
 
 test('rejects unsupported methods, oversized bodies, and stale timestamps', () => {
@@ -76,7 +108,8 @@ test('rejects unsupported methods, oversized bodies, and stale timestamps', () =
     main_c: 26,
     sump_c: 26,
     uptime_ms: 1,
-    padding: 'x'.repeat(1_100),
+    active_events: [],
+    padding: 'x'.repeat(2_100),
   };
   assert.throws(
     () => authenticateHeartbeat(makeEvent({ payload: largePayload }), options),
@@ -90,11 +123,27 @@ test('rejects unsupported methods, oversized bodies, and stale timestamps', () =
     main_c: 26,
     sump_c: 26,
     uptime_ms: 1,
+    active_events: [],
   };
   assert.throws(
     () => authenticateHeartbeat(makeEvent({ payload: stalePayload }), options),
     (error) => error instanceof RequestError && error.statusCode === 401,
   );
+});
+
+test('allows a signed body below the 2 KiB cap', () => {
+  const payload = {
+    device_id: 'tank01',
+    sent_at_ms: NOW_MS,
+    nonce: '0123456789abcdef',
+    main_c: 26,
+    sump_c: 26,
+    uptime_ms: 1,
+    active_events: [],
+    padding: 'x'.repeat(1_500),
+  };
+  const result = authenticateHeartbeat(makeEvent({ payload }), options);
+  assert.equal(result.payload.deviceId, 'tank01');
 });
 
 test('rejects malformed JSON before authentication or storage', () => {
@@ -112,6 +161,7 @@ test('rejects unknown devices, malformed fields, and invalid signatures', () => 
     main_c: 26,
     sump_c: 26,
     uptime_ms: 1,
+    active_events: [],
   };
   assert.throws(
     () => authenticateHeartbeat(makeEvent({ payload: unknownPayload }), options),
@@ -125,6 +175,7 @@ test('rejects unknown devices, malformed fields, and invalid signatures', () => 
     main_c: 99,
     sump_c: 26,
     uptime_ms: -1,
+    active_events: [],
   };
   assert.throws(
     () => authenticateHeartbeat(makeEvent({ payload: malformedPayload }), options),
@@ -135,6 +186,39 @@ test('rejects unknown devices, malformed fields, and invalid signatures', () => 
     () => authenticateHeartbeat(makeEvent({ signature: '0'.repeat(64) }), options),
     (error) => error instanceof RequestError && error.statusCode === 401,
   );
+});
+
+test('rejects malformed active event snapshots', () => {
+  const base = {
+    device_id: 'tank01',
+    sent_at_ms: NOW_MS,
+    nonce: '0123456789abcdef',
+    main_c: 26,
+    sump_c: 26,
+    uptime_ms: 1,
+  };
+  const invalidSnapshots = [
+    [{ type: 'sensor_fault', state: 'opened', severity: 'n2', at_ms: NOW_MS, display_c: 0 }],
+    [
+      { type: 'high_temperature', state: 'opened', severity: 'n2', at_ms: NOW_MS, display_c: 28 },
+      { type: 'high_temperature', state: 'reminder', severity: 'n2', at_ms: NOW_MS, display_c: 28 },
+    ],
+    [{ type: 'unknown', state: 'opened', severity: 'n2', at_ms: NOW_MS, display_c: 28 }],
+    Array.from({ length: 8 }, (_, index) => ({
+      type: `unknown_${index}`,
+      state: 'opened',
+      severity: 'n2',
+      at_ms: NOW_MS,
+      display_c: 28,
+    })),
+  ];
+
+  for (const active_events of invalidSnapshots) {
+    assert.throws(
+      () => authenticateHeartbeat(makeEvent({ payload: { ...base, active_events } }), options),
+      (error) => error instanceof RequestError && error.statusCode === 400,
+    );
+  }
 });
 
 test('supports base64 request bodies and case-insensitive headers', () => {
@@ -162,6 +246,7 @@ test('verifies an uppercase hex nonce exactly as transmitted, then normalizes it
       main_c: 26,
       sump_c: 26,
       uptime_ms: 1,
+      active_events: [],
     },
   });
 

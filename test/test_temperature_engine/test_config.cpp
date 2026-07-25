@@ -16,15 +16,12 @@ int main() {
   assert(!config.mqtt_enabled);
   assert(config.heartbeat_enabled);
   assert(config.heartbeat_interval_ms == 300000U);
-  assert(!config.main_tank_sensor.configured());
-  assert(!config.sump_return_sensor.configured());
-
-  config.main_tank_sensor.bytes = {0x28, 0x01, 0x02, 0x03,
-                                   0x04, 0x05, 0x06, 0x07};
-  config.sump_return_sensor.bytes = {0x28, 0x11, 0x12, 0x13,
-                                     0x14, 0x15, 0x16, 0x17};
   assert(config.main_tank_sensor.configured());
   assert(config.sump_return_sensor.configured());
+  assert((config.main_tank_sensor.bytes == std::array<std::uint8_t, 8>{
+      0x28, 0x20, 0xD5, 0x6B, 0x11, 0x00, 0x00, 0xC1}));
+  assert((config.sump_return_sensor.bytes == std::array<std::uint8_t, 8>{
+      0x28, 0x17, 0xAE, 0x6B, 0x11, 0x00, 0x00, 0xB4}));
   assert(config.main_tank_sensor.bytes != config.sump_return_sensor.bytes);
   std::cout << "firmware configuration tests passed\n";
 }

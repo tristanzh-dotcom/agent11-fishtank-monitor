@@ -1,4 +1,4 @@
-#include "aliyun_mqtt.hpp"
+#include "active_event_snapshot.hpp"
 #include "bark_notifier.hpp"
 #include "config.hpp"
 #include "delivery_coordinator.hpp"
@@ -18,8 +18,8 @@ constexpr std::uint8_t kOneWirePin = 4;
 aquarium::firmware::RuntimeConfig runtime_config =
     aquarium::firmware::default_runtime_config();
 aquarium::TemperatureEngine engine(runtime_config.policy);
+aquarium::ActiveEventSnapshot active_events;
 aquarium::firmware::Ds18b20Reader reader(kOneWirePin, runtime_config);
-aquarium::firmware::AliyunMqtt mqtt;
 aquarium::firmware::BarkNotifier bark;
 aquarium::firmware::HeartbeatNotifier heartbeat;
 aquarium::DeliveryCoordinator delivery(16, runtime_config.bark_enabled,
@@ -62,14 +62,43 @@ void print_sample(const aquarium::TemperatureSample& sample) {
 }
 
 void connect_wifi(std::uint64_t now_ms) {
+  static bool was_connected = false;
+  static bool scan_completed = false;
   if (WiFi.status() == WL_CONNECTED) {
+    if (!was_connected) {
+      Serial.print("wifi connected ip=");
+      Serial.println(WiFi.localIP());
+      was_connected = true;
+    }
     wifi_backoff.record_success();
     return;
+  }
+  if (was_connected) {
+    Serial.println("wifi disconnected");
+    was_connected = false;
   }
   if (!wifi_backoff.should_attempt(now_ms)) {
     return;
   }
   WiFi.mode(WIFI_STA);
+  if (!scan_completed) {
+    const int network_count = WiFi.scanNetworks(false, true);
+    bool configured_ssid_seen = false;
+    for (int index = 0; index < network_count; ++index) {
+      if (WiFi.SSID(index) == aquarium::secrets::kWifiSsid) {
+        configured_ssid_seen = true;
+        break;
+      }
+    }
+    Serial.print("wifi scan count=");
+    Serial.print(network_count);
+    Serial.print(" configured_ssid_seen=");
+    Serial.println(configured_ssid_seen ? 1 : 0);
+    WiFi.scanDelete();
+    scan_completed = true;
+  }
+  Serial.print("wifi connecting status=");
+  Serial.println(static_cast<int>(WiFi.status()));
   WiFi.begin(aquarium::secrets::kWifiSsid, aquarium::secrets::kWifiPassword);
   wifi_backoff.record_failure(now_ms);
 }
@@ -88,9 +117,6 @@ void loop() {
   const std::uint64_t now_ms = monotonic_millis();
 
   connect_wifi(now_ms);
-  if (runtime_config.mqtt_enabled) {
-    mqtt.loop();
-  }
 
   if (now_ms - last_sample_at_ms < runtime_config.sample_interval_ms) {
     delay(50);
@@ -100,25 +126,19 @@ void loop() {
 
   const auto sample = reader.read(now_ms);
   print_sample(sample);
-  if (runtime_config.mqtt_enabled) {
-    mqtt.publish_telemetry(sample, now_ms);
-  }
-  for (const auto& event : engine.ingest(sample)) {
+  const auto events = engine.ingest(sample);
+  active_events.apply(events);
+  for (const auto& event : events) {
     delivery.enqueue(event);
   }
 
   if (const auto* event = delivery.bark_front(); event != nullptr) {
     delivery.acknowledge_bark(bark.notify(*event, runtime_config.aquarium_id));
   }
-  if (const auto* event = delivery.mqtt_front(); event != nullptr) {
-    delivery.acknowledge_mqtt(mqtt.publish_event(*event, now_ms));
-  }
-
-  if (runtime_config.heartbeat_enabled && sample.display_c.has_value() &&
-      sample.return_c.has_value() && WiFi.status() == WL_CONNECTED &&
+  if (runtime_config.heartbeat_enabled && WiFi.status() == WL_CONNECTED &&
       heartbeat_schedule.should_attempt(now_ms)) {
-    const bool delivered =
-        heartbeat.notify(*sample.display_c, *sample.return_c, now_ms);
+    const bool delivered = heartbeat.notify(sample, active_events, now_ms);
+    Serial.println(delivered ? "heartbeat delivered" : "heartbeat failed");
     if (delivered) {
       heartbeat_schedule.record_success(now_ms);
     } else {

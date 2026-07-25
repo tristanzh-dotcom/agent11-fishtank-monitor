@@ -69,6 +69,20 @@ for heartbeat_contract in \
   fi
 done
 
+for state_api_contract in \
+  "2,048" \
+  "active_events" \
+  "STATE_READ_TOKEN" \
+  "GET /api/v1/devices/tank01/state" \
+  "FishTankStateV1"; do
+  if ! rg -F --quiet -- "$state_api_contract" \
+    cloud/tencent-scf/README.md HANDOVER_SOFTWARE_CLOUD_STATUS_20260724.md \
+    docs/superpowers/specs/2026-07-25-heartbeat-state-snapshot-design.md; then
+    echo "missing state API contract: $state_api_contract" >&2
+    exit 1
+  fi
+done
+
 for event_closure_contract in \
   ">=2.0°C" \
   "<1.0°C" \

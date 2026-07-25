@@ -78,7 +78,8 @@ void HeartbeatNotifier::begin_time_sync() {
   configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
 }
 
-bool HeartbeatNotifier::notify(double main_c, double sump_c,
+bool HeartbeatNotifier::notify(const TemperatureSample& sample,
+                               const ActiveEventSnapshot& active_events,
                                std::uint64_t uptime_ms) {
   if (secrets::kTencentFunctionUrl[0] == '\0' ||
       secrets::kTencentDeviceSecret[0] == '\0' ||
@@ -95,9 +96,10 @@ bool HeartbeatNotifier::notify(double main_c, double sump_c,
       "tank01",
       static_cast<std::uint64_t>(current_time) * 1000ULL,
       random_nonce(),
-      main_c,
-      sump_c,
+      sample.display_c,
+      sample.return_c,
       uptime_ms,
+      active_events.events(),
   };
   const std::string body = heartbeat::heartbeat_json(payload);
 
@@ -128,4 +130,3 @@ bool HeartbeatNotifier::notify(double main_c, double sump_c,
 }
 
 }  // namespace aquarium::firmware
-

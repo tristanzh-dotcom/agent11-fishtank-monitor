@@ -4,7 +4,8 @@ import { createBarkNotifier } from './bark_notifier.mjs';
 import { createCosStateStore } from './cos_state_store.mjs';
 import { createHeartbeatHandler } from './heartbeat_handler.mjs';
 import { createOfflineChecker } from './offline_checker.mjs';
-import { readHeartbeatConfig, readOfflineConfig } from './runtime_config.mjs';
+import { readHeartbeatConfig, readOfflineConfig, readStateApiConfig } from './runtime_config.mjs';
+import { createStateReadHandler } from './state_read_handler.mjs';
 
 function credentialsFromEnvironment(env) {
   const SecretId = env?.TENCENTCLOUD_SECRETID;
@@ -18,6 +19,10 @@ function credentialsFromEnvironment(env) {
 
 function isHttpEvent(event) {
   return Boolean(event?.requestContext?.http?.method ?? event?.httpMethod);
+}
+
+function httpMethod(event) {
+  return event?.requestContext?.http?.method ?? event?.httpMethod ?? '';
 }
 
 function createStore(config, env, CosCtor) {
@@ -39,11 +44,21 @@ export async function dispatchScfEvent(
   } = {},
 ) {
   if (isHttpEvent(event)) {
-    const config = readHeartbeatConfig(env);
-    return createHeartbeatHandler({
+    if (httpMethod(event) === 'POST') {
+      const config = readHeartbeatConfig(env);
+      return createHeartbeatHandler({
+        store: createStore(config, env, CosCtor),
+        deviceSecrets: config.deviceSecrets,
+        minimumDurationMs: minimumHeartbeatDurationMs,
+        notifier: env.BARK_KEY
+          ? createBarkNotifier({ barkKey: env.BARK_KEY, fetchImpl })
+          : null,
+      })(event);
+    }
+    const config = readStateApiConfig(env);
+    return createStateReadHandler({
       store: createStore(config, env, CosCtor),
-      deviceSecrets: config.deviceSecrets,
-      minimumDurationMs: minimumHeartbeatDurationMs,
+      readToken: config.readToken,
     })(event);
   }
 

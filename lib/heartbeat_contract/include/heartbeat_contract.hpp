@@ -1,7 +1,11 @@
 #pragma once
 
+#include "active_event_snapshot.hpp"
+
 #include <cstdint>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace aquarium::heartbeat {
 
@@ -9,9 +13,10 @@ struct HeartbeatPayload {
   std::string device_id;
   std::uint64_t sent_at_ms;
   std::string nonce;
-  double main_c;
-  double sump_c;
+  std::optional<double> main_c;
+  std::optional<double> sump_c;
   std::uint64_t uptime_ms;
+  std::vector<ActiveTemperatureEvent> active_events;
 };
 
 std::string heartbeat_json(const HeartbeatPayload& payload);
@@ -38,4 +43,3 @@ class HeartbeatSchedule {
 };
 
 }  // namespace aquarium::heartbeat
-

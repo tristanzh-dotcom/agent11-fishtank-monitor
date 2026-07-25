@@ -64,6 +64,48 @@ std::string json_number(double value) {
   return text;
 }
 
+std::string json_optional_number(const std::optional<double>& value) {
+  return value.has_value() ? json_number(*value) : "null";
+}
+
+const char* event_type_name(EventType type) {
+  switch (type) {
+    case EventType::high_temperature:
+      return "high_temperature";
+    case EventType::high_temperature_critical:
+      return "high_temperature_critical";
+    case EventType::low_temperature:
+      return "low_temperature";
+    case EventType::low_temperature_critical:
+      return "low_temperature_critical";
+    case EventType::sensor_fault:
+      return "sensor_fault";
+    case EventType::temperature_rapid_change:
+      return "temperature_rapid_change";
+    case EventType::temperature_gradient:
+      return "temperature_gradient";
+  }
+  return "unknown";
+}
+
+const char* event_state_name(EventState state) {
+  switch (state) {
+    case EventState::opened:
+      return "opened";
+    case EventState::escalated:
+      return "escalated";
+    case EventState::reminder:
+      return "reminder";
+    case EventState::resolved:
+      return "resolved";
+  }
+  return "unknown";
+}
+
+const char* severity_name(Severity severity) {
+  return severity == Severity::n3 ? "n3" : "n2";
+}
+
 std::uint64_t saturating_add(std::uint64_t left, std::uint64_t right) {
   if (right > std::numeric_limits<std::uint64_t>::max() - left) {
     return std::numeric_limits<std::uint64_t>::max();
@@ -79,9 +121,21 @@ std::string heartbeat_json(const HeartbeatPayload& payload) {
   stream << "{\"device_id\":\"" << json_escape(payload.device_id)
          << "\",\"sent_at_ms\":" << payload.sent_at_ms << ",\"nonce\":\""
          << json_escape(payload.nonce) << "\",\"main_c\":"
-         << json_number(payload.main_c) << ",\"sump_c\":"
-         << json_number(payload.sump_c) << ",\"uptime_ms\":"
-         << payload.uptime_ms << '}';
+         << json_optional_number(payload.main_c) << ",\"sump_c\":"
+         << json_optional_number(payload.sump_c) << ",\"uptime_ms\":"
+         << payload.uptime_ms << ",\"active_events\":[";
+  for (std::size_t index = 0; index < payload.active_events.size(); ++index) {
+    if (index > 0U) {
+      stream << ',';
+    }
+    const auto& event = payload.active_events[index];
+    stream << "{\"type\":\"" << event_type_name(event.type)
+           << "\",\"state\":\"" << event_state_name(event.state)
+           << "\",\"severity\":\"" << severity_name(event.severity)
+           << "\",\"at_ms\":" << event.at_ms << ",\"display_c\":"
+           << json_optional_number(event.display_c) << '}';
+  }
+  stream << "]}";
   return stream.str();
 }
 
@@ -131,4 +185,3 @@ void HeartbeatSchedule::record_success(std::uint64_t now_ms) {
 }
 
 }  // namespace aquarium::heartbeat
-

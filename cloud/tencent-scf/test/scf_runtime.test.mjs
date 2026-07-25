@@ -7,6 +7,7 @@ const baseEnv = {
   COS_BUCKET: 'fishtank-monitor-1454792551',
   COS_REGION: 'ap-shanghai',
   DEVICE_SECRETS_JSON: JSON.stringify({ tank01: '0123456789abcdef' }),
+  STATE_READ_TOKEN: '0123456789abcdef0123456789abcdef',
 };
 
 function envWithRoleCredentials(secretId) {

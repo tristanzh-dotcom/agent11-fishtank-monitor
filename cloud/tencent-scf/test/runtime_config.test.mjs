@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   readHeartbeatConfig,
   readOfflineConfig,
+  readStateApiConfig,
 } from '../src/runtime_config.mjs';
 
 const base = {
@@ -22,6 +23,18 @@ test('reads strict heartbeat configuration without defaults for secrets', () => 
   assert.equal(config.bucket, base.COS_BUCKET);
   assert.equal(config.region, 'ap-shanghai');
   assert.deepEqual(Object.keys(config.deviceSecrets), ['tank01']);
+});
+
+test('reads an independent state API token', () => {
+  const config = readStateApiConfig({
+    ...base,
+    STATE_READ_TOKEN: '0123456789abcdef0123456789abcdef',
+  });
+  assert.equal(config.readToken, '0123456789abcdef0123456789abcdef');
+  assert.throws(
+    () => readStateApiConfig({ ...base, STATE_READ_TOKEN: 'too-short' }),
+    /STATE_READ_TOKEN/,
+  );
 });
 
 test('reads offline configuration for the single safe-mode device', () => {

@@ -7,7 +7,7 @@ import { createHeartbeatHandler } from '../src/heartbeat_handler.mjs';
 const NOW_MS = 1_750_000_000_000;
 const SECRET = 'test-secret-never-deploy';
 
-function eventFor(nonce = '0123456789abcdef') {
+function eventFor(nonce = '0123456789abcdef', activeEvents = []) {
   const payload = {
     device_id: 'tank01',
     sent_at_ms: NOW_MS - 1_000,
@@ -15,6 +15,7 @@ function eventFor(nonce = '0123456789abcdef') {
     main_c: 26.4,
     sump_c: 26.6,
     uptime_ms: 123_456,
+    active_events: activeEvents,
   };
   const body = JSON.stringify(payload);
   const hash = createHash('sha256').update(body).digest('hex');
@@ -49,6 +50,16 @@ function handlerFor(store, sleeps) {
   });
 }
 
+function handlerWithNotifier(store, sleeps, notifier) {
+  return createHeartbeatHandler({
+    store,
+    deviceSecrets: { tank01: SECRET },
+    clock: () => NOW_MS,
+    sleep: async (milliseconds) => sleeps.push(milliseconds),
+    notifier,
+  });
+}
+
 test('persists one bounded device state and returns no secret data', async () => {
   const store = memoryStore();
   const sleeps = [];
@@ -64,7 +75,7 @@ test('persists one bounded device state and returns no secret data', async () =>
   assert.deepEqual(store.inspect(), {
     writes: 1,
     state: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       deviceId: 'tank01',
       lastSeenAtMs: NOW_MS,
       sentAtMs: NOW_MS - 1_000,
@@ -72,6 +83,7 @@ test('persists one bounded device state and returns no secret data', async () =>
       mainC: 26.4,
       sumpC: 26.6,
       uptimeMs: 123_456,
+      activeEvents: [],
       connectivityStatus: 'online',
       recoveryPending: false,
     },
@@ -114,6 +126,87 @@ test('marks recovery pending after an offline state and caps nonce history', asy
   assert.equal(state.recentNonces.includes(oldNonces[0]), false);
 });
 
+test('notifies once for a newly opened temperature event before saving state', async () => {
+  const store = memoryStore();
+  const sleeps = [];
+  const alerts = [];
+  const notifier = { async send(alert) { alerts.push(alert); } };
+  const event = {
+    type: 'high_temperature',
+    state: 'opened',
+    severity: 'n2',
+    at_ms: NOW_MS,
+    display_c: 28.1,
+  };
+
+  const response = await handlerWithNotifier(store, sleeps, notifier)(
+    eventFor('aaaaaaaaaaaaaaaa', [event]),
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(alerts, [{
+    type: 'temperature',
+    deviceId: 'tank01',
+    mainC: 26.4,
+    sumpC: 26.6,
+    event: {
+      type: event.type,
+      state: event.state,
+      severity: event.severity,
+      atMs: event.at_ms,
+      displayC: event.display_c,
+    },
+  }]);
+  assert.equal(store.inspect().writes, 1);
+});
+
+test('does not repeat an unchanged active event on the next heartbeat', async () => {
+  const event = {
+    type: 'high_temperature',
+    state: 'opened',
+    severity: 'n2',
+    at_ms: NOW_MS,
+    display_c: 28.1,
+  };
+  const store = memoryStore({
+    schemaVersion: 2,
+    deviceId: 'tank01',
+    recentNonces: [],
+    activeEvents: [event],
+    connectivityStatus: 'online',
+  });
+  const sleeps = [];
+  const alerts = [];
+  const notifier = { async send(alert) { alerts.push(alert); } };
+
+  const response = await handlerWithNotifier(store, sleeps, notifier)(
+    eventFor('bbbbbbbbbbbbbbbb', [event]),
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(alerts, []);
+});
+
+test('does not save state when a temperature alert cannot be delivered', async () => {
+  const store = memoryStore();
+  const sleeps = [];
+  const notifier = { async send() { throw new Error('Bark unavailable'); } };
+  const event = {
+    type: 'temperature_rapid_change',
+    state: 'escalated',
+    severity: 'n3',
+    at_ms: NOW_MS,
+    display_c: 30.1,
+  };
+
+  const response = await handlerWithNotifier(store, sleeps, notifier)(
+    eventFor('cccccccccccccccc', [event]),
+  );
+
+  assert.equal(response.statusCode, 503);
+  assert.equal(store.inspect().writes, 0);
+});
+
 test('invalid requests do not read or write COS and still take at least 500ms', async () => {
   let reads = 0;
   let writes = 0;
@@ -134,4 +227,3 @@ test('invalid requests do not read or write COS and still take at least 500ms', 
   assert.equal(writes, 0);
   assert.deepEqual(sleeps, [500]);
 });
-
