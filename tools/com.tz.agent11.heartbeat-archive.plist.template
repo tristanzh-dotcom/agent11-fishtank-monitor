@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.tz.agent11.heartbeat-archive</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/env</string>
+    <string>-i</string>
+    <string>PATH=/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <string>/usr/bin/python3</string>
+    <string>/Users/tristanzh/agent/agent11-fishtank-monitor/tools/heartbeat_archive.py</string>
+    <string>--env-file</string>
+    <string>/Users/tristanzh/agent/AgentAssetVault/99_System/audit/.agent12-web.env</string>
+    <string>--vault</string>
+    <string>/Users/tristanzh/agent/AgentAssetVault</string>
+    <string>--archive-folder</string>
+    <string>95_Ledgers/fishtank/heartbeat</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>300</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>StandardOutPath</key>
+  <string>/tmp/agent11-heartbeat-archive.out</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/agent11-heartbeat-archive.err</string>
+</dict>
+</plist>

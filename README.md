@@ -5,6 +5,42 @@
 温度报警不依赖常驻电脑或云端转发；独立的腾讯云心跳负责在设备断电或失联时发出
 离线/恢复通知。系统不控制加热棒、水泵、插排或其他市电设备。
 
+## 本地五分钟心跳归档（独立于 Codex）
+
+`tools/heartbeat_archive.py` 是一个只读本地采集器：每次通过现有 Agent11 HTTPS
+只读 GET 获取一份 `FishTankStateV1`，并将未改写的上游 JSON 连同本地采集时间追加到
+Obsidian Vault 的 JSONL 文件。Token 只从 Agent12 的受控环境文件读取，不写入 Vault、日志
+或标准输出。
+
+单次验证（先使用临时 Vault）：
+
+```bash
+tmp_vault="$(mktemp -d)"
+python3 tools/heartbeat_archive.py \
+  --env-file /Users/tristanzh/agent/AgentAssetVault/99_System/audit/.agent12-web.env \
+  --vault "$tmp_vault"
+find "$tmp_vault" -type f -maxdepth 5 -print
+```
+
+安装为 macOS 用户级五分钟任务：
+
+```bash
+cp tools/com.tz.agent11.heartbeat-archive.plist.template \
+  "$HOME/Library/LaunchAgents/com.tz.agent11.heartbeat-archive.plist"
+launchctl bootstrap "gui/$(id -u)" \
+  "$HOME/Library/LaunchAgents/com.tz.agent11.heartbeat-archive.plist"
+```
+
+归档文件路径为：
+
+```text
+/Users/tristanzh/agent/AgentAssetVault/95_Ledgers/fishtank/heartbeat/heartbeat-YYYY-MM-DD.jsonl
+```
+
+每行保留 `source_timestamp_ms`、`display_c`、`return_c`、连接状态和活动事件；这条链路
+保存的是约五分钟一次的云端心跳，不会补齐 ESP32 内部的 30 秒采样。电脑关机、休眠或断网
+期间会出现本地采集缺口，恢复后任务继续追加。
+
 ## 已实现的告警策略
 
 显示缸探头是鱼只安全的唯一判断依据，回水仓探头只做循环诊断。采样间隔为 30 秒。
