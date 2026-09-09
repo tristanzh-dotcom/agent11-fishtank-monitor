@@ -1,6 +1,7 @@
 #include "delivery_coordinator.hpp"
 #include "event_outbox.hpp"
 #include "retry_backoff.hpp"
+#include "scoped_event_outbox.hpp"
 #include "transport_contract.hpp"
 
 #include <cassert>
@@ -57,6 +58,25 @@ int main() {
   assert(bark.body.find("password") == std::string::npos);
   assert(bark.body.find("DeviceSecret") == std::string::npos);
 
+  const auto scoped_bark = aquarium::transport::bark_message(
+      aquarium::transport::ScopedTemperatureEvent{
+          "laosi_tank", "老四缸", event},
+      "tank01");
+  assert(scoped_bark.title == "老四缸温度告警");
+  assert(scoped_bark.body.find("老四缸") != std::string::npos);
+  assert(scoped_bark.fingerprint ==
+         "aquarium:tank01:laosi_tank:high_temperature");
+
+  const auto scoped_fault = aquarium::transport::bark_message(
+      aquarium::transport::ScopedTemperatureEvent{
+          "xiaohei_tank", "小黑缸",
+          TemperatureEvent{EventType::sensor_fault, EventState::opened,
+                           Severity::n2, 900000, 0.0}},
+      "tank01");
+  assert(scoped_fault.body.find("小黑缸") != std::string::npos);
+  assert(scoped_fault.body.find("无有效读数") != std::string::npos);
+  assert(scoped_fault.body.find("0C") == std::string::npos);
+
   const auto bark_request =
       aquarium::transport::bark_request_json(bark, "unit-test-key");
   assert(bark_request ==
@@ -85,6 +105,19 @@ int main() {
   assert(outbox.front()->type == EventType::high_temperature);
   outbox.pop();
   assert(outbox.front()->type == EventType::low_temperature);
+
+  const aquarium::transport::ScopedTemperatureEvent old_four_event{
+      "laosi_tank", "老四缸", event};
+  const aquarium::transport::ScopedTemperatureEvent xiaohei_event{
+      "xiaohei_tank", "小黑缸", event};
+  aquarium::transport::ScopedEventOutbox scoped_outbox(2);
+  assert(scoped_outbox.push(old_four_event));
+  assert(scoped_outbox.push(xiaohei_event));
+  assert(!scoped_outbox.push(old_four_event));
+  assert(scoped_outbox.dropped_count() == 1);
+  assert(scoped_outbox.front()->tank_key == "laosi_tank");
+  scoped_outbox.pop();
+  assert(scoped_outbox.front()->tank_key == "xiaohei_tank");
 
   aquarium::DeliveryCoordinator delivery(2, true, true);
   assert(delivery.enqueue(event));

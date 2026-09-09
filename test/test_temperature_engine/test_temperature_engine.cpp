@@ -257,6 +257,30 @@ void test_critical_low_temperature_reminds_after_60_minutes() {
   assert(reminder[0].state == EventState::reminder);
 }
 
+void test_auxiliary_engines_are_independent_without_gradient_events() {
+  aquarium::TemperaturePolicy old_four_policy{};
+  old_four_policy.low_attention_c = 22.5;
+  old_four_policy.low_critical_c = 20.5;
+  old_four_policy.low_recovery_c = 23.5;
+
+  aquarium::TemperaturePolicy normal_policy{};
+  TemperatureEngine old_four(old_four_policy);
+  TemperatureEngine xiaohei(normal_policy);
+  TemperatureEngine maomao(normal_policy);
+
+  assert(old_four.ingest(TemperatureSample{0, 20.0, std::nullopt}).empty());
+  assert(xiaohei.ingest(TemperatureSample{0, 25.0, std::nullopt}).empty());
+  assert(maomao.ingest(TemperatureSample{0, 25.0, std::nullopt}).empty());
+
+  const auto old_four_events =
+      old_four.ingest(TemperatureSample{300000, 20.0, std::nullopt});
+  assert(old_four_events.size() == 1);
+  assert(old_four_events[0].type == EventType::low_temperature_critical);
+  assert(old_four_events[0].severity == Severity::n3);
+  assert(xiaohei.ingest(TemperatureSample{300000, 25.0, std::nullopt}).empty());
+  assert(maomao.ingest(TemperatureSample{300000, 25.0, std::nullopt}).empty());
+}
+
 }  // namespace
 
 int main() {
@@ -275,5 +299,6 @@ int main() {
   test_sensor_fault_suppresses_temperature_reminders_and_requires_fresh_recovery();
   test_critical_high_temperature_reminds_after_60_minutes();
   test_critical_low_temperature_reminds_after_60_minutes();
+  test_auxiliary_engines_are_independent_without_gradient_events();
   std::cout << "temperature engine task-1 tests passed\n";
 }

@@ -36,4 +36,48 @@ bool BarkNotifier::notify(const TemperatureEvent& event,
   return status >= 200 && status < 300;
 }
 
+bool BarkNotifier::notify(const transport::ScopedTemperatureEvent& event,
+                          const char* aquarium_id) {
+  if (secrets::kBarkDeviceKey[0] == '\0' || secrets::kBarkRootCaPem[0] == '\0') {
+    return false;
+  }
+  const auto message = transport::bark_message(event, aquarium_id);
+  const String payload =
+      transport::bark_request_json(message, secrets::kBarkDeviceKey).c_str();
+  WiFiClientSecure client;
+  client.setCACert(secrets::kBarkRootCaPem);
+  client.setTimeout(5000);
+  HTTPClient http;
+  http.setConnectTimeout(5000);
+  if (!http.begin(client, kBarkPushUrl)) {
+    return false;
+  }
+  http.addHeader("Content-Type", "application/json");
+  const int status = http.POST(payload);
+  http.end();
+  return status >= 200 && status < 300;
+}
+
+bool BarkNotifier::notify(const transport::DailyTemperatureSummary& summary,
+                          const char* aquarium_id) {
+  if (secrets::kBarkDeviceKey[0] == '\0' || secrets::kBarkRootCaPem[0] == '\0') {
+    return false;
+  }
+  const auto message = transport::daily_summary_message(summary, aquarium_id);
+  const String payload =
+      transport::bark_request_json(message, secrets::kBarkDeviceKey).c_str();
+  WiFiClientSecure client;
+  client.setCACert(secrets::kBarkRootCaPem);
+  client.setTimeout(5000);
+  HTTPClient http;
+  http.setConnectTimeout(5000);
+  if (!http.begin(client, kBarkPushUrl)) {
+    return false;
+  }
+  http.addHeader("Content-Type", "application/json");
+  const int status = http.POST(payload);
+  http.end();
+  return status >= 200 && status < 300;
+}
+
 }  // namespace aquarium::firmware

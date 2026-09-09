@@ -125,6 +125,29 @@ BarkMessage bark_message(const TemperatureEvent& event,
                      "aquarium:" + aquarium_id + ":" + event_name};
 }
 
+BarkMessage bark_message(const ScopedTemperatureEvent& scoped_event,
+                         const std::string& aquarium_id) {
+  const auto& event = scoped_event.event;
+  const bool critical = event.severity == Severity::n3;
+  const std::string event_name = event_type_name(event.type);
+  const std::string label = scoped_event.tank_label.empty()
+                                ? scoped_event.tank_key
+                                : scoped_event.tank_label;
+  const std::string body = event.type == EventType::sensor_fault
+                               ? label + " 事件=" + event_name + " 状态=" +
+                                     event_state_name(event.state) +
+                                     " 无有效读数"
+                               : label + " 事件=" + event_name + " 状态=" +
+                                     event_state_name(event.state) + " 水温=" +
+                                     number(event.display_c) + "C";
+  return BarkMessage{critical ? label + "温度严重告警" : label + "温度告警",
+                     body,
+                     "aquarium",
+                     critical ? "critical" : "timeSensitive",
+                     "aquarium:" + aquarium_id + ":" + scoped_event.tank_key +
+                         ":" + event_name};
+}
+
 std::string bark_request_json(const BarkMessage& message,
                               const std::string& device_key) {
   return "{\"device_key\":\"" + json_escape(device_key) +

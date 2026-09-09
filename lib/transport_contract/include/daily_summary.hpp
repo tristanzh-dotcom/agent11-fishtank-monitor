@@ -1,0 +1,69 @@
+#pragma once
+
+#include "transport_contract.hpp"
+
+#include <array>
+#include <cstdint>
+#include <optional>
+
+namespace aquarium::transport {
+
+struct LocalDateTime {
+  int year = 0;
+  int month = 0;
+  int day = 0;
+  int hour = 0;
+  int minute = 0;
+  int second = 0;
+  bool valid = false;
+};
+
+enum class SummaryReadingState {
+  valid,
+  invalid,
+  unconfigured,
+  configuration_error,
+};
+
+struct DailyTemperatureSnapshot {
+  LocalDateTime sampled_at;
+  std::optional<double> main_c;
+  std::optional<double> sump_c;
+  std::array<std::optional<double>, 3> auxiliary_c{};
+  std::array<SummaryReadingState, 3> auxiliary_states{
+      SummaryReadingState::invalid, SummaryReadingState::invalid,
+      SummaryReadingState::invalid};
+};
+
+enum class DailySlot {
+  morning,
+  evening,
+};
+
+struct DailyTemperatureSummary {
+  std::uint32_t slot_key = 0;
+  DailySlot slot = DailySlot::morning;
+  DailyTemperatureSnapshot snapshot;
+};
+
+class DailySummaryScheduler {
+ public:
+  std::optional<DailyTemperatureSummary> observe(
+      const LocalDateTime& now, std::uint64_t monotonic_now_ms,
+      const DailyTemperatureSnapshot& snapshot);
+
+  const DailyTemperatureSummary* pending() const;
+  void acknowledge(bool delivered);
+  void expire(std::uint64_t monotonic_now_ms);
+
+ private:
+  std::optional<std::uint32_t> last_slot_key_;
+  std::optional<DailyTemperatureSummary> pending_;
+  std::uint64_t pending_expires_at_ms_ = 0;
+};
+
+std::string daily_summary_body(const DailyTemperatureSummary& summary);
+BarkMessage daily_summary_message(const DailyTemperatureSummary& summary,
+                                  const std::string& aquarium_id);
+
+}  // namespace aquarium::transport

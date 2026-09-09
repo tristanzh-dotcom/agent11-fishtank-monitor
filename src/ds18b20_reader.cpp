@@ -30,18 +30,28 @@ void Ds18b20Reader::begin() {
   }
 }
 
-TemperatureSample Ds18b20Reader::read(std::uint64_t at_ms) {
+Ds18b20Reader::TemperatureReadings Ds18b20Reader::read(
+    std::uint64_t at_ms) {
   sensors_.requestTemperatures();
-  return TemperatureSample{at_ms,
-                           read_sensor(config_.main_tank_sensor, 0),
-                           read_sensor(config_.sump_return_sensor, 1)};
+  TemperatureReadings readings{at_ms,
+                                TemperatureSample{
+                                    at_ms, read_sensor(config_.main_tank_sensor),
+                                    read_sensor(config_.sump_return_sensor)}};
+  for (std::size_t index = 0; index < config_.auxiliary_tanks.size(); ++index) {
+    readings.auxiliary_states[index] =
+        auxiliary_sensor_binding_state(config_, index);
+    if (readings.auxiliary_states[index] == SensorBindingState::valid) {
+      readings.auxiliary_c[index] =
+          read_sensor(config_.auxiliary_tanks[index].sensor);
+    }
+  }
+  return readings;
 }
 
 std::optional<double> Ds18b20Reader::read_sensor(
-    const SensorRomAddress& address, std::uint8_t discovery_index) {
+    const SensorRomAddress& address) {
   DeviceAddress device_address{};
-  const bool known_address = to_device_address(address, device_address);
-  if (!known_address && !sensors_.getAddress(device_address, discovery_index)) {
+  if (!to_device_address(address, device_address)) {
     return std::nullopt;
   }
 
