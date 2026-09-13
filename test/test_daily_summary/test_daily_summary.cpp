@@ -1,4 +1,5 @@
 #include "daily_summary.hpp"
+#include "heartbeat_contract.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -16,14 +17,20 @@ namespace {
 DailyTemperatureSnapshot snapshot() {
   DailyTemperatureSnapshot value{};
   value.sampled_at = LocalDateTime{2026, 9, 9, 9, 0, 20, true};
-  value.main_c = 25.1;
-  value.sump_c = 25.0;
-  value.auxiliary_c[0] = 23.4;
-  value.auxiliary_c[1] = std::nullopt;
-  value.auxiliary_c[2] = 24.8;
+  value.main_c = 22.1;
+  value.sump_c = 21.8;
+  value.auxiliary_c[0] = 22.1;
+  value.auxiliary_c[1] = 28.7;
+  value.auxiliary_c[2] = 20.1;
   value.auxiliary_states[0] = SummaryReadingState::valid;
-  value.auxiliary_states[1] = SummaryReadingState::invalid;
-  value.auxiliary_states[2] = SummaryReadingState::unconfigured;
+  value.auxiliary_states[1] = SummaryReadingState::valid;
+  value.auxiliary_states[2] = SummaryReadingState::valid;
+  value.main_status = aquarium::transport::TemperatureReadingStatus::low;
+  value.auxiliary_status[0] = aquarium::transport::TemperatureReadingStatus::low;
+  value.auxiliary_status[1] =
+      aquarium::transport::TemperatureReadingStatus::high_critical;
+  value.auxiliary_status[2] =
+      aquarium::transport::TemperatureReadingStatus::low_critical;
   return value;
 }
 
@@ -90,12 +97,14 @@ void test_daily_summary_body_reports_all_five_channels_and_states() {
   assert(created.has_value());
 
   const auto body = aquarium::transport::daily_summary_body(*created);
+  assert(body.size() <= aquarium::heartbeat::kMaxTemperatureSummaryBytes);
   assert(body.find("采样时间：2026-09-09 09:00:20") != std::string::npos);
-  assert(body.find("包包缸：25.10°C") != std::string::npos);
-  assert(body.find("回水缸：25.00°C") != std::string::npos);
-  assert(body.find("老四缸：23.40°C") != std::string::npos);
-  assert(body.find("小黑缸：无有效读数") != std::string::npos);
-  assert(body.find("毛毛缸：未配置") != std::string::npos);
+  assert(body.find("包包缸（主缸 / 回水缸）") != std::string::npos);
+  assert(body.find("  主缸：22.1°C（温度偏低）") != std::string::npos);
+  assert(body.find("  回水缸：21.8°C") != std::string::npos);
+  assert(body.find("老四缸：22.1°C（温度偏低）") != std::string::npos);
+  assert(body.find("小黑缸：28.7°C（温度严重偏高）") != std::string::npos);
+  assert(body.find("毛毛缸：20.1°C（温度严重偏低）") != std::string::npos);
 
   const auto message =
       aquarium::transport::daily_summary_message(*created, "tank01");
@@ -105,11 +114,36 @@ void test_daily_summary_body_reports_all_five_channels_and_states() {
   assert(message.fingerprint == "aquarium:tank01:20260909:morning");
 }
 
+void test_temperature_status_uses_configured_thresholds() {
+  aquarium::TemperaturePolicy policy{};
+  assert(aquarium::transport::temperature_reading_status(23.5, policy) ==
+         aquarium::transport::TemperatureReadingStatus::normal);
+  assert(aquarium::transport::temperature_reading_status(23.49, policy) ==
+         aquarium::transport::TemperatureReadingStatus::low);
+  assert(aquarium::transport::temperature_reading_status(22.49, policy) ==
+         aquarium::transport::TemperatureReadingStatus::low_critical);
+  assert(aquarium::transport::temperature_reading_status(27.5, policy) ==
+         aquarium::transport::TemperatureReadingStatus::normal);
+  assert(aquarium::transport::temperature_reading_status(27.51, policy) ==
+         aquarium::transport::TemperatureReadingStatus::high);
+  assert(aquarium::transport::temperature_reading_status(28.51, policy) ==
+         aquarium::transport::TemperatureReadingStatus::high_critical);
+
+  aquarium::TemperaturePolicy laosi_policy{};
+  laosi_policy.low_attention_c = 22.5;
+  laosi_policy.low_critical_c = 20.5;
+  assert(aquarium::transport::temperature_reading_status(22.1, laosi_policy) ==
+         aquarium::transport::TemperatureReadingStatus::low);
+  assert(aquarium::transport::temperature_reading_status(20.1, laosi_policy) ==
+         aquarium::transport::TemperatureReadingStatus::low_critical);
+}
+
 }  // namespace
 
 int main() {
   test_daily_summary_windows_and_expiry();
   test_daily_summary_rejects_invalid_time_and_handles_slot_order();
   test_daily_summary_body_reports_all_five_channels_and_states();
+  test_temperature_status_uses_configured_thresholds();
   std::cout << "daily summary tests passed\n";
 }

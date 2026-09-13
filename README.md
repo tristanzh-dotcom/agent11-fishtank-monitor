@@ -78,7 +78,9 @@ launchctl bootstrap "gui/$(id -u)" \
 
 ## 首次配置与编译
 
-1. 安装 PlatformIO Core 6.1.19 或更高版本：`python3 -m pip install --user --upgrade platformio`。
+1. 使用 Python 3.10–3.13 的独立虚拟环境安装 `platformio==6.2.0`。当前已验证入口为
+   `/Users/tristanzh/.platformio/penv/bin/pio`（Python 3.12）；下文 `pio` 均指该环境的命令。
+   `platformio.ini` 固定 pioarduino 平台 `55.03.36`（Arduino 3.3.6），不要使用系统 Python 3.9 的旧入口。
 2. 复制 `include/secrets.example.hpp` 为本机 `include/secrets.hpp`。只在该忽略文件中填写
    Wi-Fi、Bark Device Key、腾讯 SCF 函数 URL、设备共享密钥及两条 HTTPS 链路的
    CA PEM；不要把值发到聊天、日志或截图。
@@ -91,7 +93,7 @@ launchctl bootstrap "gui/$(id -u)" \
 5. 用 USB-C 数据线连接开发板，执行：
 
 ```sh
-pio run -e waveshare_esp32s3_n16r8 -t upload
+pio run -e waveshare_esp32s3_n16r8 -t upload --upload-port <已确认的设备串口>
 ```
 
 开发板通过板载 CH343/CH334 将 UART 与 USB 接到同一个 USB-C。固件保留 UART0
@@ -116,6 +118,10 @@ Bark 与 MQTT 各有独立 16 条 RAM 队列。Bark 成功仅移除 Bark 队首�
 MQTT 队首；MQTT 默认关闭，其未配置、连接失败或发布失败不会阻塞 Bark。队列不跨断电
 持久化，因此复位会丢失尚未投递的温度事件。
 
+温度告警正文固定先给出事件当时读数、告警/升级/提醒/解除判定时间，再给出本次发送发起时间；
+设备直推标为“设备”，云端主缸通知标为“云端”，时间均为北京时间。设备未完成校时时显示
+“时间未同步”，云端事件日历时间暂不可由现有心跳可信得出时显示“事件时间不可用”。
+
 ## 腾讯云在线状态监控
 
 设备每 5 分钟把最新有效双探头读数通过校验证书的 HTTPS 发送到腾讯云 SCF；请求使用
@@ -139,14 +145,17 @@ Timer，以及离线一次、重复离线不提醒、恢复一次和重复恢复
 g++ -std=c++17 -Wall -Wextra -Werror -Ilib/temperature_engine/include test/test_temperature_engine/test_temperature_engine.cpp lib/temperature_engine/src/temperature_engine.cpp -o .build/temperature_engine_tests && ./.build/temperature_engine_tests
 g++ -std=c++17 -Wall -Wextra -Werror -Ilib/temperature_engine/include test/test_temperature_engine/test_temperature_simulation.cpp lib/temperature_engine/src/temperature_engine.cpp -o .build/temperature_simulation_tests && ./.build/temperature_simulation_tests
 g++ -std=c++17 -Wall -Wextra -Werror -Iinclude -Ilib/temperature_engine/include test/test_temperature_engine/test_config.cpp -o .build/config_tests && ./.build/config_tests
-g++ -std=c++17 -Wall -Wextra -Werror -Iinclude -Ilib/temperature_engine/include -Ilib/transport_contract/include test/test_transport_contract/test_transport_contract.cpp lib/transport_contract/src/transport_contract.cpp lib/transport_contract/src/event_outbox.cpp lib/transport_contract/src/retry_backoff.cpp lib/transport_contract/src/delivery_coordinator.cpp -o .build/transport_contract_tests && ./.build/transport_contract_tests
+g++ -std=c++17 -Wall -Wextra -Werror -Iinclude -Ilib/temperature_engine/include -Ilib/transport_contract/include test/test_transport_contract/test_transport_contract.cpp lib/transport_contract/src/transport_contract.cpp lib/transport_contract/src/event_outbox.cpp lib/transport_contract/src/scoped_event_outbox.cpp lib/transport_contract/src/retry_backoff.cpp lib/transport_contract/src/delivery_coordinator.cpp -o .build/transport_contract_tests && ./.build/transport_contract_tests
 g++ -std=c++17 -Wall -Wextra -Werror -Ilib/temperature_engine/include -Ilib/active_event_snapshot/include -Ilib/heartbeat_contract/include test/test_heartbeat_contract/test_heartbeat_contract.cpp lib/active_event_snapshot/src/active_event_snapshot.cpp lib/heartbeat_contract/src/heartbeat_contract.cpp -o .build/heartbeat_contract_tests && ./.build/heartbeat_contract_tests
-g++ -std=c++17 -Wall -Wextra -Werror -Ilib/temperature_engine/include -Ilib/transport_contract/include test/test_daily_summary/test_daily_summary.cpp lib/transport_contract/src/daily_summary.cpp lib/transport_contract/src/transport_contract.cpp -o .build/daily_summary_tests && ./.build/daily_summary_tests
+g++ -std=c++17 -Wall -Wextra -Werror -Ilib/temperature_engine/include -Ilib/active_event_snapshot/include -Ilib/heartbeat_contract/include -Ilib/transport_contract/include test/test_daily_summary/test_daily_summary.cpp lib/transport_contract/src/daily_summary.cpp lib/transport_contract/src/transport_contract.cpp -o .build/daily_summary_tests && ./.build/daily_summary_tests
 node --test cloud/bark-forwarder/index.test.mjs
 (cd cloud/tencent-scf && npm test)
 sh test/verify_docs.sh
 pio run -e waveshare_esp32s3_n16r8
 ```
+
+远程五缸温度快捷查询的刷写候选使用 `waveshare_esp32s3_n16r8_remote_five` 环境；该环境
+排除 Tab5 局域网广播，默认环境继续保留现有 Tab5 功能。
 
 ## 安全边界
 

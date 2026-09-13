@@ -2,6 +2,8 @@
 
 const { createSerializedHandler } = require('./serializer.js');
 
+const TEMPERATURE_SUMMARY_PATH = '/api/v1/devices/tank01/temperature-summary';
+
 function isHttpEvent(event) {
   return Boolean(event?.requestContext?.http?.method ?? event?.httpMethod);
 }
@@ -17,6 +19,22 @@ function serviceUnavailable() {
   };
 }
 
+function summaryUnavailable() {
+  return {
+    statusCode: 503,
+    headers: {
+      'content-type': 'text/plain; charset=utf-8',
+      'cache-control': 'no-store',
+    },
+    body: '温度数据暂不可用。',
+  };
+}
+
+function requestPath(event) {
+  const path = event?.rawPath ?? event?.requestContext?.http?.path ?? event?.path ?? '';
+  return String(path).split('?')[0];
+}
+
 async function run(event, context) {
   const startedAt = Date.now();
   const http = isHttpEvent(event);
@@ -27,7 +45,9 @@ async function run(event, context) {
     });
   } catch {
     return http
-      ? serviceUnavailable()
+      ? (requestPath(event) === TEMPERATURE_SUMMARY_PATH
+        ? summaryUnavailable()
+        : serviceUnavailable())
       : { checked: 0, transitioned: 0, failed: 1 };
   } finally {
     if (http) {

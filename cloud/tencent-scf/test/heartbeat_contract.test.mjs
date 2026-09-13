@@ -95,6 +95,83 @@ test('accepts nullable readings and a complete active event snapshot', () => {
   }]);
 });
 
+test('accepts and normalizes a valid temperature snapshot', () => {
+  const result = authenticateHeartbeat(makeEvent({
+    payload: {
+      device_id: 'tank01',
+      sent_at_ms: NOW_MS,
+      nonce: '0123456789abcdef',
+      main_c: 26.4,
+      sump_c: 26.6,
+      uptime_ms: 123_456,
+      active_events: [],
+      temperature_snapshot: {
+        sampled_at_ms: NOW_MS - 2_000,
+        summary_text: '采样时间：2025-06-15 23:06:38（上海时间）',
+      },
+    },
+  }), options);
+
+  assert.deepEqual(result.payload.temperatureSnapshot, {
+    sampledAtMs: NOW_MS - 2_000,
+    summaryText: '采样时间：2025-06-15 23:06:38（上海时间）',
+  });
+});
+
+test('rejects a signed heartbeat when the temperature summary is tampered with', () => {
+  const event = makeEvent({
+    payload: {
+      device_id: 'tank01',
+      sent_at_ms: NOW_MS,
+      nonce: '0123456789abcdef',
+      main_c: 26.4,
+      sump_c: 26.6,
+      uptime_ms: 123_456,
+      active_events: [],
+      temperature_snapshot: {
+        sampled_at_ms: NOW_MS - 2_000,
+        summary_text: '温度摘要不可篡改',
+      },
+    },
+  });
+  event.body = event.body.replace('温度摘要不可篡改', '篡改后的摘要');
+
+  assert.throws(
+    () => authenticateHeartbeat(event, options),
+    (error) => error instanceof RequestError && error.statusCode === 401,
+  );
+});
+
+test('rejects malformed or oversized temperature snapshots', () => {
+  const base = {
+    device_id: 'tank01',
+    sent_at_ms: NOW_MS,
+    nonce: '0123456789abcdef',
+    main_c: 26,
+    sump_c: 26,
+    uptime_ms: 1,
+    active_events: [],
+  };
+  const invalidSnapshots = [
+    { sampled_at_ms: 0, summary_text: '温度' },
+    { sampled_at_ms: NOW_MS, summary_text: '' },
+    { sampled_at_ms: NOW_MS, summary_text: 'x'.repeat(769) },
+    { sampled_at_ms: NOW_MS, summary_text: '😀'.repeat(193) },
+    { sampled_at_ms: NOW_MS, summary_text: '\ud800' },
+    { sampled_at_ms: NOW_MS, summary_text: 42 },
+    { sampled_at_ms: NOW_MS },
+  ];
+
+  for (const temperature_snapshot of invalidSnapshots) {
+    assert.throws(
+      () => authenticateHeartbeat(makeEvent({
+        payload: { ...base, temperature_snapshot },
+      }), options),
+      (error) => error instanceof RequestError && error.statusCode === 400,
+    );
+  }
+});
+
 test('rejects unsupported methods, oversized bodies, and stale timestamps', () => {
   assert.throws(
     () => authenticateHeartbeat(makeEvent({ method: 'GET' }), options),

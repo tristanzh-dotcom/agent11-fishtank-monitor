@@ -9,16 +9,30 @@
 #include "retry_backoff.hpp"
 #include "scoped_event_outbox.hpp"
 #include "daily_summary.hpp"
+#if !defined(AQUARIUM_DISABLE_TAB5_LAN)
+#include "tab5_lan_state.hpp"
+#endif
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <esp_sntp.h>
+#if !defined(AQUARIUM_DISABLE_TAB5_LAN)
+#include <WiFiUdp.h>
+#endif
 
 #include <array>
+#include <algorithm>
 #include <ctime>
+#include <optional>
 
 namespace {
 
+#if !defined(AQUARIUM_DISABLE_TAB5_LAN)
+#include "tab5_lan_secret.hpp"
+#endif
+
 constexpr std::uint8_t kOneWirePin = 4;
+constexpr std::time_t kMinimumReasonableEpochSeconds = 1700000000;
 
 aquarium::firmware::RuntimeConfig runtime_config =
     aquarium::firmware::default_runtime_config();
@@ -36,10 +50,35 @@ std::array<aquarium::TemperatureEngine, 3> auxiliary_engines{
 aquarium::transport::ScopedEventOutbox auxiliary_delivery(16);
 aquarium::transport::DailySummaryScheduler daily_summary;
 bool auxiliary_turn = false;
+bool time_sync_completed = false;
 aquarium::RetryBackoff wifi_backoff(1000U, 60000U);
 aquarium::heartbeat::HeartbeatSchedule heartbeat_schedule(
     runtime_config.heartbeat_interval_ms, 5000U,
     runtime_config.heartbeat_interval_ms);
+#if !defined(AQUARIUM_DISABLE_TAB5_LAN)
+WiFiUDP tab5_lan_udp;
+std::uint64_t tab5_source_id{};
+std::uint32_t tab5_sequence{};
+constexpr std::uint16_t kTab5LanPort = 35111U;
+
+std::array<std::uint8_t, 32> tab5_lan_key() {
+  std::array<std::uint8_t, 32> key{};
+  std::copy_n(kTab5LanStateKey, key.size(), key.begin());
+  return key;
+}
+
+void publish_tab5_lan_state(const aquarium::TemperatureSample& sample) {
+  if (WiFi.status() != WL_CONNECTED) return;
+  const auto state = aquarium::tab5::make_lan_state(sample, active_events);
+  const auto packet = aquarium::tab5::encode_packet(
+      state, tab5_source_id, ++tab5_sequence, tab5_lan_key());
+  if (!tab5_lan_udp.beginPacket(IPAddress(255, 255, 255, 255), kTab5LanPort)) {
+    return;
+  }
+  tab5_lan_udp.write(packet.data(), packet.size());
+  tab5_lan_udp.endPacket();
+}
+#endif
 
 std::uint64_t monotonic_millis() {
   static std::uint32_t previous = 0;
@@ -50,6 +89,19 @@ std::uint64_t monotonic_millis() {
   }
   previous = current;
   return epoch + current;
+}
+
+void observe_time_sync() {
+  if (sntp_get_sync_status() == SNTP_SYNC_STATUS_COMPLETED) {
+    time_sync_completed = true;
+  }
+}
+
+std::optional<std::time_t> event_calendar_time(std::time_t sampled_at) {
+  if (!time_sync_completed || sampled_at < kMinimumReasonableEpochSeconds) {
+    return std::nullopt;
+  }
+  return sampled_at;
 }
 
 void print_temperature(const char* label, const std::optional<double>& value) {
@@ -112,14 +164,16 @@ aquarium::transport::LocalDateTime local_time_from_epoch(std::time_t epoch) {
 }
 
 aquarium::transport::DailyTemperatureSnapshot daily_snapshot(
-    const aquarium::firmware::Ds18b20Reader::TemperatureReadings& readings) {
+    const aquarium::firmware::Ds18b20Reader::TemperatureReadings& readings,
+    std::time_t sampled_at) {
   aquarium::transport::DailyTemperatureSnapshot snapshot{};
-  const std::time_t current_time = std::time(nullptr);
-  if (current_time >= 1700000000) {
-    snapshot.sampled_at = local_time_from_epoch(current_time);
+  if (sampled_at >= 1700000000) {
+    snapshot.sampled_at = local_time_from_epoch(sampled_at);
   }
   snapshot.main_c = readings.primary.display_c;
   snapshot.sump_c = readings.primary.return_c;
+  snapshot.main_status = aquarium::transport::temperature_reading_status(
+      snapshot.main_c, runtime_config.policy);
   for (std::size_t index = 0; index < readings.auxiliary_c.size(); ++index) {
     snapshot.auxiliary_c[index] = readings.auxiliary_c[index];
     switch (readings.auxiliary_states[index]) {
@@ -137,6 +191,13 @@ aquarium::transport::DailyTemperatureSnapshot daily_snapshot(
         snapshot.auxiliary_states[index] =
             aquarium::transport::SummaryReadingState::configuration_error;
         break;
+    }
+    if (snapshot.auxiliary_states[index] ==
+        aquarium::transport::SummaryReadingState::valid) {
+      snapshot.auxiliary_status[index] =
+          aquarium::transport::temperature_reading_status(
+              snapshot.auxiliary_c[index],
+              runtime_config.auxiliary_tanks[index].policy);
     }
   }
   return snapshot;
@@ -191,6 +252,10 @@ void setup() {
   connect_wifi(monotonic_millis());
   heartbeat.begin_time_sync();
   reader.begin();
+#if !defined(AQUARIUM_DISABLE_TAB5_LAN)
+  tab5_source_id = (static_cast<std::uint64_t>(esp_random()) << 32U) |
+                   static_cast<std::uint64_t>(esp_random());
+#endif
 }
 
 void loop() {
@@ -198,6 +263,7 @@ void loop() {
   const std::uint64_t now_ms = monotonic_millis();
 
   connect_wifi(now_ms);
+  observe_time_sync();
 
   if (now_ms - last_sample_at_ms < runtime_config.sample_interval_ms) {
     delay(50);
@@ -207,11 +273,17 @@ void loop() {
 
   const auto readings = reader.read(now_ms);
   const auto& sample = readings.primary;
+  observe_time_sync();
+  const std::time_t sampled_at = std::time(nullptr);
+  const auto event_time = event_calendar_time(sampled_at);
   print_readings(readings);
   const auto events = engine.ingest(sample);
   active_events.apply(events);
+#if !defined(AQUARIUM_DISABLE_TAB5_LAN)
+  publish_tab5_lan_state(sample);
+#endif
   for (const auto& event : events) {
-    delivery.enqueue(event);
+    delivery.enqueue(event, event_time);
   }
 
   for (std::size_t index = 0; index < auxiliary_engines.size(); ++index) {
@@ -223,22 +295,27 @@ void loop() {
         aquarium::TemperatureSample{now_ms, readings.auxiliary_c[index],
                                     std::nullopt});
     for (const auto& event : auxiliary_events) {
+      if (!runtime_config.bark_enabled) {
+        continue;
+      }
       auxiliary_delivery.push({runtime_config.auxiliary_tanks[index].key,
                                runtime_config.auxiliary_tanks[index].label,
-                               event});
+                               event,
+                               event_time});
     }
   }
 
-  const std::time_t current_time = std::time(nullptr);
-  if (current_time >= 1700000000) {
-    const auto local_time = local_time_from_epoch(current_time);
-    daily_summary.observe(local_time, now_ms, daily_snapshot(readings));
+  if (runtime_config.bark_enabled && sampled_at >= 1700000000) {
+    const auto local_time = local_time_from_epoch(sampled_at);
+    daily_summary.observe(local_time, monotonic_millis(),
+                          daily_snapshot(readings, sampled_at));
   }
 
   bool attempted_alert = false;
   const auto* main_event = delivery.bark_front();
   const auto* auxiliary_event = auxiliary_delivery.front();
-  if (main_event != nullptr || auxiliary_event != nullptr) {
+  if (runtime_config.bark_enabled &&
+      (main_event != nullptr || auxiliary_event != nullptr)) {
     attempted_alert = true;
     const bool choose_auxiliary =
         auxiliary_event != nullptr &&
@@ -246,25 +323,45 @@ void loop() {
     if (choose_auxiliary) {
       const bool delivered = bark.notify(*auxiliary_event,
                                          runtime_config.aquarium_id);
+      Serial.println(delivered ? "auxiliary bark delivered"
+                               : "auxiliary bark failed");
       if (delivered) {
         auxiliary_delivery.pop();
       }
       auxiliary_turn = false;
     } else {
-      delivery.acknowledge_bark(
-          bark.notify(*main_event, runtime_config.aquarium_id));
+      const auto* main_record = delivery.bark_record_front();
+      const bool delivered =
+          main_record != nullptr &&
+          bark.notify(main_record->event, runtime_config.aquarium_id,
+                      main_record->event_time);
+      Serial.println(delivered ? "main bark delivered" : "main bark failed");
+      delivery.acknowledge_bark(delivered);
       auxiliary_turn = true;
     }
   }
-  daily_summary.expire(now_ms);
-  if (!attempted_alert && delivery.bark_front() == nullptr &&
+  daily_summary.expire(monotonic_millis());
+  if (runtime_config.bark_enabled && !attempted_alert && delivery.bark_front() == nullptr &&
       auxiliary_delivery.front() == nullptr && daily_summary.pending() != nullptr) {
-    daily_summary.acknowledge(
-        bark.notify(*daily_summary.pending(), runtime_config.aquarium_id));
+    const bool delivered =
+        bark.notify(*daily_summary.pending(), runtime_config.aquarium_id);
+    Serial.println(delivered ? "daily bark delivered" : "daily bark failed");
+    daily_summary.acknowledge(delivered);
   }
   if (runtime_config.heartbeat_enabled && WiFi.status() == WL_CONNECTED &&
       heartbeat_schedule.should_attempt(now_ms)) {
-    const bool delivered = heartbeat.notify(sample, active_events, now_ms);
+    std::optional<aquarium::heartbeat::TemperatureSnapshot>
+        temperature_snapshot;
+    if (sampled_at >= 1700000000) {
+      const aquarium::transport::DailyTemperatureSummary summary{
+          0U, aquarium::transport::DailySlot::morning,
+          daily_snapshot(readings, sampled_at)};
+      temperature_snapshot = aquarium::heartbeat::TemperatureSnapshot{
+          static_cast<std::uint64_t>(sampled_at) * 1000ULL,
+          aquarium::transport::daily_summary_body(summary)};
+    }
+    const bool delivered = heartbeat.notify(sample, active_events, now_ms,
+                                            temperature_snapshot);
     Serial.println(delivered ? "heartbeat delivered" : "heartbeat failed");
     if (delivered) {
       heartbeat_schedule.record_success(now_ms);

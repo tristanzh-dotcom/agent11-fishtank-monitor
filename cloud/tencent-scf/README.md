@@ -46,6 +46,21 @@ npm run build
 }
 ```
 
+新固件可在同一心跳中附带私有五缸摘要：
+
+```json
+{
+  "temperature_snapshot": {
+    "sampled_at_ms": 1750000000000,
+    "summary_text": "采样时间：..."
+  }
+}
+```
+
+`sampled_at_ms` 必须是正的安全整数，`summary_text` 必须是非空 UTF-8 文本且不超过
+768 字节；字段仍计入 2,048 字节心跳上限和原始 JSON HMAC。固件在可选摘要超限时省略
+整个字段并继续发送原有心跳，云端在收到不合法字段时拒绝该心跳。
+
 请求头 `X-Aquarium-Signature` 是 64 位十六进制 HMAC-SHA256。签名原文为：
 
 ```text
@@ -77,6 +92,19 @@ COS 内部字段、HMAC 设备密钥、Bark key 或云函数临时凭据。令�
 令牌长度必须为 32–256 个字符，且必须与设备 HMAC 密钥不同。错误保持为不含敏感信息的
 `401 unauthorized`、`404 state_not_found`、`405 method_not_allowed` 或
 `503 state_unavailable`。
+
+远程五缸快捷查询复用同一个只读令牌和函数 URL：
+
+```text
+GET /api/v1/devices/tank01/temperature-summary
+Authorization: Bearer <STATE_READ_TOKEN>
+```
+
+该路径返回 `text/plain; charset=utf-8` 并设置 `Cache-Control: no-store`。新固件通过
+可选的 `temperature_snapshot` 心跳字段上传最新日报正文；旧固件省略该字段时仍可正常
+处理心跳，摘要接口返回“暂无温度数据，请稍后重试。”。设备离线或采样超过十分钟时，
+接口只返回对应中文提示，不展示旧温度；现有 `/state` JSON 投影保持不变。该接口只读，
+不会写 COS、刷新在线时间或触发 Bark。
 
 软件模拟设备可用于硬件到货前的真实函数 URL 验证。变量只在当前终端进程中提供，
 脚本输出仅包含 HTTP 状态，不打印 URL、密钥、nonce 或签名：
@@ -123,9 +151,13 @@ COS 存储桶必须复核为私有读写、单可用区、SSE-COS、版本控制
 Bark 采用“提醒优先”的至少一次投递：若 Bark 已成功但紧随其后的 COS 状态写入失败，
 下一轮可能重复同一条状态切换提醒；这比漏掉离线报警更安全。
 
+云端主缸温度通知与设备直推采用同一顺序的双时间正文：先显示事件读数，再显示判定时间、
+本次云端发送发起时间和北京时间标识。现有心跳只携带设备单调运行时间，不能可信转换为日历
+事件时间，因此该栏固定显示“事件时间不可用”；离线/恢复通知保持原文案。
+
 上传部署包、输入 Bark/设备密钥、启用公网 URL 和启用定时器是四个独立确认点。
-本次本地代码变更也尚未部署：上传新版部署包并私下配置 `STATE_READ_TOKEN` 是额外的
-确认点；之后仍需真机刷写、Wi-Fi/NTP、真实心跳、Bark 与下游读取验收。
+本次新版部署包已按授权发布；`STATE_READ_TOKEN` 不随代码包上传，继续由现有私下配置提供。
+之后仍需真机刷写、Wi-Fi/NTP、真实心跳、Bark 与下游读取验收。
 
 ## 2026-07-17 云端验收记录
 

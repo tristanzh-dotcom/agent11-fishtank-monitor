@@ -43,13 +43,31 @@ std::uint64_t saturating_add(std::uint64_t left, std::uint64_t right) {
   return left + right;
 }
 
-std::string temperature_text(const std::optional<double>& value) {
+const char* temperature_status_text(TemperatureReadingStatus status) {
+  switch (status) {
+    case TemperatureReadingStatus::invalid:
+    case TemperatureReadingStatus::normal:
+      return "";
+    case TemperatureReadingStatus::low:
+      return "（温度偏低）";
+    case TemperatureReadingStatus::low_critical:
+      return "（温度严重偏低）";
+    case TemperatureReadingStatus::high:
+      return "（温度偏高）";
+    case TemperatureReadingStatus::high_critical:
+      return "（温度严重偏高）";
+  }
+  return "";
+}
+
+std::string temperature_text(const std::optional<double>& value,
+                             TemperatureReadingStatus status) {
   if (!value.has_value()) {
     return "无有效读数";
   }
   char buffer[32]{};
-  std::snprintf(buffer, sizeof(buffer), "%.2f°C", *value);
-  return buffer;
+  std::snprintf(buffer, sizeof(buffer), "%.1f°C", *value);
+  return std::string(buffer) + temperature_status_text(status);
 }
 
 std::string local_time_text(const LocalDateTime& value) {
@@ -64,7 +82,8 @@ std::string auxiliary_text(const DailyTemperatureSnapshot& snapshot,
                            std::size_t index) {
   switch (snapshot.auxiliary_states[index]) {
     case SummaryReadingState::valid:
-      return temperature_text(snapshot.auxiliary_c[index]);
+      return temperature_text(snapshot.auxiliary_c[index],
+                              snapshot.auxiliary_status[index]);
     case SummaryReadingState::invalid:
       return "无有效读数";
     case SummaryReadingState::unconfigured:
@@ -80,6 +99,26 @@ const char* slot_name(DailySlot slot) {
 }
 
 }  // namespace
+
+TemperatureReadingStatus temperature_reading_status(
+    const std::optional<double>& value, const TemperaturePolicy& policy) {
+  if (!value.has_value()) {
+    return TemperatureReadingStatus::invalid;
+  }
+  if (*value < policy.low_critical_c) {
+    return TemperatureReadingStatus::low_critical;
+  }
+  if (*value < policy.low_attention_c) {
+    return TemperatureReadingStatus::low;
+  }
+  if (*value > policy.high_critical_c) {
+    return TemperatureReadingStatus::high_critical;
+  }
+  if (*value > policy.high_attention_c) {
+    return TemperatureReadingStatus::high;
+  }
+  return TemperatureReadingStatus::normal;
+}
 
 std::optional<DailyTemperatureSummary> DailySummaryScheduler::observe(
     const LocalDateTime& now, std::uint64_t monotonic_now_ms,
@@ -123,8 +162,11 @@ void DailySummaryScheduler::expire(std::uint64_t monotonic_now_ms) {
 std::string daily_summary_body(const DailyTemperatureSummary& summary) {
   const auto& snapshot = summary.snapshot;
   std::string body = "采样时间：" + local_time_text(snapshot.sampled_at) +
-                     "\n\n包包缸：" + temperature_text(snapshot.main_c) +
-                     "\n回水缸：" + temperature_text(snapshot.sump_c) +
+                     "\n\n包包缸（主缸 / 回水缸）\n  主缸：" +
+                     temperature_text(snapshot.main_c, snapshot.main_status) +
+                     "\n  回水缸：" +
+                     temperature_text(snapshot.sump_c,
+                                      TemperatureReadingStatus::normal) +
                      "\n老四缸：" + auxiliary_text(snapshot, 0) +
                      "\n小黑缸：" + auxiliary_text(snapshot, 1) +
                      "\n毛毛缸：" + auxiliary_text(snapshot, 2);

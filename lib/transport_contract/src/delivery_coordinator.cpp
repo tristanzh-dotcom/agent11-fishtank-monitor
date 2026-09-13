@@ -2,10 +2,16 @@
 
 namespace aquarium {
 
-bool DeliveryCoordinator::enqueue(const TemperatureEvent& event) {
+bool DeliveryCoordinator::enqueue(const TemperatureEvent& event,
+                                  std::optional<std::time_t> event_time) {
   bool queued = false;
   if (bark_enabled_) {
-    queued = bark_outbox_.push(event);
+    if (bark_outbox_.size() >= bark_capacity_) {
+      ++bark_dropped_count_;
+    } else {
+      bark_outbox_.push_back(BarkDeliveryRecord{event, event_time});
+      queued = true;
+    }
   }
   if (mqtt_enabled_) {
     queued = mqtt_outbox_.push(event) || queued;
@@ -13,8 +19,14 @@ bool DeliveryCoordinator::enqueue(const TemperatureEvent& event) {
   return queued;
 }
 
+const BarkDeliveryRecord* DeliveryCoordinator::bark_record_front() const {
+  return bark_enabled_ && !bark_outbox_.empty() ? &bark_outbox_.front()
+                                                 : nullptr;
+}
+
 const TemperatureEvent* DeliveryCoordinator::bark_front() const {
-  return bark_enabled_ ? bark_outbox_.front() : nullptr;
+  const auto* record = bark_record_front();
+  return record == nullptr ? nullptr : &record->event;
 }
 
 const TemperatureEvent* DeliveryCoordinator::mqtt_front() const {
@@ -23,7 +35,9 @@ const TemperatureEvent* DeliveryCoordinator::mqtt_front() const {
 
 void DeliveryCoordinator::acknowledge_bark(bool delivered) {
   if (bark_enabled_ && delivered) {
-    bark_outbox_.pop();
+    if (!bark_outbox_.empty()) {
+      bark_outbox_.pop_front();
+    }
   }
 }
 

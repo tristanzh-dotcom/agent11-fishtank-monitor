@@ -10,6 +10,7 @@ const DEVICE_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,31}$/;
 const NONCE_PATTERN = /^[a-fA-F0-9]{16,64}$/;
 const SIGNATURE_PATTERN = /^[a-fA-F0-9]{64}$/;
 const MAX_ACTIVE_EVENTS = 7;
+const MAX_TEMPERATURE_SUMMARY_BYTES = 768;
 const EVENT_TYPES = new Set([
   'high_temperature',
   'high_temperature_critical',
@@ -108,6 +109,41 @@ function normalizeActiveEvents(value) {
   });
 }
 
+function isWellFormedText(value) {
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = value.charCodeAt(index + 1);
+      if (Number.isNaN(next) || next < 0xdc00 || next > 0xdfff) return false;
+      index += 1;
+    } else if (code >= 0xdc00 && code <= 0xdfff) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function normalizeTemperatureSnapshot(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new RequestError(400, 'temperature_snapshot is invalid');
+  }
+  if (!Number.isSafeInteger(value.sampled_at_ms) || value.sampled_at_ms <= 0) {
+    throw new RequestError(400, 'temperature_snapshot is invalid');
+  }
+  if (
+    typeof value.summary_text !== 'string'
+    || value.summary_text.length === 0
+    || !isWellFormedText(value.summary_text)
+    || Buffer.byteLength(value.summary_text, 'utf8') > MAX_TEMPERATURE_SUMMARY_BYTES
+  ) {
+    throw new RequestError(400, 'temperature_snapshot is invalid');
+  }
+  return {
+    sampledAtMs: value.sampled_at_ms,
+    summaryText: value.summary_text,
+  };
+}
+
 function normalizePayload(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new RequestError(400, 'JSON body must be an object');
@@ -127,6 +163,10 @@ function normalizePayload(value) {
     throw new RequestError(400, 'uptime_ms is invalid');
   }
 
+  const temperatureSnapshot = value.temperature_snapshot === undefined
+    ? undefined
+    : normalizeTemperatureSnapshot(value.temperature_snapshot);
+
   return {
     deviceId,
     sentAtMs: value.sent_at_ms,
@@ -135,6 +175,7 @@ function normalizePayload(value) {
     sumpC: requireNullableTemperature(value.sump_c, 'sump_c'),
     uptimeMs: value.uptime_ms,
     activeEvents: normalizeActiveEvents(value.active_events),
+    ...(temperatureSnapshot === undefined ? {} : { temperatureSnapshot }),
   };
 }
 

@@ -115,11 +115,17 @@ constexpr RuntimeConfig default_runtime_config() {
   config.sump_return_sensor =
       SensorRomAddress{{0x28, 0x17, 0xAE, 0x6B, 0x11, 0x00, 0x00, 0xB4}};
   config.auxiliary_tanks = std::array<AuxiliaryTankConfig, 3>{
-      AuxiliaryTankConfig{"laosi_tank", "老四缸", SensorRomAddress{},
+      AuxiliaryTankConfig{"laosi_tank", "老四缸",
+                          SensorRomAddress{{0x28, 0xE9, 0x53, 0xA0, 0x11, 0x00,
+                                            0x00, 0x32}},
                           auxiliary_policy(22.5, 20.5, 23.5)},
-      AuxiliaryTankConfig{"xiaohei_tank", "小黑缸", SensorRomAddress{},
+      AuxiliaryTankConfig{"xiaohei_tank", "小黑缸",
+                          SensorRomAddress{{0x28, 0x01, 0xB7, 0x9F, 0x11, 0x00,
+                                            0x00, 0xAD}},
                           auxiliary_policy(23.5, 22.5, 24.5)},
-      AuxiliaryTankConfig{"maomao_tank", "毛毛缸", SensorRomAddress{},
+      AuxiliaryTankConfig{"maomao_tank", "毛毛缸",
+                          SensorRomAddress{{0x28, 0xA8, 0xE7, 0x9E, 0x11, 0x00,
+                                            0x00, 0x7D}},
                           auxiliary_policy(23.5, 22.5, 24.5)},
   };
   return config;

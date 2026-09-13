@@ -25,11 +25,24 @@ enum class SummaryReadingState {
   configuration_error,
 };
 
+enum class TemperatureReadingStatus {
+  invalid,
+  normal,
+  low,
+  low_critical,
+  high,
+  high_critical,
+};
+
 struct DailyTemperatureSnapshot {
   LocalDateTime sampled_at;
   std::optional<double> main_c;
   std::optional<double> sump_c;
+  TemperatureReadingStatus main_status = TemperatureReadingStatus::invalid;
   std::array<std::optional<double>, 3> auxiliary_c{};
+  std::array<TemperatureReadingStatus, 3> auxiliary_status{
+      TemperatureReadingStatus::invalid, TemperatureReadingStatus::invalid,
+      TemperatureReadingStatus::invalid};
   std::array<SummaryReadingState, 3> auxiliary_states{
       SummaryReadingState::invalid, SummaryReadingState::invalid,
       SummaryReadingState::invalid};
@@ -63,6 +76,8 @@ class DailySummaryScheduler {
 };
 
 std::string daily_summary_body(const DailyTemperatureSummary& summary);
+TemperatureReadingStatus temperature_reading_status(
+    const std::optional<double>& value, const TemperaturePolicy& policy);
 BarkMessage daily_summary_message(const DailyTemperatureSummary& summary,
                                   const std::string& aquarium_id);
 

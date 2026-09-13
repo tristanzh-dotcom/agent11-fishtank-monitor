@@ -26,3 +26,22 @@ test('redacts initialization failures and keeps the public 500ms response floor'
   });
   assert.equal(Date.now() - startedAt >= 480, true);
 });
+
+test('returns the summary route initialization failure as Chinese plain text', async () => {
+  const monitor = require('../monitor.js');
+  const response = await monitor.main_handler({
+    requestContext: {
+      http: {
+        method: 'GET',
+        path: '/api/v1/devices/tank01/temperature-summary',
+      },
+    },
+    rawPath: '/api/v1/devices/tank01/temperature-summary',
+    headers: {},
+    body: '',
+  }, {});
+
+  assert.equal(response.statusCode, 503);
+  assert.equal(response.headers['content-type'], 'text/plain; charset=utf-8');
+  assert.equal(response.body, '温度数据暂不可用。');
+});

@@ -8,6 +8,7 @@ test('formats a temperature event as a Bark alert without putting the key in the
   const notifier = createBarkNotifier({
     barkKey: 'bark-key-not-in-url',
     serverUrl: 'https://bark.example.test',
+    clock: () => 1_750_000_001_000,
     fetchImpl: async (url, options) => {
       request = { url, options, body: JSON.parse(options.body) };
       return { ok: true };
@@ -17,8 +18,8 @@ test('formats a temperature event as a Bark alert without putting the key in the
   await notifier.send({
     type: 'temperature',
     deviceId: 'tank01',
-    mainC: 28.1,
-    sumpC: 27.8,
+    mainC: 27.3,
+    sumpC: 26.7,
     event: {
       type: 'high_temperature',
       state: 'opened',
@@ -30,10 +31,14 @@ test('formats a temperature event as a Bark alert without putting the key in the
 
   assert.equal(request.url, 'https://bark.example.test/push');
   assert.equal(request.body.device_key, 'bark-key-not-in-url');
-  assert.equal(request.body.title, '高温告警｜包包大缸・主缸');
-  assert.match(request.body.body, /主缸：28\.1°C/);
-  assert.match(request.body.body, /底滤缸：27\.8°C/);
-  assert.match(request.body.body, /阈值\/条件：27\.5°C/);
+  assert.equal(request.body.title, '包包缸·主缸｜高温告警');
+  assert.match(request.body.body, /当时水温：28\.1°C/);
+  assert.match(request.body.body, /告警判定：事件时间不可用/);
+  assert.match(request.body.body, /发送发起（云端）：2025-06-15 23:06:41/);
+  assert.match(request.body.body, /时间均为北京时间/);
+  assert.match(request.body.body, /建议：核查最新水温及加热棒温控。/);
+  assert.equal(request.body.body.includes('27.3°C'), false);
+  assert.equal(request.body.body.includes('26.7°C'), false);
   assert.equal(request.options.method, 'POST');
 });
 
@@ -42,6 +47,7 @@ test('uses user-facing Chinese templates for low temperature and sensor faults',
   const notifier = createBarkNotifier({
     barkKey: 'bark-key-not-in-url',
     serverUrl: 'https://bark.example.test',
+    clock: () => 1_750_000_001_000,
     fetchImpl: async (_url, options) => {
       messages.push(JSON.parse(options.body));
       return { ok: true };
@@ -75,12 +81,76 @@ test('uses user-facing Chinese templates for low temperature and sensor faults',
     },
   });
 
-  assert.equal(messages[0].title, '低温告警｜包包大缸・主缸');
-  assert.match(messages[0].body, /阈值\/条件：23\.5°C/);
-  assert.match(messages[0].body, /检查加热设备/);
-  assert.equal(messages[1].title, '传感器故障｜包包大缸・主缸');
-  assert.match(messages[1].body, /无有效读数/);
+  assert.equal(messages[0].title, '包包缸·主缸｜低温告警');
+  assert.match(messages[0].body, /当时水温：23\.1°C/);
+  assert.match(messages[0].body, /建议：核查最新水温及加热设备。/);
+  assert.equal(messages[1].title, '包包缸·主缸｜温度探头异常告警');
+  assert.match(messages[1].body, /当时水温：无有效读数/);
+  assert.match(messages[1].body, /告警判定：事件时间不可用/);
   assert.match(messages[1].body, /检查探头、接线和防水接头/);
+});
+
+test('uses state-specific wording for a cloud escalation', async () => {
+  let body;
+  const notifier = createBarkNotifier({
+    barkKey: 'bark-key-not-in-url',
+    serverUrl: 'https://bark.example.test',
+    clock: () => 1_750_000_001_000,
+    fetchImpl: async (_url, options) => {
+      body = JSON.parse(options.body);
+      return { ok: true };
+    },
+  });
+
+  await notifier.send({
+    type: 'temperature',
+    deviceId: 'tank01',
+    mainC: 26.0,
+    sumpC: 26.0,
+    event: {
+      type: 'temperature_rapid_change',
+      state: 'escalated',
+      severity: 'n3',
+      atMs: 1_750_000_000_000,
+      displayC: 30.1,
+    },
+  });
+
+  assert.equal(body.title, '包包缸·主缸｜升级为严重温度变化告警');
+  assert.match(body.body, /升级判定：事件时间不可用/);
+});
+
+test('reads a fresh cloud send time for each retry', async () => {
+  const sentTimes = [1_750_000_000_000, 1_750_000_002_000];
+  const bodies = [];
+  const notifier = createBarkNotifier({
+    barkKey: 'bark-key-not-in-url',
+    serverUrl: 'https://bark.example.test',
+    clock: () => sentTimes.shift(),
+    fetchImpl: async (_url, options) => {
+      bodies.push(JSON.parse(options.body));
+      return { ok: true };
+    },
+  });
+  const alert = {
+    type: 'temperature',
+    deviceId: 'tank01',
+    event: {
+      type: 'high_temperature',
+      state: 'opened',
+      severity: 'n2',
+      atMs: 123,
+      displayC: 28.1,
+    },
+  };
+
+  await notifier.send(alert);
+  await notifier.send(alert);
+
+  assert.match(bodies[0].body, /发送发起（云端）：2025-06-15 23:06:40/);
+  assert.match(bodies[1].body, /发送发起（云端）：2025-06-15 23:06:42/);
+  assert.match(bodies[0].body, /告警判定：事件时间不可用/);
+  assert.match(bodies[1].body, /告警判定：事件时间不可用/);
 });
 
 test('uses the configured fish-tank display name for offline alerts', async () => {

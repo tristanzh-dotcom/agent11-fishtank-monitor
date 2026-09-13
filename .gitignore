@@ -2,3 +2,5 @@
 .build/
 cloud/tencent-scf/node_modules/
 include/secrets.hpp
+include/.secrets.hpp.sw?
+include/tab5_lan_secret.hpp

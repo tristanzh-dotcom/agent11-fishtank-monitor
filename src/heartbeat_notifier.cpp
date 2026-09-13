@@ -80,7 +80,9 @@ void HeartbeatNotifier::begin_time_sync() {
 
 bool HeartbeatNotifier::notify(const TemperatureSample& sample,
                                const ActiveEventSnapshot& active_events,
-                               std::uint64_t uptime_ms) {
+                               std::uint64_t uptime_ms,
+                               const std::optional<heartbeat::TemperatureSnapshot>&
+                                   temperature_snapshot) {
   if (secrets::kTencentFunctionUrl[0] == '\0' ||
       secrets::kTencentDeviceSecret[0] == '\0' ||
       secrets::kTencentRootCaPem[0] == '\0') {
@@ -100,6 +102,7 @@ bool HeartbeatNotifier::notify(const TemperatureSample& sample,
       sample.return_c,
       uptime_ms,
       active_events.events(),
+      temperature_snapshot,
   };
   const std::string body = heartbeat::heartbeat_json(payload);
 
@@ -117,8 +120,10 @@ bool HeartbeatNotifier::notify(const TemperatureSample& sample,
   WiFiClientSecure client;
   client.setCACert(secrets::kTencentRootCaPem);
   client.setTimeout(5000);
+  client.setHandshakeTimeout(5);
   HTTPClient http;
   http.setConnectTimeout(5000);
+  http.setTimeout(5000);
   if (!http.begin(client, secrets::kTencentFunctionUrl)) {
     return false;
   }

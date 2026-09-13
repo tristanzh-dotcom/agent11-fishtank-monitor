@@ -15,12 +15,18 @@ test('offline transition fires once after 15 minutes', () => {
     lastSeenAtMs: NOW_MS - FIFTEEN_MINUTES,
     connectivityStatus: 'online',
     recoveryPending: false,
+    temperatureSnapshot: {
+      sampledAtMs: NOW_MS - 60_000,
+      summaryText: '温度摘要',
+    },
   };
 
   const transition = evaluateOfflineTransition(state, NOW_MS, FIFTEEN_MINUTES);
   assert.equal(transition.type, 'offline');
   assert.equal(transition.nextState.connectivityStatus, 'offline');
   assert.equal(transition.nextState.recoveryPending, false);
+  assert.deepEqual(transition.nextState.temperatureSnapshot,
+                   state.temperatureSnapshot);
 
   assert.equal(
     evaluateOfflineTransition(transition.nextState, NOW_MS + 60_000, FIFTEEN_MINUTES),

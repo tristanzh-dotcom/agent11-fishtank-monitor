@@ -2,12 +2,21 @@
 
 #include "active_event_snapshot.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
 
 namespace aquarium::heartbeat {
+
+constexpr std::size_t kMaxHeartbeatBodyBytes = 2048U;
+constexpr std::size_t kMaxTemperatureSummaryBytes = 768U;
+
+struct TemperatureSnapshot {
+  std::uint64_t sampled_at_ms;
+  std::string summary_text;
+};
 
 struct HeartbeatPayload {
   std::string device_id;
@@ -17,6 +26,7 @@ struct HeartbeatPayload {
   std::optional<double> sump_c;
   std::uint64_t uptime_ms;
   std::vector<ActiveTemperatureEvent> active_events;
+  std::optional<TemperatureSnapshot> temperature_snapshot = std::nullopt;
 };
 
 std::string heartbeat_json(const HeartbeatPayload& payload);

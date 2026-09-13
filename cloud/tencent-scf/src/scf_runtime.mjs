@@ -5,7 +5,10 @@ import { createCosStateStore } from './cos_state_store.mjs';
 import { createHeartbeatHandler } from './heartbeat_handler.mjs';
 import { createOfflineChecker } from './offline_checker.mjs';
 import { readHeartbeatConfig, readOfflineConfig, readStateApiConfig } from './runtime_config.mjs';
-import { createStateReadHandler } from './state_read_handler.mjs';
+import {
+  createStateReadHandler,
+  TEMPERATURE_SUMMARY_PATH,
+} from './state_read_handler.mjs';
 
 function credentialsFromEnvironment(env) {
   const SecretId = env?.TENCENTCLOUD_SECRETID;
@@ -23,6 +26,11 @@ function isHttpEvent(event) {
 
 function httpMethod(event) {
   return event?.requestContext?.http?.method ?? event?.httpMethod ?? '';
+}
+
+function httpPath(event) {
+  const path = event?.rawPath ?? event?.requestContext?.http?.path ?? event?.path ?? '';
+  return String(path).split('?')[0];
 }
 
 function createStore(config, env, CosCtor) {
@@ -44,6 +52,13 @@ export async function dispatchScfEvent(
   } = {},
 ) {
   if (isHttpEvent(event)) {
+    if (httpMethod(event) === 'POST' && httpPath(event) === TEMPERATURE_SUMMARY_PATH) {
+      const config = readStateApiConfig(env);
+      return createStateReadHandler({
+        store: createStore(config, env, CosCtor),
+        readToken: config.readToken,
+      })(event);
+    }
     if (httpMethod(event) === 'POST') {
       const config = readHeartbeatConfig(env);
       return createHeartbeatHandler({

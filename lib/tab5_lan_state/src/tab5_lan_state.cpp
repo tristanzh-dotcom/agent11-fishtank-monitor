@@ -1,0 +1,23 @@
+#include "tab5_lan_state.hpp"
+
+#include <array>
+#include <cmath>
+#include <cstring>
+#include <limits>
+
+namespace aquarium::tab5 {
+namespace {
+std::uint32_t r(std::uint32_t x, std::uint32_t n) { return (x >> n) | (x << (32U - n)); }
+std::array<std::uint8_t,32> sha(const std::uint8_t* in, std::size_t n) {
+  constexpr std::uint32_t k[]={0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2};
+  std::array<std::uint8_t,128> b{}; const auto padded=((n+9U+63U)/64U)*64U; if(padded>b.size()) return {}; std::memcpy(b.data(),in,n); b[n]=0x80; const auto bits=static_cast<std::uint64_t>(n)*8U; for(std::size_t i=0;i<8;++i)b[padded-1-i]=static_cast<std::uint8_t>(bits>>(8*i)); std::uint32_t h[]={0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19};
+  for(std::size_t off=0;off<padded;off+=64){std::uint32_t w[64]{};for(int i=0;i<16;++i)w[i]=(std::uint32_t(b[off+4*i])<<24)|(std::uint32_t(b[off+4*i+1])<<16)|(std::uint32_t(b[off+4*i+2])<<8)|b[off+4*i+3];for(int i=16;i<64;++i)w[i]=w[i-16]+(r(w[i-15],7)^r(w[i-15],18)^(w[i-15]>>3))+w[i-7]+(r(w[i-2],17)^r(w[i-2],19)^(w[i-2]>>10));auto a=h[0],c=h[2],d=h[3],e=h[4],f=h[5],g=h[6],z=h[7],q=h[1];for(int i=0;i<64;++i){auto t=z+(r(e,6)^r(e,11)^r(e,25))+((e&f)^((~e)&g))+k[i]+w[i];auto u=(r(a,2)^r(a,13)^r(a,22))+((a&q)^(a&c)^(q&c));z=g;g=f;f=e;e=d+t;d=c;c=q;q=a;a=t+u;}h[0]+=a;h[1]+=q;h[2]+=c;h[3]+=d;h[4]+=e;h[5]+=f;h[6]+=g;h[7]+=z;}
+  std::array<std::uint8_t,32> out{};for(int i=0;i<8;++i)for(int j=0;j<4;++j)out[4*i+j]=static_cast<std::uint8_t>(h[i]>>(24-8*j));return out;
+}
+std::array<std::uint8_t,32> mac(const std::uint8_t* data,std::size_t n,const std::array<std::uint8_t,32>& key){std::array<std::uint8_t,92> i{};std::array<std::uint8_t,96> o{};for(std::size_t x=0;x<64;++x){const auto v=x<32?key[x]:0U;i[x]=v^0x36;o[x]=v^0x5c;}std::memcpy(i.data()+64,data,n);const auto mid=sha(i.data(),64+n);std::memcpy(o.data()+64,mid.data(),32);return sha(o.data(),96);}
+std::int16_t centi(const std::optional<double>& value){if(!value.has_value()||!std::isfinite(*value))return kMissingTemperature;const auto scaled=std::lround(*value*100.0);return scaled<-5000||scaled>10000?kMissingTemperature:static_cast<std::int16_t>(scaled);}
+void put64(std::uint8_t* p,std::uint64_t v){for(int i=7;i>=0;--i){p[i]=static_cast<std::uint8_t>(v);v>>=8;}} void put32(std::uint8_t* p,std::uint32_t v){for(int i=3;i>=0;--i){p[i]=static_cast<std::uint8_t>(v);v>>=8;}} void put16(std::uint8_t* p,std::int16_t v){const auto u=static_cast<std::uint16_t>(v);p[0]=static_cast<std::uint8_t>(u>>8);p[1]=static_cast<std::uint8_t>(u);}
+}
+LanState make_lan_state(const TemperatureSample& sample,const ActiveEventSnapshot& active){LanState out{};out.main_centi_c=centi(sample.display_c);out.sump_centi_c=centi(sample.return_c);out.thermal_state=out.main_centi_c==kMissingTemperature?ThermalState::no_signal:ThermalState::normal;for(const auto& event:active.events()){out.severity=std::max(out.severity,static_cast<std::uint8_t>(event.severity==Severity::n3?3U:2U));if(event.type==EventType::sensor_fault)out.sensor_fault=true;else if(event.type==EventType::high_temperature||event.type==EventType::high_temperature_critical)out.thermal_state=ThermalState::high;else if(event.type==EventType::low_temperature||event.type==EventType::low_temperature_critical)out.thermal_state=ThermalState::low;}if(out.sensor_fault||out.main_centi_c==kMissingTemperature)out.thermal_state=ThermalState::no_signal;return out;}
+std::array<std::uint8_t,kPacketSize> encode_packet(const LanState& s,std::uint64_t source,std::uint32_t sequence,const std::array<std::uint8_t,32>& key){std::array<std::uint8_t,kPacketSize> p{};p[0]='T';p[1]='5';p[2]='L';p[3]='1';p[4]=1;put64(p.data()+8,source);put32(p.data()+16,sequence);put16(p.data()+20,s.main_centi_c);put16(p.data()+22,s.sump_centi_c);p[24]=static_cast<std::uint8_t>(s.thermal_state);p[25]=s.severity;p[26]=s.sensor_fault?1U:0U;const auto tag=mac(p.data(),28,key);std::memcpy(p.data()+28,tag.data(),tag.size());return p;}
+}  // namespace aquarium::tab5

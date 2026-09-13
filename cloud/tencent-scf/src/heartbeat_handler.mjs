@@ -36,6 +36,9 @@ function nextState(previous, payload, nowMs) {
     sumpC: payload.sumpC,
     uptimeMs: payload.uptimeMs,
     activeEvents: payload.activeEvents,
+    ...(payload.temperatureSnapshot === undefined
+      ? {}
+      : { temperatureSnapshot: payload.temperatureSnapshot }),
     connectivityStatus: 'online',
     recoveryPending: previous?.connectivityStatus === 'offline'
       || previous?.recoveryPending === true,
@@ -80,6 +83,7 @@ export function createHeartbeatHandler({
       });
       const { payload } = authenticated;
       const previous = await store.getDeviceState(payload.deviceId);
+      const state = nextState(previous, payload, startedAt);
       if (notifier && typeof notifier.send === 'function') {
         const alerts = newlyActionableTemperatureEvents(previous, payload.activeEvents)
           .map((alert) => ({
@@ -92,7 +96,6 @@ export function createHeartbeatHandler({
           await notifier.send(alert);
         }
       }
-      const state = nextState(previous, payload, startedAt);
       await store.saveDeviceState(payload.deviceId, state);
 
       response = jsonResponse(200, {

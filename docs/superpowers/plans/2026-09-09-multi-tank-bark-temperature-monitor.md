@@ -155,7 +155,7 @@ g++ -std=c++17 -Wall -Wextra -Werror -Ilib/transport_contract/include test/test_
 - Add BarkNotifier overloads for ScopedTemperatureEvent and DailyTemperatureSummary while retaining the current main event overload.
 - Keep HeartbeatNotifier::notify inputs and serialized payload unchanged.
 
-- [ ] Add failing transport assertions for tank names, “无有效读数”, absence of 0°C fault text, daily level active, and byte-for-byte compatibility of the current main event request.
+- [ ] Add transport assertions for tank names, “无有效读数”, recovered fault readings, daily level active, and unchanged request fields. TZ subsequently approved including 包包缸 in the main message; the old title/body byte-for-byte assertion is superseded, while group, level and fingerprint semantics remain unchanged.
 - [ ] Run the transport command and verify the new assertions fail.
 - [ ] Initialize three TemperatureEngine objects from runtime_config.auxiliary_tanks[i].policy, one scoped queue of capacity 16, and one DailySummaryScheduler.
 - [ ] Preserve readings.primary for the existing engine and heartbeat. Feed only valid auxiliary roles into their independent engines, wrap events with configured key/label, and do not call ActiveEventSnapshot::apply for auxiliary events.

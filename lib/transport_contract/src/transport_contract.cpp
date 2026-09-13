@@ -1,6 +1,7 @@
 #include "transport_contract.hpp"
 
 #include <cstdio>
+#include <limits>
 
 namespace aquarium::transport {
 namespace {
@@ -9,6 +10,165 @@ std::string number(double value) {
   char buffer[24]{};
   std::snprintf(buffer, sizeof(buffer), "%.6g", value);
   return buffer;
+}
+
+std::string temperature_text(double value) {
+  char buffer[24]{};
+  std::snprintf(buffer, sizeof(buffer), "%.1f°C", value);
+  return buffer;
+}
+
+std::string event_name(const TemperatureEvent& event) {
+  switch (event.type) {
+    case EventType::high_temperature:
+    case EventType::high_temperature_critical:
+      return (event.type == EventType::high_temperature_critical ||
+              event.severity == Severity::n3)
+                 ? "严重高温"
+                 : "高温";
+    case EventType::low_temperature:
+    case EventType::low_temperature_critical:
+      return (event.type == EventType::low_temperature_critical ||
+              event.severity == Severity::n3)
+                 ? "严重低温"
+                 : "低温";
+    case EventType::sensor_fault:
+      return "温度探头故障";
+    case EventType::temperature_rapid_change:
+      return event.severity == Severity::n3 ? "严重温度变化" : "温度变化过快";
+    case EventType::temperature_gradient:
+      return "主缸与回水缸温差";
+  }
+  return "温度";
+}
+
+std::string bark_title(const TemperatureEvent& event,
+                       const std::string& label) {
+  if (event.type == EventType::sensor_fault) {
+    if (event.state == EventState::opened) {
+      return label + "｜温度探头异常告警";
+    }
+    if (event.state == EventState::resolved) {
+      return label + "｜温度探头已恢复";
+    }
+  }
+  const std::string name = event_name(event);
+  std::string state_text;
+  switch (event.state) {
+    case EventState::opened:
+      state_text = name + "告警";
+      break;
+    case EventState::escalated:
+      state_text = "升级为严重" +
+                   (name.rfind("严重", 0) == 0U
+                        ? name.substr(std::string("严重").size())
+                        : name) +
+                   "告警";
+      break;
+    case EventState::reminder:
+      state_text = name + "持续提醒";
+      break;
+    case EventState::resolved:
+      state_text = name + "告警已解除";
+      break;
+  }
+  return label + "｜" + state_text;
+}
+
+const char* event_time_label(EventState state) {
+  switch (state) {
+    case EventState::opened:
+      return "告警判定";
+    case EventState::escalated:
+      return "升级判定";
+    case EventState::reminder:
+      return "提醒判定";
+    case EventState::resolved:
+      return "解除判定";
+  }
+  return "事件判定";
+}
+
+std::string suggestion(const TemperatureEvent& event) {
+  switch (event.type) {
+    case EventType::high_temperature:
+    case EventType::high_temperature_critical:
+      return "核查最新水温及加热棒温控。";
+    case EventType::low_temperature:
+    case EventType::low_temperature_critical:
+      return "核查最新水温及加热设备。";
+    case EventType::temperature_rapid_change:
+      return "核查最新水温及探头位置。";
+    case EventType::temperature_gradient:
+      return "核查水流循环及探头位置。";
+    case EventType::sensor_fault:
+      return event.state == EventState::resolved ? "继续观察水温。"
+                                                  : "检查探头、接线和防水接头。";
+  }
+  return "检查鱼缸监控设备。";
+}
+
+std::string calendar_time_text(std::optional<std::time_t> value,
+                               const char* missing_text) {
+  if (!value.has_value()) {
+    return missing_text;
+  }
+  if (*value < 0) {
+    return "时间不可用";
+  }
+  constexpr std::time_t kShanghaiOffsetSeconds = 8 * 60 * 60;
+  if (*value > std::numeric_limits<std::time_t>::max() -
+                  kShanghaiOffsetSeconds ||
+      *value < std::numeric_limits<std::time_t>::min() +
+                  kShanghaiOffsetSeconds) {
+    return "时间不可用";
+  }
+  const std::time_t local_epoch = *value + kShanghaiOffsetSeconds;
+  std::tm broken_down{};
+  if (gmtime_r(&local_epoch, &broken_down) == nullptr) {
+    return "时间不可用";
+  }
+  char buffer[32]{};
+  if (std::snprintf(buffer, sizeof(buffer), "%04d-%02d-%02d %02d:%02d:%02d",
+                    broken_down.tm_year + 1900, broken_down.tm_mon + 1,
+                    broken_down.tm_mday, broken_down.tm_hour,
+                    broken_down.tm_min, broken_down.tm_sec) < 0) {
+    return "时间不可用";
+  }
+  return buffer;
+}
+
+std::string bark_body(const TemperatureEvent& event,
+                      std::optional<std::time_t> event_time,
+                      std::optional<std::time_t> send_time,
+                      const char* source) {
+  const bool sensor_fault_without_reading =
+      event.type == EventType::sensor_fault && event.state != EventState::resolved;
+  const std::string reading =
+      event.type == EventType::temperature_gradient
+          ? ("当时主缸水温：" + temperature_text(event.display_c))
+          : ("当时水温：" +
+             (sensor_fault_without_reading ? "无有效读数"
+                                           : temperature_text(event.display_c)));
+  const std::string source_text =
+      source != nullptr && *source != '\0' ? source : "设备";
+  std::string body = reading + "\n" + event_time_label(event.state) + "：" +
+                     calendar_time_text(event_time, "时间未同步") +
+                     "\n发送发起（" + source_text + "）：" +
+                     calendar_time_text(send_time, "时间不可用") +
+                     "\n时间均为北京时间";
+  if (event.state == EventState::reminder) {
+    body += "\n截至该次判定，尚未满足解除条件。";
+  }
+  if (event.type == EventType::sensor_fault &&
+      event.state == EventState::resolved) {
+    body += "\n探头已恢复。";
+  }
+  if (event_time.has_value() && send_time.has_value() &&
+      *send_time < *event_time) {
+    body += "\n设备时钟已调整，不能用上述时间差判断延迟。";
+  }
+  return body + "\n建议：" + suggestion(event);
 }
 
 std::string json_escape(const std::string& value) {
@@ -114,34 +274,32 @@ std::string event_json(const TemperatureEvent& event) {
 }
 
 BarkMessage bark_message(const TemperatureEvent& event,
-                         const std::string& aquarium_id) {
-  const bool critical = event.severity == Severity::n3;
-  const std::string event_name = event_type_name(event.type);
-  return BarkMessage{critical ? "鱼缸温度严重告警" : "鱼缸温度告警",
-                     "事件=" + event_name + " 状态=" +
-                         event_state_name(event.state) + " 水温=" +
-                         number(event.display_c) + "C",
-                     "aquarium", critical ? "critical" : "timeSensitive",
-                     "aquarium:" + aquarium_id + ":" + event_name};
+                         const std::string& aquarium_id,
+                         std::optional<std::time_t> event_time,
+                         std::optional<std::time_t> send_time,
+                         const char* source) {
+  auto message = bark_message(
+      ScopedTemperatureEvent{"main_tank", "包包缸·主缸", event, event_time},
+      aquarium_id, event_time, send_time, source);
+  message.fingerprint = "aquarium:" + aquarium_id + ":" + event_type_name(event.type);
+  return message;
 }
 
 BarkMessage bark_message(const ScopedTemperatureEvent& scoped_event,
-                         const std::string& aquarium_id) {
+                         const std::string& aquarium_id,
+                         std::optional<std::time_t> event_time,
+                         std::optional<std::time_t> send_time,
+                         const char* source) {
   const auto& event = scoped_event.event;
   const bool critical = event.severity == Severity::n3;
   const std::string event_name = event_type_name(event.type);
   const std::string label = scoped_event.tank_label.empty()
                                 ? scoped_event.tank_key
                                 : scoped_event.tank_label;
-  const std::string body = event.type == EventType::sensor_fault
-                               ? label + " 事件=" + event_name + " 状态=" +
-                                     event_state_name(event.state) +
-                                     " 无有效读数"
-                               : label + " 事件=" + event_name + " 状态=" +
-                                     event_state_name(event.state) + " 水温=" +
-                                     number(event.display_c) + "C";
-  return BarkMessage{critical ? label + "温度严重告警" : label + "温度告警",
-                     body,
+  const auto effective_event_time =
+      event_time.has_value() ? event_time : scoped_event.event_time;
+  return BarkMessage{bark_title(event, label),
+                     bark_body(event, effective_event_time, send_time, source),
                      "aquarium",
                      critical ? "critical" : "timeSensitive",
                      "aquarium:" + aquarium_id + ":" + scoped_event.tank_key +

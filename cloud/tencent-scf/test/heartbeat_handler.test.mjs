@@ -7,7 +7,11 @@ import { createHeartbeatHandler } from '../src/heartbeat_handler.mjs';
 const NOW_MS = 1_750_000_000_000;
 const SECRET = 'test-secret-never-deploy';
 
-function eventFor(nonce = '0123456789abcdef', activeEvents = []) {
+function eventFor(
+  nonce = '0123456789abcdef',
+  activeEvents = [],
+  temperatureSnapshot,
+) {
   const payload = {
     device_id: 'tank01',
     sent_at_ms: NOW_MS - 1_000,
@@ -17,6 +21,9 @@ function eventFor(nonce = '0123456789abcdef', activeEvents = []) {
     uptime_ms: 123_456,
     active_events: activeEvents,
   };
+  if (temperatureSnapshot !== undefined) {
+    payload.temperature_snapshot = temperatureSnapshot;
+  }
   const body = JSON.stringify(payload);
   const hash = createHash('sha256').update(body).digest('hex');
   const canonical = `v1\n${payload.sent_at_ms}\n${nonce}\n${hash}`;
@@ -107,6 +114,32 @@ test('rejects nonce replay without writing state', async () => {
   assert.deepEqual(sleeps, [500]);
 });
 
+test('does not notify when a heartbeat nonce is replayed', async () => {
+  const event = {
+    type: 'high_temperature',
+    state: 'opened',
+    severity: 'n2',
+    at_ms: NOW_MS,
+    display_c: 28.1,
+  };
+  const store = memoryStore({
+    recentNonces: ['aaaaaaaaaaaaaaaa'],
+    activeEvents: [],
+    connectivityStatus: 'online',
+  });
+  const sleeps = [];
+  const alerts = [];
+  const notifier = { async send(alert) { alerts.push(alert); } };
+
+  const response = await handlerWithNotifier(store, sleeps, notifier)(
+    eventFor('aaaaaaaaaaaaaaaa', [event]),
+  );
+
+  assert.equal(response.statusCode, 409);
+  assert.deepEqual(alerts, []);
+  assert.equal(store.inspect().writes, 0);
+});
+
 test('marks recovery pending after an offline state and caps nonce history', async () => {
   const oldNonces = Array.from({ length: 16 }, (_, index) => index.toString(16).padStart(16, '0'));
   const store = memoryStore({
@@ -124,6 +157,30 @@ test('marks recovery pending after an offline state and caps nonce history', asy
   assert.equal(state.recentNonces.length, 16);
   assert.equal(state.recentNonces.at(-1), 'fedcba9876543210');
   assert.equal(state.recentNonces.includes(oldNonces[0]), false);
+});
+
+test('persists a valid temperature snapshot and clears it on an old heartbeat', async () => {
+  const snapshot = {
+    sampled_at_ms: NOW_MS - 2_000,
+    summary_text: '采样时间：2025-06-15 23:06:38（上海时间）',
+  };
+  const store = memoryStore();
+  const sleeps = [];
+  const first = await handlerFor(store, sleeps)(
+    eventFor('aaaaaaaaaaaaaaaa', [], snapshot),
+  );
+
+  assert.equal(first.statusCode, 200);
+  assert.deepEqual(store.inspect().state.temperatureSnapshot, {
+    sampledAtMs: NOW_MS - 2_000,
+    summaryText: snapshot.summary_text,
+  });
+
+  const second = await handlerFor(store, sleeps)(
+    eventFor('bbbbbbbbbbbbbbbb'),
+  );
+  assert.equal(second.statusCode, 200);
+  assert.equal('temperatureSnapshot' in store.inspect().state, false);
 });
 
 test('notifies once for a newly opened temperature event before saving state', async () => {

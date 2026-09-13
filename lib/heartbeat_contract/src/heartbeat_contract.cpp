@@ -113,17 +113,74 @@ std::uint64_t saturating_add(std::uint64_t left, std::uint64_t right) {
   return left + right;
 }
 
-}  // namespace
+bool valid_utf8(const std::string& value) {
+  std::size_t index = 0;
+  while (index < value.size()) {
+    const auto lead = static_cast<unsigned char>(value[index]);
+    if (lead <= 0x7fU) {
+      ++index;
+      continue;
+    }
+    std::size_t length = 0;
+    std::uint32_t code_point = 0;
+    std::uint32_t minimum = 0;
+    std::uint32_t maximum = 0;
+    if (lead >= 0xc2U && lead <= 0xdfU) {
+      length = 2U;
+      code_point = lead & 0x1fU;
+      minimum = 0x80U;
+      maximum = 0x7ffU;
+    } else if (lead >= 0xe0U && lead <= 0xefU) {
+      length = 3U;
+      code_point = lead & 0x0fU;
+      minimum = 0x800U;
+      maximum = 0xffffU;
+    } else if (lead >= 0xf0U && lead <= 0xf4U) {
+      length = 4U;
+      code_point = lead & 0x07U;
+      minimum = 0x10000U;
+      maximum = 0x10ffffU;
+    } else {
+      return false;
+    }
+    if (index + length > value.size()) return false;
+    for (std::size_t offset = 1U; offset < length; ++offset) {
+      const auto byte = static_cast<unsigned char>(value[index + offset]);
+      if (byte < 0x80U || byte > 0xbfU) return false;
+      code_point = (code_point << 6U) | (byte & 0x3fU);
+    }
+    if (code_point < minimum || code_point > maximum
+        || (code_point >= 0xd800U && code_point <= 0xdfffU)) {
+      return false;
+    }
+    index += length;
+  }
+  return true;
+}
 
-std::string heartbeat_json(const HeartbeatPayload& payload) {
+bool valid_temperature_snapshot(const TemperatureSnapshot& snapshot) {
+  return snapshot.sampled_at_ms > 0U && !snapshot.summary_text.empty() &&
+         valid_utf8(snapshot.summary_text) &&
+         snapshot.summary_text.size() <= kMaxTemperatureSummaryBytes;
+}
+
+std::string heartbeat_json_impl(const HeartbeatPayload& payload,
+                                bool include_temperature_snapshot) {
   std::ostringstream stream;
   stream.imbue(std::locale::classic());
   stream << "{\"device_id\":\"" << json_escape(payload.device_id)
-         << "\",\"sent_at_ms\":" << payload.sent_at_ms << ",\"nonce\":\""
-         << json_escape(payload.nonce) << "\",\"main_c\":"
-         << json_optional_number(payload.main_c) << ",\"sump_c\":"
-         << json_optional_number(payload.sump_c) << ",\"uptime_ms\":"
-         << payload.uptime_ms << ",\"active_events\":[";
+         << "\",\"sent_at_ms\":" << payload.sent_at_ms
+         << ",\"nonce\":\"" << json_escape(payload.nonce)
+         << "\",\"main_c\":" << json_optional_number(payload.main_c)
+         << ",\"sump_c\":" << json_optional_number(payload.sump_c)
+         << ",\"uptime_ms\":" << payload.uptime_ms;
+  if (include_temperature_snapshot && payload.temperature_snapshot.has_value()) {
+    const auto& snapshot = *payload.temperature_snapshot;
+    stream << ",\"temperature_snapshot\":{\"sampled_at_ms\":"
+           << snapshot.sampled_at_ms << ",\"summary_text\":\""
+           << json_escape(snapshot.summary_text) << "\"}";
+  }
+  stream << ",\"active_events\":[";
   for (std::size_t index = 0; index < payload.active_events.size(); ++index) {
     if (index > 0U) {
       stream << ',';
@@ -137,6 +194,24 @@ std::string heartbeat_json(const HeartbeatPayload& payload) {
   }
   stream << "]}";
   return stream.str();
+}
+
+}  // namespace
+
+std::string heartbeat_json(const HeartbeatPayload& payload) {
+  const bool has_valid_snapshot =
+      payload.temperature_snapshot.has_value() &&
+      valid_temperature_snapshot(*payload.temperature_snapshot);
+  const auto without_snapshot = heartbeat_json_impl(payload, false);
+  if (!has_valid_snapshot) {
+    return without_snapshot;
+  }
+
+  const auto with_snapshot = heartbeat_json_impl(payload, true);
+  if (with_snapshot.size() <= kMaxHeartbeatBodyBytes) {
+    return with_snapshot;
+  }
+  return without_snapshot;
 }
 
 std::string signature_canonical(

@@ -43,10 +43,22 @@ int main() {
   assert(config.auxiliary_tanks[0].policy.high_attention_c == 27.5);
   assert(config.auxiliary_tanks[0].policy.high_critical_c == 28.5);
   assert(config.auxiliary_tanks[0].policy.high_recovery_c == 26.5);
-  assert(!config.auxiliary_tanks[0].sensor.configured());
-  assert(aquarium::firmware::auxiliary_sensor_binding_state(config, 0) ==
+  assert((config.auxiliary_tanks[0].sensor.bytes ==
+          std::array<std::uint8_t, 8>{0x28, 0xE9, 0x53, 0xA0, 0x11, 0x00,
+                                      0x00, 0x32}));
+  assert((config.auxiliary_tanks[1].sensor.bytes ==
+          std::array<std::uint8_t, 8>{0x28, 0x01, 0xB7, 0x9F, 0x11, 0x00,
+                                      0x00, 0xAD}));
+  assert((config.auxiliary_tanks[2].sensor.bytes ==
+          std::array<std::uint8_t, 8>{0x28, 0xA8, 0xE7, 0x9E, 0x11, 0x00,
+                                      0x00, 0x7D}));
+  assert(aquarium::firmware::sensor_roms_unique(config));
+
+  auto unconfigured = config;
+  unconfigured.auxiliary_tanks[0].sensor = {};
+  assert(aquarium::firmware::auxiliary_sensor_binding_state(unconfigured, 0) ==
          aquarium::firmware::SensorBindingState::unconfigured);
-  assert(!aquarium::firmware::sensor_roms_unique(config));
+  assert(!aquarium::firmware::sensor_roms_unique(unconfigured));
 
   auto configured = config;
   configured.auxiliary_tanks[0].sensor =
