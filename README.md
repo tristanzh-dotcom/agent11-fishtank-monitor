@@ -154,8 +154,8 @@ sh test/verify_docs.sh
 pio run -e waveshare_esp32s3_n16r8
 ```
 
-远程五缸温度快捷查询的刷写候选使用 `waveshare_esp32s3_n16r8_remote_five` 环境；该环境
-排除 Tab5 局域网广播，默认环境继续保留现有 Tab5 功能。
+远程五缸温度快捷查询的刷写候选使用 `waveshare_esp32s3_n16r8_remote_five` 环境；该环境同时
+保留手机云端温度摘要与 Tab5 局域网广播，默认环境继续保留现有 Tab5 功能。
 
 ## 安全边界
 
