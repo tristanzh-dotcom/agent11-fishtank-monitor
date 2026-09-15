@@ -67,9 +67,45 @@ std::array<std::uint8_t, 32> tab5_lan_key() {
   return key;
 }
 
-void publish_tab5_lan_state(const aquarium::TemperatureSample& sample) {
+std::array<aquarium::tab5::ThermalState, 3> auxiliary_thermal_states(
+    const aquarium::firmware::Ds18b20Reader::TemperatureReadings& readings) {
+  std::array<aquarium::tab5::ThermalState, 3> states{
+      aquarium::tab5::ThermalState::no_signal,
+      aquarium::tab5::ThermalState::no_signal,
+      aquarium::tab5::ThermalState::no_signal};
+  for (std::size_t index = 0U; index < states.size(); ++index) {
+    if (readings.auxiliary_states[index] !=
+        aquarium::firmware::SensorBindingState::valid) {
+      continue;
+    }
+    const auto status = aquarium::transport::temperature_reading_status(
+        readings.auxiliary_c[index], runtime_config.auxiliary_tanks[index].policy);
+    switch (status) {
+      case aquarium::transport::TemperatureReadingStatus::normal:
+        states[index] = aquarium::tab5::ThermalState::normal;
+        break;
+      case aquarium::transport::TemperatureReadingStatus::low:
+      case aquarium::transport::TemperatureReadingStatus::low_critical:
+        states[index] = aquarium::tab5::ThermalState::low;
+        break;
+      case aquarium::transport::TemperatureReadingStatus::high:
+      case aquarium::transport::TemperatureReadingStatus::high_critical:
+        states[index] = aquarium::tab5::ThermalState::high;
+        break;
+      case aquarium::transport::TemperatureReadingStatus::invalid:
+        states[index] = aquarium::tab5::ThermalState::no_signal;
+        break;
+    }
+  }
+  return states;
+}
+
+void publish_tab5_lan_state(
+    const aquarium::firmware::Ds18b20Reader::TemperatureReadings& readings) {
   if (WiFi.status() != WL_CONNECTED) return;
-  const auto state = aquarium::tab5::make_lan_state(sample, active_events);
+  const auto state = aquarium::tab5::make_lan_state(
+      readings.primary, readings.auxiliary_c, auxiliary_thermal_states(readings),
+      active_events);
   const auto packet = aquarium::tab5::encode_packet(
       state, tab5_source_id, ++tab5_sequence, tab5_lan_key());
   if (!tab5_lan_udp.beginPacket(IPAddress(255, 255, 255, 255), kTab5LanPort)) {
@@ -280,7 +316,7 @@ void loop() {
   const auto events = engine.ingest(sample);
   active_events.apply(events);
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
-  publish_tab5_lan_state(sample);
+  publish_tab5_lan_state(readings);
 #endif
   for (const auto& event : events) {
     delivery.enqueue(event, event_time);

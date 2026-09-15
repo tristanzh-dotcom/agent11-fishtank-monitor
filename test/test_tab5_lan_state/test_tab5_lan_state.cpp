@@ -20,17 +20,37 @@ void test_encoder_uses_active_thermal_result_without_thresholds() {
       aquarium::EventState::opened, aquarium::Severity::n3, 900000U, 28.6}});
   const aquarium::TemperatureSample sample{900000U, 28.63, 25.12};
 
-  const auto state = aquarium::tab5::make_lan_state(sample, active);
+  const std::array<std::optional<double>, 3> auxiliary{22.1, 28.7,
+                                                        std::nullopt};
+  const std::array<aquarium::tab5::ThermalState, 3> auxiliary_states{
+      aquarium::tab5::ThermalState::low,
+      aquarium::tab5::ThermalState::high,
+      aquarium::tab5::ThermalState::no_signal};
+  const auto state = aquarium::tab5::make_lan_state(
+      sample, auxiliary, auxiliary_states, active);
   assert(state.thermal_state == aquarium::tab5::ThermalState::high);
   assert(state.severity == 3U);
   assert(!state.sensor_fault);
   assert(state.main_centi_c == 2863);
   assert(state.sump_centi_c == 2512);
+  assert(state.auxiliary_centi_c[0] == 2210);
+  assert(state.auxiliary_centi_c[1] == 2870);
+  assert(state.auxiliary_centi_c[2] == aquarium::tab5::kMissingTemperature);
+  assert(state.auxiliary_thermal_state[0] ==
+         aquarium::tab5::ThermalState::low);
+  assert(state.auxiliary_thermal_state[1] ==
+         aquarium::tab5::ThermalState::high);
+  assert(state.auxiliary_thermal_state[2] ==
+         aquarium::tab5::ThermalState::no_signal);
 
   const auto packet = aquarium::tab5::encode_packet(state, 0x1020304050607080ULL,
                                                       7U, kTestKey);
   assert(packet.size() == aquarium::tab5::kPacketSize);
-  assert(packet[0] == 'T' && packet[1] == '5');
+  assert(packet[0] == 'T' && packet[1] == '5' && packet[4] == 2U);
+  assert(packet[28] == 0x08U && packet[29] == 0xA2U);
+  assert(packet[30] == 0x0BU && packet[31] == 0x36U);
+  assert(packet[34] ==
+         static_cast<std::uint8_t>(aquarium::tab5::ThermalState::low));
 }
 
 void test_encoder_marks_missing_or_fault_as_no_signal() {
@@ -39,7 +59,8 @@ void test_encoder_marks_missing_or_fault_as_no_signal() {
                                             aquarium::EventState::opened,
                                             aquarium::Severity::n2, 60000U, 0.0}});
   const auto state = aquarium::tab5::make_lan_state(
-      aquarium::TemperatureSample{60000U, std::nullopt, 24.95}, active);
+      aquarium::TemperatureSample{60000U, std::nullopt, 24.95},
+      {}, {}, active);
   assert(state.thermal_state == aquarium::tab5::ThermalState::no_signal);
   assert(state.sensor_fault);
   assert(state.main_centi_c == aquarium::tab5::kMissingTemperature);
@@ -49,7 +70,7 @@ void test_encoder_marks_missing_or_fault_as_no_signal() {
 void test_encoder_marks_valid_primary_without_events_as_normal() {
   aquarium::ActiveEventSnapshot active;
   const auto state = aquarium::tab5::make_lan_state(
-      aquarium::TemperatureSample{60000U, 26.4, 25.0}, active);
+      aquarium::TemperatureSample{60000U, 26.4, 25.0}, {}, {}, active);
   assert(state.thermal_state == aquarium::tab5::ThermalState::normal);
   assert(state.severity == 0U);
   assert(!state.sensor_fault);
