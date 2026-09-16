@@ -94,6 +94,20 @@ std::string auxiliary_text(const DailyTemperatureSnapshot& snapshot,
   return "无有效读数";
 }
 
+std::string extension_text(const ExtensionTankReading& reading) {
+  switch (reading.state) {
+    case SummaryReadingState::valid:
+      return temperature_text(reading.temperature_c, reading.status);
+    case SummaryReadingState::invalid:
+      return "无有效读数";
+    case SummaryReadingState::unconfigured:
+      return "未配置";
+    case SummaryReadingState::configuration_error:
+      return "配置错误";
+  }
+  return "无有效读数";
+}
+
 const char* slot_name(DailySlot slot) {
   return slot == DailySlot::morning ? "morning" : "evening";
 }
@@ -169,7 +183,9 @@ std::string daily_summary_body(const DailyTemperatureSummary& summary) {
                                       TemperatureReadingStatus::normal) +
                      "\n老四缸：" + auxiliary_text(snapshot, 0) +
                      "\n小黑缸：" + auxiliary_text(snapshot, 1) +
-                     "\n毛毛缸：" + auxiliary_text(snapshot, 2);
+                     "\n毛毛缸：" + auxiliary_text(snapshot, 2) +
+                     "\n南美草缸：" + extension_text(snapshot.extension_tanks[0]) +
+                     "\n南美异形缸：" + extension_text(snapshot.extension_tanks[1]);
   return body;
 }
 

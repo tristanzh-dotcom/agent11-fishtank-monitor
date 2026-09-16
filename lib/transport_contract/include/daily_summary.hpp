@@ -34,6 +34,14 @@ enum class TemperatureReadingStatus {
   high_critical,
 };
 
+constexpr std::size_t kExtensionTankCount = 2U;
+
+struct ExtensionTankReading {
+  SummaryReadingState state = SummaryReadingState::invalid;
+  std::optional<double> temperature_c;
+  TemperatureReadingStatus status = TemperatureReadingStatus::invalid;
+};
+
 struct DailyTemperatureSnapshot {
   LocalDateTime sampled_at;
   std::optional<double> main_c;
@@ -46,6 +54,7 @@ struct DailyTemperatureSnapshot {
   std::array<SummaryReadingState, 3> auxiliary_states{
       SummaryReadingState::invalid, SummaryReadingState::invalid,
       SummaryReadingState::invalid};
+  std::array<ExtensionTankReading, kExtensionTankCount> extension_tanks{};
 };
 
 enum class DailySlot {

@@ -31,6 +31,9 @@ DailyTemperatureSnapshot snapshot() {
       aquarium::transport::TemperatureReadingStatus::high_critical;
   value.auxiliary_status[2] =
       aquarium::transport::TemperatureReadingStatus::low_critical;
+  value.extension_tanks[0].state = SummaryReadingState::valid;
+  value.extension_tanks[0].temperature_c = 25.4;
+  value.extension_tanks[1].state = SummaryReadingState::invalid;
   return value;
 }
 
@@ -138,6 +141,17 @@ void test_temperature_status_uses_configured_thresholds() {
          aquarium::transport::TemperatureReadingStatus::low_critical);
 }
 
+void test_daily_summary_body_appends_new_tanks_without_relabeling_old_ones() {
+  DailySummaryScheduler scheduler;
+  const auto created = scheduler.observe(
+      LocalDateTime{2026, 9, 9, 9, 0, 20, true}, 1000, snapshot());
+  assert(created.has_value());
+  const auto body = aquarium::transport::daily_summary_body(*created);
+  assert(body.find("南美草缸：25.4°C") != std::string::npos);
+  assert(body.find("南美异形缸：无有效读数") != std::string::npos);
+  assert(body.find("毛毛缸：20.1°C（温度严重偏低）") != std::string::npos);
+}
+
 }  // namespace
 
 int main() {
@@ -145,5 +159,6 @@ int main() {
   test_daily_summary_rejects_invalid_time_and_handles_slot_order();
   test_daily_summary_body_reports_all_five_channels_and_states();
   test_temperature_status_uses_configured_thresholds();
+  test_daily_summary_body_appends_new_tanks_without_relabeling_old_ones();
   std::cout << "daily summary tests passed\n";
 }

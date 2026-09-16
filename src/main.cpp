@@ -9,6 +9,7 @@
 #include "retry_backoff.hpp"
 #include "scoped_event_outbox.hpp"
 #include "daily_summary.hpp"
+#include "extension_lan_state.hpp"
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
 #include "tab5_lan_state.hpp"
 #endif
@@ -49,6 +50,7 @@ std::array<aquarium::TemperatureEngine, 3> auxiliary_engines{
     aquarium::TemperatureEngine(runtime_config.auxiliary_tanks[2].policy)};
 aquarium::transport::ScopedEventOutbox auxiliary_delivery(16);
 aquarium::transport::DailySummaryScheduler daily_summary;
+aquarium::extension_lan::State extension_state{};
 bool auxiliary_turn = false;
 bool time_sync_completed = false;
 aquarium::RetryBackoff wifi_backoff(1000U, 60000U);
@@ -236,6 +238,28 @@ aquarium::transport::DailyTemperatureSnapshot daily_snapshot(
               runtime_config.auxiliary_tanks[index].policy);
     }
   }
+  for (std::size_t index = 0U; index < extension_state.temperature_c.size();
+       ++index) {
+    auto& extension = snapshot.extension_tanks[index];
+    extension.temperature_c =
+        extension_state.temperature_c[index].has_value()
+            ? std::optional<double>{*extension_state.temperature_c[index]}
+            : std::nullopt;
+    extension.state = extension.temperature_c.has_value()
+                          ? aquarium::transport::SummaryReadingState::valid
+                          : aquarium::transport::SummaryReadingState::invalid;
+    if (extension.state ==
+        aquarium::transport::SummaryReadingState::valid) {
+      extension.status =
+          extension_state.thermal_state[index] ==
+                  aquarium::extension_lan::ThermalState::high
+              ? aquarium::transport::TemperatureReadingStatus::high
+              : extension_state.thermal_state[index] ==
+                        aquarium::extension_lan::ThermalState::low
+                    ? aquarium::transport::TemperatureReadingStatus::low
+                    : aquarium::transport::TemperatureReadingStatus::normal;
+    }
+  }
   return snapshot;
 }
 
@@ -288,6 +312,7 @@ void setup() {
   connect_wifi(monotonic_millis());
   heartbeat.begin_time_sync();
   reader.begin();
+  aquarium::extension_lan::begin();
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
   tab5_source_id = (static_cast<std::uint64_t>(esp_random()) << 32U) |
                    static_cast<std::uint64_t>(esp_random());
@@ -299,6 +324,7 @@ void loop() {
   const std::uint64_t now_ms = monotonic_millis();
 
   connect_wifi(now_ms);
+  aquarium::extension_lan::tick(now_ms);
   observe_time_sync();
 
   if (now_ms - last_sample_at_ms < runtime_config.sample_interval_ms) {
@@ -308,6 +334,7 @@ void loop() {
   last_sample_at_ms = now_ms;
 
   const auto readings = reader.read(now_ms);
+  extension_state = aquarium::extension_lan::snapshot(now_ms);
   const auto& sample = readings.primary;
   observe_time_sync();
   const std::time_t sampled_at = std::time(nullptr);
