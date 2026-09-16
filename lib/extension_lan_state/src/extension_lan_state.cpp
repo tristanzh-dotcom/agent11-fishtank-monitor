@@ -146,7 +146,8 @@ bool accept(Reducer* reducer,
   for (std::size_t index = 0U; index < 2U; ++index) {
     const auto temperature = get16(packet.data() + 28U + index * 2U);
     if (!validTemperature(temperature) || packet[32U + index] > 3U ||
-        (temperature == kMissingTemperature && packet[32U + index] != 3U)) {
+        (temperature == kMissingTemperature && packet[32U + index] != 3U) ||
+        (temperature != kMissingTemperature && packet[32U + index] == 3U)) {
       return false;
     }
     state.temperature_c[index] =

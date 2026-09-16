@@ -22,6 +22,12 @@ int main() {
   auto tampered = packet;
   tampered[29] ^= 1U;
   assert(!aquarium::extension_lan::accept(&reducer, tampered, 1300U, key));
+  State inconsistent = source;
+  inconsistent.thermal_state[0] = ThermalState::no_signal;
+  const auto inconsistent_packet =
+      aquarium::extension_lan::encode(inconsistent, 7U, 2U, key);
+  assert(!aquarium::extension_lan::accept(&reducer, inconsistent_packet, 1400U,
+                                          key));
   assert(aquarium::extension_lan::freshState(reducer, 76101U)
              .temperature_c[0]
              .has_value() == false);
