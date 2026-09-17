@@ -26,7 +26,7 @@ test('builds the exact JSON body and HMAC header', () => {
   assert.equal(request.url, URL);
   assert.equal(
     request.options.body,
-    '{"device_id":"tank01","sent_at_ms":1750000000000,'
+    '{"device_id":"esp1","sent_at_ms":1750000000000,'
       + '"nonce":"00112233445566778899aabbccddeeff",'
       + '"main_c":26.4,"sump_c":26.75,"uptime_ms":123456,"active_events":[]}',
   );

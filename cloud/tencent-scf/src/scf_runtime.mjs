@@ -7,6 +7,7 @@ import { createOfflineChecker } from './offline_checker.mjs';
 import { readHeartbeatConfig, readOfflineConfig, readStateApiConfig } from './runtime_config.mjs';
 import {
   createStateReadHandler,
+  LEGACY_TEMPERATURE_SUMMARY,
   TEMPERATURE_SUMMARY_PATH,
 } from './state_read_handler.mjs';
 
@@ -52,7 +53,9 @@ export async function dispatchScfEvent(
   } = {},
 ) {
   if (isHttpEvent(event)) {
-    if (httpMethod(event) === 'POST' && httpPath(event) === TEMPERATURE_SUMMARY_PATH) {
+    if (httpMethod(event) === 'POST'
+      && (httpPath(event) === TEMPERATURE_SUMMARY_PATH
+        || httpPath(event) === LEGACY_TEMPERATURE_SUMMARY)) {
       const config = readStateApiConfig(env);
       return createStateReadHandler({
         store: createStore(config, env, CosCtor),

@@ -13,7 +13,7 @@ function eventFor(
   temperatureSnapshot,
 ) {
   const payload = {
-    device_id: 'tank01',
+    device_id: 'esp1',
     sent_at_ms: NOW_MS - 1_000,
     nonce,
     main_c: 26.4,
@@ -51,7 +51,7 @@ function memoryStore(initial = null) {
 function handlerFor(store, sleeps) {
   return createHeartbeatHandler({
     store,
-    deviceSecrets: { tank01: SECRET },
+    deviceSecrets: { esp1: SECRET },
     clock: () => NOW_MS,
     sleep: async (milliseconds) => sleeps.push(milliseconds),
   });
@@ -60,7 +60,7 @@ function handlerFor(store, sleeps) {
 function handlerWithNotifier(store, sleeps, notifier) {
   return createHeartbeatHandler({
     store,
-    deviceSecrets: { tank01: SECRET },
+    deviceSecrets: { esp1: SECRET },
     clock: () => NOW_MS,
     sleep: async (milliseconds) => sleeps.push(milliseconds),
     notifier,
@@ -76,14 +76,14 @@ test('persists one bounded device state and returns no secret data', async () =>
   assert.equal(response.statusCode, 200);
   assert.deepEqual(body, {
     ok: true,
-    device_id: 'tank01',
+    device_id: 'esp1',
     last_seen_at_ms: NOW_MS,
   });
   assert.deepEqual(store.inspect(), {
     writes: 1,
     state: {
       schemaVersion: 2,
-      deviceId: 'tank01',
+      deviceId: 'esp1',
       lastSeenAtMs: NOW_MS,
       sentAtMs: NOW_MS - 1_000,
       recentNonces: ['0123456789abcdef'],
@@ -101,7 +101,7 @@ test('persists one bounded device state and returns no secret data', async () =>
 
 test('rejects nonce replay without writing state', async () => {
   const store = memoryStore({
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     recentNonces: ['0123456789abcdef'],
     connectivityStatus: 'online',
   });
@@ -143,7 +143,7 @@ test('does not notify when a heartbeat nonce is replayed', async () => {
 test('marks recovery pending after an offline state and caps nonce history', async () => {
   const oldNonces = Array.from({ length: 16 }, (_, index) => index.toString(16).padStart(16, '0'));
   const store = memoryStore({
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     recentNonces: oldNonces,
     connectivityStatus: 'offline',
   });
@@ -203,7 +203,7 @@ test('notifies once for a newly opened temperature event before saving state', a
   assert.equal(response.statusCode, 200);
   assert.deepEqual(alerts, [{
     type: 'temperature',
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     mainC: 26.4,
     sumpC: 26.6,
     event: {
@@ -227,7 +227,7 @@ test('does not repeat an unchanged active event on the next heartbeat', async ()
   };
   const store = memoryStore({
     schemaVersion: 2,
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     recentNonces: [],
     activeEvents: [event],
     connectivityStatus: 'online',

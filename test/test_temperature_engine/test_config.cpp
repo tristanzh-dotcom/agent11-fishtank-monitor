@@ -11,7 +11,7 @@ int main() {
   assert(config.policy.low_attention_c == 23.5);
   assert(config.policy.low_critical_c == 22.5);
   assert(config.sample_interval_ms == 30000U);
-  assert(std::string(config.aquarium_id) == "tank01");
+  assert(std::string(config.aquarium_id) == "esp1");
   assert(config.bark_enabled);
   assert(!config.mqtt_enabled);
   assert(config.heartbeat_enabled);

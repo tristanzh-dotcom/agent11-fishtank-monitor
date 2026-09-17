@@ -129,7 +129,7 @@ HMAC-SHA256、当前 UTC 时间和一次性 nonce 鉴权。心跳失败使用 5 
 指数退避，不阻塞温度采样、Bark 或可选 MQTT。
 
 同一个上海区 `fishtank-monitor` 函数覆盖写入 COS 的唯一对象
-`devices/tank01/state.json`，并由 5 分钟 Timer 检查在线状态。连续 15 分钟没有有效
+`devices/esp1/state.json`，并由 5 分钟 Timer 检查在线状态。连续 15 分钟没有有效
 心跳时 Bark 通知一次，恢复后再通知一次；不保存持续增长的云端历史日志。部署和安全
 配置见 [腾讯云 SCF 说明](cloud/tencent-scf/README.md)。
 

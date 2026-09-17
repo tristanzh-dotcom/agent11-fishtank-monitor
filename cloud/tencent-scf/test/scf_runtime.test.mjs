@@ -7,11 +7,11 @@ import { dispatchScfEvent } from '../src/scf_runtime.mjs';
 const baseEnv = {
   COS_BUCKET: 'fishtank-monitor-1454792551',
   COS_REGION: 'ap-shanghai',
-  DEVICE_SECRETS_JSON: JSON.stringify({ tank01: '0123456789abcdef' }),
+  DEVICE_SECRETS_JSON: JSON.stringify({ esp1: '0123456789abcdef' }),
   STATE_READ_TOKEN: '0123456789abcdef0123456789abcdef',
 };
 const DEVICE_SECRET = '0123456789abcdef';
-const SUMMARY_PATH = '/api/v1/devices/tank01/temperature-summary';
+const SUMMARY_PATH = '/api/v1/devices/esp1/temperature-summary';
 
 function envWithRoleCredentials(secretId) {
   return {
@@ -53,7 +53,7 @@ test('creates a fresh COS client from current invocation environment credentials
 test('does not route POST on the temperature summary path into heartbeat storage', async () => {
   const sentAtMs = Date.now();
   const payload = {
-    device_id: 'tank01',
+    device_id: 'esp1',
     sent_at_ms: sentAtMs,
     nonce: '0123456789abcdef',
     main_c: 26.4,

@@ -36,7 +36,7 @@ npm run build
 
 ```json
 {
-  "device_id": "tank01",
+  "device_id": "esp1",
   "sent_at_ms": 1750000000000,
   "nonce": "16至64位十六进制随机数",
   "main_c": 26.4,
@@ -74,7 +74,7 @@ v1\n<sent_at_ms>\n<nonce>\n<sha256(原始 JSON 请求体)>
 旧读数或 `0` 伪造。`active_events` 最多七项，按事件类型去重；`sensor_fault` 的
 `display_c` 必须为 `null`。心跳签名原文仍为 `v1`，并覆盖包含这些字段的原始请求体。
 
-成功心跳会覆盖私有 COS 对象 `devices/tank01/state.json`，内部状态版本为 2。该对象
+成功心跳会覆盖私有 COS 对象 `devices/esp1/state.json`，内部状态版本为 2。该对象
 不是公开 API，且不会用作历史日志。
 
 ## 只读状态 API
@@ -82,7 +82,7 @@ v1\n<sent_at_ms>\n<nonce>\n<sha256(原始 JSON 请求体)>
 同一函数 URL 提供下游消费者使用的只读接口：
 
 ```text
-GET /api/v1/devices/tank01/state
+GET /api/v1/devices/esp1/state
 Authorization: Bearer <STATE_READ_TOKEN>
 ```
 
@@ -96,7 +96,7 @@ COS 内部字段、HMAC 设备密钥、Bark key 或云函数临时凭据。令�
 远程五缸快捷查询复用同一个只读令牌和函数 URL：
 
 ```text
-GET /api/v1/devices/tank01/temperature-summary
+GET /api/v1/devices/esp1/temperature-summary
 Authorization: Bearer <STATE_READ_TOKEN>
 ```
 
@@ -121,8 +121,8 @@ npm run simulate-heartbeat
 
 - `COS_BUCKET=fishtank-monitor-1454792551`
 - `COS_REGION=ap-shanghai`
-- `DEVICE_SECRETS_JSON`：例如一个仅包含 `tank01` 的 JSON 对象；不要写入代码或聊天。
-- `DEVICE_IDS=tank01`
+- `DEVICE_SECRETS_JSON`：例如一个仅包含 `esp1` 的 JSON 对象；不要写入代码或聊天。
+- `DEVICE_IDS=esp1`
 - `OFFLINE_AFTER_MS=900000`
 - `BARK_KEY`：在控制台私下输入，不写入代码、URL 或聊天。
 - `STATE_READ_TOKEN`：32–256 字符、独立于 `DEVICE_SECRETS_JSON` 的只读令牌；仅在
@@ -145,7 +145,7 @@ COS 存储桶必须复核为私有读写、单可用区、SSE-COS、版本控制
 - 定时器：已启用 `fishtank-monitor-offline-check`，每 5 分钟运行一次，事件类型为
   `Timer`，Cron 为 `0 */5 * * * * *`。
 - 运行角色：仅允许对
-  `fishtank-monitor-1454792551/devices/tank01/state.json` 执行 COS
+  `fishtank-monitor-1454792551/devices/esp1/state.json` 执行 COS
   GetObject/PutObject。
 
 Bark 采用“提醒优先”的至少一次投递：若 Bark 已成功但紧随其后的 COS 状态写入失败，

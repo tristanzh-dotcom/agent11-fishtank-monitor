@@ -37,7 +37,7 @@ struct AuxiliaryTankConfig {
 struct RuntimeConfig {
   TemperaturePolicy policy{};
   std::uint32_t sample_interval_ms = 30000U;
-  const char* aquarium_id = "tank01";
+  const char* aquarium_id = "esp1";
   // Fixed after the 2026-07-24 desktop validation of both physical probes.
   SensorRomAddress main_tank_sensor{};
   SensorRomAddress sump_return_sensor{};

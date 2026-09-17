@@ -18,7 +18,7 @@ function sign(body, timestamp, nonce) {
 
 function makeEvent(overrides = {}) {
   const payload = overrides.payload ?? {
-    device_id: 'tank01',
+    device_id: 'esp1',
     sent_at_ms: NOW_MS - 1_000,
     nonce: '0123456789abcdef',
     main_c: 26.4,
@@ -46,7 +46,7 @@ function makeEvent(overrides = {}) {
 }
 
 const options = {
-  deviceSecrets: { tank01: SECRET },
+  deviceSecrets: { esp1: SECRET },
   nowMs: NOW_MS,
 };
 
@@ -54,7 +54,7 @@ test('accepts a valid signed heartbeat and normalizes its payload', () => {
   const result = authenticateHeartbeat(makeEvent(), options);
 
   assert.deepEqual(result.payload, {
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     sentAtMs: NOW_MS - 1_000,
     nonce: '0123456789abcdef',
     mainC: 26.4,
@@ -65,10 +65,28 @@ test('accepts a valid signed heartbeat and normalizes its payload', () => {
   assert.equal(result.rawBody.length > 0, true);
 });
 
+test('rejects the legacy tank01 identity when only esp1 is provisioned', () => {
+  const event = makeEvent({
+    payload: {
+      device_id: 'tank01',
+      sent_at_ms: NOW_MS - 1_000,
+      nonce: '0123456789abcdef',
+      main_c: 26.4,
+      sump_c: 26.6,
+      uptime_ms: 123_456,
+      active_events: [],
+    },
+  });
+  assert.throws(
+    () => authenticateHeartbeat(event, options),
+    (error) => error instanceof RequestError && error.statusCode === 401,
+  );
+});
+
 test('accepts nullable readings and a complete active event snapshot', () => {
   const result = authenticateHeartbeat(makeEvent({
     payload: {
-      device_id: 'tank01',
+      device_id: 'esp1',
       sent_at_ms: NOW_MS,
       nonce: '0123456789abcdef',
       main_c: null,
@@ -98,7 +116,7 @@ test('accepts nullable readings and a complete active event snapshot', () => {
 test('accepts and normalizes a valid temperature snapshot', () => {
   const result = authenticateHeartbeat(makeEvent({
     payload: {
-      device_id: 'tank01',
+      device_id: 'esp1',
       sent_at_ms: NOW_MS,
       nonce: '0123456789abcdef',
       main_c: 26.4,
@@ -121,7 +139,7 @@ test('accepts and normalizes a valid temperature snapshot', () => {
 test('rejects a signed heartbeat when the temperature summary is tampered with', () => {
   const event = makeEvent({
     payload: {
-      device_id: 'tank01',
+      device_id: 'esp1',
       sent_at_ms: NOW_MS,
       nonce: '0123456789abcdef',
       main_c: 26.4,
@@ -144,7 +162,7 @@ test('rejects a signed heartbeat when the temperature summary is tampered with',
 
 test('rejects malformed or oversized temperature snapshots', () => {
   const base = {
-    device_id: 'tank01',
+    device_id: 'esp1',
     sent_at_ms: NOW_MS,
     nonce: '0123456789abcdef',
     main_c: 26,
@@ -179,7 +197,7 @@ test('rejects unsupported methods, oversized bodies, and stale timestamps', () =
   );
 
   const largePayload = {
-    device_id: 'tank01',
+    device_id: 'esp1',
     sent_at_ms: NOW_MS,
     nonce: '0123456789abcdef',
     main_c: 26,
@@ -194,7 +212,7 @@ test('rejects unsupported methods, oversized bodies, and stale timestamps', () =
   );
 
   const stalePayload = {
-    device_id: 'tank01',
+    device_id: 'esp1',
     sent_at_ms: NOW_MS - 300_001,
     nonce: '0123456789abcdef',
     main_c: 26,
@@ -210,7 +228,7 @@ test('rejects unsupported methods, oversized bodies, and stale timestamps', () =
 
 test('allows a signed body below the 2 KiB cap', () => {
   const payload = {
-    device_id: 'tank01',
+    device_id: 'esp1',
     sent_at_ms: NOW_MS,
     nonce: '0123456789abcdef',
     main_c: 26,
@@ -220,7 +238,7 @@ test('allows a signed body below the 2 KiB cap', () => {
     padding: 'x'.repeat(1_500),
   };
   const result = authenticateHeartbeat(makeEvent({ payload }), options);
-  assert.equal(result.payload.deviceId, 'tank01');
+  assert.equal(result.payload.deviceId, 'esp1');
 });
 
 test('rejects malformed JSON before authentication or storage', () => {
@@ -246,7 +264,7 @@ test('rejects unknown devices, malformed fields, and invalid signatures', () => 
   );
 
   const malformedPayload = {
-    device_id: 'tank01',
+    device_id: 'esp1',
     sent_at_ms: NOW_MS,
     nonce: 'not-hex',
     main_c: 99,
@@ -267,7 +285,7 @@ test('rejects unknown devices, malformed fields, and invalid signatures', () => 
 
 test('rejects malformed active event snapshots', () => {
   const base = {
-    device_id: 'tank01',
+    device_id: 'esp1',
     sent_at_ms: NOW_MS,
     nonce: '0123456789abcdef',
     main_c: 26,
@@ -311,13 +329,13 @@ test('supports base64 request bodies and case-insensitive headers', () => {
   };
 
   const result = authenticateHeartbeat(event, options);
-  assert.equal(result.payload.deviceId, 'tank01');
+  assert.equal(result.payload.deviceId, 'esp1');
 });
 
 test('verifies an uppercase hex nonce exactly as transmitted, then normalizes it', () => {
   const event = makeEvent({
     payload: {
-      device_id: 'tank01',
+      device_id: 'esp1',
       sent_at_ms: NOW_MS,
       nonce: 'ABCDEF0123456789',
       main_c: 26,

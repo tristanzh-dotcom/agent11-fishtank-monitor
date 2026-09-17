@@ -9,7 +9,7 @@ function fakeCos() {
     calls,
     getObject(params, callback) {
       calls.push(['getObject', params]);
-      callback(null, { Body: Buffer.from('{"deviceId":"tank01"}') });
+      callback(null, { Body: Buffer.from('{"deviceId":"esp1"}') });
     },
     putObject(params, callback) {
       calls.push(['putObject', params]);
@@ -26,13 +26,13 @@ test('reads and overwrites only the fixed per-device object key', async () => {
     region: 'ap-shanghai',
   });
 
-  assert.deepEqual(await store.getDeviceState('tank01'), { deviceId: 'tank01' });
-  await store.saveDeviceState('tank01', { deviceId: 'tank01', mainC: 26.4 });
+  assert.deepEqual(await store.getDeviceState('esp1'), { deviceId: 'esp1' });
+  await store.saveDeviceState('esp1', { deviceId: 'esp1', mainC: 26.4 });
 
-  assert.equal(cos.calls[0][1].Key, 'devices/tank01/state.json');
-  assert.equal(cos.calls[1][1].Key, 'devices/tank01/state.json');
+  assert.equal(cos.calls[0][1].Key, 'devices/esp1/state.json');
+  assert.equal(cos.calls[1][1].Key, 'devices/esp1/state.json');
   assert.equal(cos.calls[1][1].ContentType, 'application/json; charset=utf-8');
-  assert.equal(cos.calls[1][1].Body, '{"deviceId":"tank01","mainC":26.4}');
+  assert.equal(cos.calls[1][1].Body, '{"deviceId":"esp1","mainC":26.4}');
 });
 
 test('treats a missing state object as null and rejects invalid device ids', async () => {
@@ -49,6 +49,6 @@ test('treats a missing state object as null and rejects invalid device ids', asy
     region: 'ap-shanghai',
   });
 
-  assert.equal(await store.getDeviceState('tank01'), null);
+  assert.equal(await store.getDeviceState('esp1'), null);
   await assert.rejects(() => store.getDeviceState('../escape'), /device id/i);
 });

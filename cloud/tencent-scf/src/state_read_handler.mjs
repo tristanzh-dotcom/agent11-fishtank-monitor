@@ -1,8 +1,11 @@
 import { timingSafeEqual } from 'node:crypto';
 
-const DEVICE_ID = 'tank01';
+const DEVICE_ID = 'esp1';
 const STATE_PATH = `/api/v1/devices/${DEVICE_ID}/state`;
 export const TEMPERATURE_SUMMARY_PATH = `/api/v1/devices/${DEVICE_ID}/temperature-summary`;
+const LEGACY_STATE_PATH = '/api/v1/devices/tank01/state';
+const LEGACY_TEMPERATURE_SUMMARY_PATH = '/api/v1/devices/tank01/temperature-summary';
+export const LEGACY_TEMPERATURE_SUMMARY = LEGACY_TEMPERATURE_SUMMARY_PATH;
 const TEMPERATURE_SUMMARY_MAX_AGE_MS = 10 * 60 * 1_000;
 const MAX_TEMPERATURE_SUMMARY_BYTES = 768;
 const SHANGHAI_OFFSET_MS = 8 * 60 * 60 * 1_000;
@@ -186,17 +189,20 @@ export function createStateReadHandler({ store, readToken, clock = Date.now }) {
 
   return async function stateReadHandler(event) {
     const path = requestPath(event);
+    const isSummaryPath = path === TEMPERATURE_SUMMARY_PATH
+      || path === LEGACY_TEMPERATURE_SUMMARY_PATH;
+    const isStatePath = path === STATE_PATH || path === LEGACY_STATE_PATH;
     if (requestMethod(event) !== 'GET') {
-      if (path === TEMPERATURE_SUMMARY_PATH) {
+      if (isSummaryPath) {
         return textResponse(405, '仅允许 GET 请求。');
       }
       return jsonResponse(405, { ok: false, error: 'method_not_allowed' });
     }
-    if (path !== STATE_PATH && path !== TEMPERATURE_SUMMARY_PATH) {
+    if (!isStatePath && !isSummaryPath) {
       return jsonResponse(400, { ok: false, error: 'invalid_device_id' });
     }
     if (!matchesReadToken(authorizationHeader(event), readToken)) {
-      if (path === TEMPERATURE_SUMMARY_PATH) {
+      if (isSummaryPath) {
         return textResponse(401, '未授权。');
       }
       return jsonResponse(401, { ok: false, error: 'unauthorized' });
@@ -204,7 +210,7 @@ export function createStateReadHandler({ store, readToken, clock = Date.now }) {
 
     try {
       const state = await store.getDeviceState(DEVICE_ID);
-      if (path === TEMPERATURE_SUMMARY_PATH) {
+      if (isSummaryPath) {
         const summary = readTemperatureSummary(state, clock());
         if (summary.kind === 'error') {
           return textResponse(503, '温度数据暂不可用。');
@@ -220,7 +226,7 @@ export function createStateReadHandler({ store, readToken, clock = Date.now }) {
       }
       return jsonResponse(200, projected);
     } catch {
-      if (path === TEMPERATURE_SUMMARY_PATH) {
+      if (isSummaryPath) {
         return textResponse(503, '温度数据暂不可用。');
       }
       return jsonResponse(503, { ok: false, error: 'state_unavailable' });

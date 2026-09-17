@@ -33,10 +33,10 @@ test('returns the summary route initialization failure as Chinese plain text', a
     requestContext: {
       http: {
         method: 'GET',
-        path: '/api/v1/devices/tank01/temperature-summary',
+        path: '/api/v1/devices/esp1/temperature-summary',
       },
     },
-    rawPath: '/api/v1/devices/tank01/temperature-summary',
+    rawPath: '/api/v1/devices/esp1/temperature-summary',
     headers: {},
     body: '',
   }, {});

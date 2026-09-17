@@ -5,11 +5,11 @@ import { createStateReadHandler } from '../src/state_read_handler.mjs';
 
 const READ_TOKEN = '0123456789abcdef0123456789abcdef';
 const NOW_MS = 1_750_000_000_000;
-const SUMMARY_PATH = '/api/v1/devices/tank01/temperature-summary';
+const SUMMARY_PATH = '/api/v1/devices/esp1/temperature-summary';
 
 function request({
   method = 'GET',
-  path = '/api/v1/devices/tank01/state',
+  path = '/api/v1/devices/esp1/state',
   authorization = `Bearer ${READ_TOKEN}`,
   authorizationHeaderName = 'authorization',
 } = {}) {
@@ -23,7 +23,7 @@ function request({
 function state() {
   return {
     schemaVersion: 2,
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     lastSeenAtMs: 1_750_000_000_000,
     mainC: 26.4,
     sumpC: 26.6,
@@ -55,7 +55,7 @@ test('projects a v2 private state into FishTankStateV1', async () => {
   assert.equal(response.statusCode, 200);
   assert.deepEqual(JSON.parse(response.body), {
     schema_version: 1,
-    device_id: 'tank01',
+    device_id: 'esp1',
     timestamp_ms: 1_750_000_000_000,
     display_c: 26.4,
     return_c: 26.6,
@@ -70,6 +70,17 @@ test('projects a v2 private state into FishTankStateV1', async () => {
   });
   assert.deepEqual(store.inspect(), { reads: 1, writes: 0 });
   assert.equal(response.body.includes(READ_TOKEN), false);
+});
+
+test('keeps the legacy tank01 state path read-only while reading esp1 state', async () => {
+  const store = storeWith({ ...state(), deviceId: 'esp1' });
+  const response = await createStateReadHandler({ store, readToken: READ_TOKEN })(
+    request({ path: '/api/v1/devices/tank01/state' }),
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(JSON.parse(response.body).device_id, 'esp1');
+  assert.deepEqual(store.inspect(), { reads: 1, writes: 0 });
 });
 
 test('projects heartbeat contract temperature event types from a real v2 snapshot', async () => {
@@ -94,7 +105,7 @@ test('projects temperature gradient events from a real v2 snapshot', async () =>
     async getDeviceState() {
       return {
         schemaVersion: 2,
-        deviceId: 'tank01',
+        deviceId: 'esp1',
         lastSeenAtMs: 1_700_000_000_000,
         mainC: 19.4,
         sumpC: 24.8,

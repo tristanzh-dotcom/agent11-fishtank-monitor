@@ -11,7 +11,7 @@ const FIFTEEN_MINUTES = 15 * 60 * 1_000;
 
 test('offline transition fires once after 15 minutes', () => {
   const state = {
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     lastSeenAtMs: NOW_MS - FIFTEEN_MINUTES,
     connectivityStatus: 'online',
     recoveryPending: false,
@@ -38,7 +38,7 @@ test('recovery transition clears the pending marker and missing state is ignored
   assert.equal(evaluateOfflineTransition(null, NOW_MS, FIFTEEN_MINUTES), null);
 
   const state = {
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     lastSeenAtMs: NOW_MS,
     connectivityStatus: 'online',
     recoveryPending: true,
@@ -50,7 +50,7 @@ test('recovery transition clears the pending marker and missing state is ignored
 
 test('does not emit recovery when the recovery heartbeat is already stale again', () => {
   const state = {
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     lastSeenAtMs: NOW_MS - FIFTEEN_MINUTES,
     connectivityStatus: 'online',
     recoveryPending: true,
@@ -63,7 +63,7 @@ test('does not emit recovery when the recovery heartbeat is already stale again'
 
 test('checker notifies before persisting so failed notifications retry later', async () => {
   const initial = {
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     lastSeenAtMs: NOW_MS - FIFTEEN_MINUTES - 1,
     connectivityStatus: 'online',
     recoveryPending: false,
@@ -77,7 +77,7 @@ test('checker notifies before persisting so failed notifications retry later', a
   const failedChecker = createOfflineChecker({
     store,
     notifier: { async send() { throw new Error('network down'); } },
-    deviceIds: ['tank01'],
+    deviceIds: ['esp1'],
     clock: () => NOW_MS,
   });
 
@@ -90,7 +90,7 @@ test('checker notifies before persisting so failed notifications retry later', a
   const successfulChecker = createOfflineChecker({
     store,
     notifier: { async send(alert) { alerts.push(alert); } },
-    deviceIds: ['tank01'],
+    deviceIds: ['esp1'],
     clock: () => NOW_MS,
   });
   const succeeded = await successfulChecker();
@@ -100,7 +100,7 @@ test('checker notifies before persisting so failed notifications retry later', a
   assert.equal(state.connectivityStatus, 'offline');
   assert.deepEqual(alerts, [{
     type: 'offline',
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     lastSeenAtMs: initial.lastSeenAtMs,
     detectedAtMs: NOW_MS,
   }]);

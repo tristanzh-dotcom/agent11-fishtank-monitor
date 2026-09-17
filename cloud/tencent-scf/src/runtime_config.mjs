@@ -2,7 +2,7 @@ const DEVICE_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,31}$/;
 const MIN_OFFLINE_AFTER_MS = 5 * 60 * 1_000;
 const MAX_OFFLINE_AFTER_MS = 24 * 60 * 60 * 1_000;
 const SAFE_MODE_BUCKET = 'fishtank-monitor-1454792551';
-const SAFE_MODE_DEVICE_ID = 'tank01';
+const SAFE_MODE_DEVICE_ID = 'esp1';
 
 function readCosConfig(env) {
   const bucket = env.COS_BUCKET;
@@ -36,7 +36,7 @@ export function readHeartbeatConfig(env = process.env) {
   }
   const entries = Object.entries(parsed);
   if (entries.length !== 1 || entries[0][0] !== SAFE_MODE_DEVICE_ID) {
-    throw new Error('DEVICE_SECRETS_JSON must contain only tank01 in safe mode');
+    throw new Error('DEVICE_SECRETS_JSON must contain only esp1 in safe mode');
   }
   for (const [deviceId, secret] of entries) {
     requireDeviceId(deviceId);
@@ -66,7 +66,7 @@ export function readOfflineConfig(env = process.env) {
       .filter(Boolean),
   )];
   if (deviceIds.length !== 1 || deviceIds[0] !== SAFE_MODE_DEVICE_ID) {
-    throw new Error('DEVICE_IDS must be exactly tank01 in safe mode');
+    throw new Error('DEVICE_IDS must be exactly esp1 in safe mode');
   }
   deviceIds.forEach(requireDeviceId);
 

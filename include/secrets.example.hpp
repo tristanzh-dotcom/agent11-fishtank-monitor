@@ -16,7 +16,7 @@ constexpr char kAliyunClientId[] = "replace-with-mqtt-client-id";
 constexpr char kAliyunUsername[] = "replace-with-mqtt-username";
 constexpr char kAliyunPassword[] = "replace-with-mqtt-password";
 constexpr char kAliyunProductKey[] = "replace-with-product-key";
-constexpr char kAliyunDeviceName[] = "tank01";
+constexpr char kAliyunDeviceName[] = "esp1";
 
 // PEM root certificate for the Alibaba endpoint. Keep the line breaks as \n.
 constexpr char kAliyunRootCaPem[] = "";

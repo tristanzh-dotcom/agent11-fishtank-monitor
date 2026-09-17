@@ -95,7 +95,7 @@ bool HeartbeatNotifier::notify(const TemperatureSample& sample,
   }
 
   const heartbeat::HeartbeatPayload payload{
-      "tank01",
+      "esp1",
       static_cast<std::uint64_t>(current_time) * 1000ULL,
       random_nonce(),
       sample.display_c,

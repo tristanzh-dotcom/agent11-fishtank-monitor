@@ -16,13 +16,13 @@ test('reads strict heartbeat configuration without defaults for secrets', () => 
   const config = readHeartbeatConfig({
     ...base,
     DEVICE_SECRETS_JSON: JSON.stringify({
-      tank01: '0123456789abcdef0123456789abcdef',
+      esp1: '0123456789abcdef0123456789abcdef',
     }),
   });
 
   assert.equal(config.bucket, base.COS_BUCKET);
   assert.equal(config.region, 'ap-shanghai');
-  assert.deepEqual(Object.keys(config.deviceSecrets), ['tank01']);
+  assert.deepEqual(Object.keys(config.deviceSecrets), ['esp1']);
 });
 
 test('reads an independent state API token', () => {
@@ -40,17 +40,17 @@ test('reads an independent state API token', () => {
 test('reads offline configuration for the single safe-mode device', () => {
   const config = readOfflineConfig({
     ...base,
-    DEVICE_IDS: 'tank01',
+    DEVICE_IDS: 'esp1',
     BARK_KEY: 'private-bark-key',
     OFFLINE_AFTER_MS: '900000',
   });
 
-  assert.deepEqual(config.deviceIds, ['tank01']);
+  assert.deepEqual(config.deviceIds, ['esp1']);
   assert.equal(config.offlineAfterMs, 900_000);
   assert.equal(config.barkKey, 'private-bark-key');
 
   assert.throws(
-    () => readOfflineConfig({ ...base, DEVICE_IDS: 'tank01', BARK_KEY: 'key1', OFFLINE_AFTER_MS: '1' }),
+    () => readOfflineConfig({ ...base, DEVICE_IDS: 'esp1', BARK_KEY: 'key1', OFFLINE_AFTER_MS: '1' }),
     /OFFLINE_AFTER_MS/,
   );
 });
@@ -72,31 +72,31 @@ test('rejects missing, malformed, or unsafe configuration', () => {
       ...base,
       DEVICE_SECRETS_JSON: JSON.stringify({ '../tank': '0123456789abcdef' }),
     }),
-    /tank01/,
+    /esp1/,
   );
   assert.throws(
     () => readOfflineConfig({
       ...base,
-      DEVICE_IDS: 'tank01,tank02',
+      DEVICE_IDS: 'esp1,tank02',
       BARK_KEY: 'private-bark-key',
     }),
-    /tank01/,
+    /esp1/,
   );
   assert.throws(
     () => readHeartbeatConfig({
       ...base,
       DEVICE_SECRETS_JSON: JSON.stringify({
-        tank01: '0123456789abcdef',
+        esp1: '0123456789abcdef',
         tank02: '0123456789abcdef',
       }),
     }),
-    /tank01/,
+    /esp1/,
   );
   assert.throws(
     () => readHeartbeatConfig({
       ...base,
       COS_BUCKET: 'wrong-bucket-1454792551',
-      DEVICE_SECRETS_JSON: JSON.stringify({ tank01: '0123456789abcdef' }),
+      DEVICE_SECRETS_JSON: JSON.stringify({ esp1: '0123456789abcdef' }),
     }),
     /COS_BUCKET/,
   );

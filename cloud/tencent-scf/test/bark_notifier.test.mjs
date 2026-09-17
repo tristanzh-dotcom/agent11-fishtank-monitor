@@ -17,7 +17,7 @@ test('formats a temperature event as a Bark alert without putting the key in the
 
   await notifier.send({
     type: 'temperature',
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     mainC: 27.3,
     sumpC: 26.7,
     event: {
@@ -56,7 +56,7 @@ test('uses user-facing Chinese templates for low temperature and sensor faults',
 
   await notifier.send({
     type: 'temperature',
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     mainC: 23.1,
     sumpC: 23.4,
     event: {
@@ -69,7 +69,7 @@ test('uses user-facing Chinese templates for low temperature and sensor faults',
   });
   await notifier.send({
     type: 'temperature',
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     mainC: null,
     sumpC: 23.4,
     event: {
@@ -104,7 +104,7 @@ test('uses state-specific wording for a cloud escalation', async () => {
 
   await notifier.send({
     type: 'temperature',
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     mainC: 26.0,
     sumpC: 26.0,
     event: {
@@ -134,7 +134,7 @@ test('reads a fresh cloud send time for each retry', async () => {
   });
   const alert = {
     type: 'temperature',
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     event: {
       type: 'high_temperature',
       state: 'opened',
@@ -166,7 +166,7 @@ test('uses the configured fish-tank display name for offline alerts', async () =
 
   await notifier.send({
     type: 'offline',
-    deviceId: 'tank01',
+    deviceId: 'esp1',
     lastSeenAtMs: 1_750_000_000_000,
     detectedAtMs: 1_750_000_900_000,
   });

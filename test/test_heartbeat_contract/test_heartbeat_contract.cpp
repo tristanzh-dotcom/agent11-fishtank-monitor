@@ -12,7 +12,7 @@ int main() {
   using aquarium::heartbeat::HeartbeatSchedule;
 
   const HeartbeatPayload payload{
-      "tank01",
+      "esp1",
       1750000000123ULL,
       "00112233445566778899aabbccddeeff",
       std::optional<double>{26.4},
@@ -26,7 +26,7 @@ int main() {
 
   const auto body = aquarium::heartbeat::heartbeat_json(payload);
   assert(body ==
-         "{\"device_id\":\"tank01\",\"sent_at_ms\":1750000000123,"
+         "{\"device_id\":\"esp1\",\"sent_at_ms\":1750000000123,"
          "\"nonce\":\"00112233445566778899aabbccddeeff\","
          "\"main_c\":26.4,\"sump_c\":26.75,\"uptime_ms\":123456,"
          "\"active_events\":[{\"type\":\"high_temperature\","
@@ -34,7 +34,7 @@ int main() {
          "\"at_ms\":123000,\"display_c\":28.75}]}");
 
   const auto fault_body = aquarium::heartbeat::heartbeat_json(
-      HeartbeatPayload{"tank01", 1, "0011223344556677", std::nullopt,
+      HeartbeatPayload{"esp1", 1, "0011223344556677", std::nullopt,
                        std::nullopt, 2,
                        {aquarium::ActiveTemperatureEvent{
                            aquarium::EventType::sensor_fault,
@@ -67,7 +67,7 @@ int main() {
        60.0},
   };
   assert(aquarium::heartbeat::heartbeat_json(
-             HeartbeatPayload{"tank01", 1, "0011223344556677", 26.0,
+             HeartbeatPayload{"esp1", 1, "0011223344556677", 26.0,
                               26.0, 1, all_events})
              .size() <= 2048U);
 
@@ -81,7 +81,7 @@ int main() {
 
   const auto with_snapshot = aquarium::heartbeat::heartbeat_json(
       HeartbeatPayload{
-          "tank01", 1750000000123ULL, "00112233445566778899aabbccddeeff",
+          "esp1", 1750000000123ULL, "00112233445566778899aabbccddeeff",
           std::optional<double>{26.4}, std::optional<double>{26.75}, 123456ULL,
           {},
           aquarium::heartbeat::TemperatureSnapshot{
@@ -94,7 +94,7 @@ int main() {
   assert(with_snapshot.find("\\nA\\\"B") != std::string::npos);
 
   const auto max_summary = aquarium::heartbeat::heartbeat_json(
-      HeartbeatPayload{"tank01", 1, "0011223344556677", 26.0, 26.0, 1, {},
+      HeartbeatPayload{"esp1", 1, "0011223344556677", 26.0, 26.0, 1, {},
                        aquarium::heartbeat::TemperatureSnapshot{
                            1750000000000ULL, std::string(768, 'x')}});
   assert(max_summary.find("\"temperature_snapshot\":{") !=
@@ -106,14 +106,14 @@ int main() {
     exact_multibyte_summary += utf8_character;
   }
   const auto max_multibyte_summary = aquarium::heartbeat::heartbeat_json(
-      HeartbeatPayload{"tank01", 1, "0011223344556677", 26.0, 26.0, 1, {},
+      HeartbeatPayload{"esp1", 1, "0011223344556677", 26.0, 26.0, 1, {},
                        aquarium::heartbeat::TemperatureSnapshot{
                            1750000000000ULL, exact_multibyte_summary}});
   assert(max_multibyte_summary.find("\"temperature_snapshot\":{") !=
          std::string::npos);
 
   const auto over_multibyte_summary = aquarium::heartbeat::heartbeat_json(
-      HeartbeatPayload{"tank01", 1, "0011223344556677", 26.0, 26.0, 1, {},
+      HeartbeatPayload{"esp1", 1, "0011223344556677", 26.0, 26.0, 1, {},
                        aquarium::heartbeat::TemperatureSnapshot{
                            1750000000000ULL, exact_multibyte_summary + "x"}});
   assert(over_multibyte_summary.find("\"temperature_snapshot\":{") ==
@@ -126,7 +126,7 @@ int main() {
     std::string summary(newline_count, '\n');
     summary.append(768U - newline_count, 'x');
     const auto candidate = aquarium::heartbeat::heartbeat_json(
-        HeartbeatPayload{"tank01", 1750000000123ULL,
+        HeartbeatPayload{"esp1", 1750000000123ULL,
                          "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
                          60.0, -20.0, 18446744073709551615ULL, all_events,
                          aquarium::heartbeat::TemperatureSnapshot{
@@ -148,7 +148,7 @@ int main() {
   assert(replacement != std::string::npos);
   body_limit_summary_text[replacement] = '\n';
   const auto over_body = aquarium::heartbeat::heartbeat_json(
-      HeartbeatPayload{"tank01", 1750000000123ULL,
+      HeartbeatPayload{"esp1", 1750000000123ULL,
                        "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
                        60.0, -20.0, 18446744073709551615ULL, all_events,
                        aquarium::heartbeat::TemperatureSnapshot{
@@ -157,7 +157,7 @@ int main() {
   assert(over_body.find("\"active_events\":[{") != std::string::npos);
 
   const auto over_summary = aquarium::heartbeat::heartbeat_json(
-      HeartbeatPayload{"tank01", 1, "0011223344556677", 26.0, 26.0, 1, {},
+      HeartbeatPayload{"esp1", 1, "0011223344556677", 26.0, 26.0, 1, {},
                        aquarium::heartbeat::TemperatureSnapshot{
                            0ULL, std::string(768, 'x')}});
   assert(over_summary.find("\"temperature_snapshot\":{") ==
@@ -165,14 +165,14 @@ int main() {
 
   const std::string invalid_utf8("\xc0\xaf", 2);
   const auto invalid_utf8_summary = aquarium::heartbeat::heartbeat_json(
-      HeartbeatPayload{"tank01", 1, "0011223344556677", 26.0, 26.0, 1, {},
+      HeartbeatPayload{"esp1", 1, "0011223344556677", 26.0, 26.0, 1, {},
                        aquarium::heartbeat::TemperatureSnapshot{
                            1750000000000ULL, invalid_utf8}});
   assert(invalid_utf8_summary.find("\"temperature_snapshot\":{") ==
          std::string::npos);
 
   const auto escaped_over_body = aquarium::heartbeat::heartbeat_json(
-      HeartbeatPayload{"tank01", 1, "0011223344556677", 26.0, 26.0, 1,
+      HeartbeatPayload{"esp1", 1, "0011223344556677", 26.0, 26.0, 1,
                        all_events,
                        aquarium::heartbeat::TemperatureSnapshot{
                            1750000000000ULL, std::string(768, '\n')}});

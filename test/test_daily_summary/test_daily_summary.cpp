@@ -110,11 +110,11 @@ void test_daily_summary_body_reports_all_five_channels_and_states() {
   assert(body.find("毛毛缸：20.1°C（温度严重偏低）") != std::string::npos);
 
   const auto message =
-      aquarium::transport::daily_summary_message(*created, "tank01");
+      aquarium::transport::daily_summary_message(*created, "esp1");
   assert(message.title == "鱼缸温度提醒");
   assert(message.group == "aquarium-daily");
   assert(message.level == "active");
-  assert(message.fingerprint == "aquarium:tank01:20260909:morning");
+  assert(message.fingerprint == "aquarium:esp1:20260909:morning");
 }
 
 void test_temperature_status_uses_configured_thresholds() {

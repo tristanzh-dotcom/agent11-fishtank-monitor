@@ -37,7 +37,7 @@ function requireFiniteNumber(value, name) {
 export function buildSignedHeartbeatRequest({
   url,
   secret,
-  deviceId = 'tank01',
+  deviceId = 'esp1',
   nowMs = Date.now(),
   nonce = randomBytes(16).toString('hex'),
   mainC = 26.4,

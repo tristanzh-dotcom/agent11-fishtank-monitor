@@ -56,7 +56,7 @@ done
 for heartbeat_contract in \
   "bool heartbeat_enabled = true" \
   "heartbeat_interval_ms = 300000U" \
-  "devices/tank01/state.json" \
+  "devices/esp1/state.json" \
   "X-Aquarium-Signature" \
   "腾讯云心跳" \
   "15 分钟"; do
@@ -73,7 +73,7 @@ for state_api_contract in \
   "2,048" \
   "active_events" \
   "STATE_READ_TOKEN" \
-  "GET /api/v1/devices/tank01/state" \
+  "GET /api/v1/devices/esp1/state" \
   "FishTankStateV1"; do
   if ! rg -F --quiet -- "$state_api_contract" \
     cloud/tencent-scf/README.md HANDOVER_SOFTWARE_CLOUD_STATUS_20260724.md \

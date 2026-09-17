@@ -2,7 +2,8 @@
 
 const { createSerializedHandler } = require('./serializer.js');
 
-const TEMPERATURE_SUMMARY_PATH = '/api/v1/devices/tank01/temperature-summary';
+const TEMPERATURE_SUMMARY_PATH = '/api/v1/devices/esp1/temperature-summary';
+const LEGACY_TEMPERATURE_SUMMARY_PATH = '/api/v1/devices/tank01/temperature-summary';
 
 function isHttpEvent(event) {
   return Boolean(event?.requestContext?.http?.method ?? event?.httpMethod);
@@ -45,7 +46,7 @@ async function run(event, context) {
     });
   } catch {
     return http
-      ? (requestPath(event) === TEMPERATURE_SUMMARY_PATH
+      ? ([TEMPERATURE_SUMMARY_PATH, LEGACY_TEMPERATURE_SUMMARY_PATH].includes(requestPath(event))
         ? summaryUnavailable()
         : serviceUnavailable())
       : { checked: 0, transitioned: 0, failed: 1 };
