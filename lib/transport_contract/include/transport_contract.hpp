@@ -2,7 +2,10 @@
 
 #include "temperature_engine.hpp"
 
+#include <array>
+#include <cstddef>
 #include <ctime>
+#include <cstdint>
 #include <optional>
 #include <string>
 
@@ -21,6 +24,27 @@ struct ScopedTemperatureEvent {
   std::string tank_label;
   TemperatureEvent event;
   std::optional<std::time_t> event_time = std::nullopt;
+};
+
+class BarkAlertPolicy {
+ public:
+  static EventType problem_type(EventType type);
+  std::optional<TemperatureEvent> prepare(const TemperatureEvent& event,
+                                          const std::string& scope);
+
+ private:
+  struct Slot {
+    bool used = false;
+    std::string scope;
+    EventType type = EventType::high_temperature;
+    bool active = false;
+    bool severe = false;
+    std::uint8_t notification_number = 0;
+    std::uint8_t repeat_number = 0;
+  };
+
+  static constexpr std::size_t kSlotCount = 32U;
+  std::array<Slot, kSlotCount> slots_{};
 };
 
 const char* event_type_name(EventType type);

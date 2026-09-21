@@ -1,6 +1,7 @@
 #pragma once
 
 #include "event_outbox.hpp"
+#include "transport_contract.hpp"
 
 #include <cstddef>
 #include <ctime>
@@ -31,11 +32,14 @@ class DeliveryCoordinator {
   void acknowledge_mqtt(bool delivered);
 
  private:
+  void remove_pending(EventType type);
+
   bool bark_enabled_;
   bool mqtt_enabled_;
   std::size_t bark_capacity_;
   std::size_t bark_dropped_count_ = 0;
   std::deque<BarkDeliveryRecord> bark_outbox_;
+  transport::BarkAlertPolicy bark_policy_;
   EventOutbox mqtt_outbox_;
 };
 

@@ -1,4 +1,3 @@
-const DISPLAY_NAME = '包包大缸';
 const TEMPERATURE_DISPLAY_NAME = '包包缸';
 
 const SHANGHAI_OFFSET_MS = 8 * 60 * 60 * 1_000;
@@ -44,34 +43,48 @@ function eventName(event) {
 }
 
 function eventTitle(event) {
-  if (event.type === 'sensor_fault' && event.state === 'opened') {
-    return '温度探头异常告警';
-  }
-  if (event.type === 'sensor_fault' && event.state === 'resolved') {
-    return '温度探头已恢复';
-  }
   const name = eventName(event);
   switch (event.state) {
     case 'escalated':
-      return `升级为严重${name.replace(/^严重/, '')}告警`;
+      return name;
     case 'reminder':
-      return `${name}持续提醒`;
+      return `${name}未解除`;
     case 'resolved':
-      return `${name}告警已解除`;
+      return `${name}已恢复`;
     case 'opened':
     default:
-      return `${name}告警`;
+      return name;
   }
 }
 
-function eventTimeLabel(state) {
-  switch (state) {
-    case 'escalated': return '升级判定';
-    case 'reminder': return '提醒判定';
-    case 'resolved': return '解除判定';
-    case 'opened':
-    default: return '告警判定';
+function severityText(event) {
+  if (event.state === 'resolved') return '信息';
+  return event.severity === 'n3' ? '严重' : '注意';
+}
+
+function notificationText(event) {
+  if (event.state === 'resolved') return '恢复';
+  if (event.state === 'reminder') return '重复';
+  if (event.state === 'escalated'
+      || (event.state === 'opened' && (event.notificationNumber ?? 1) > 1)) {
+    return '升级';
   }
+  return '首次';
+}
+
+function notificationNumber(event) {
+  const value = event.notificationNumber ?? event.notification_number;
+  return Number.isInteger(value) && value > 0 ? value : 1;
+}
+
+function countText(event) {
+  if (event.state === 'resolved') return '不计入告警次数';
+  const text = `本问题第 ${notificationNumber(event)} 次告警`;
+  if (event.state === 'reminder') {
+    const repeat = event.repeatNumber ?? event.repeat_number ?? 1;
+    return `${text}；重复 ${repeat}/2`;
+  }
+  return event.severity === 'n3' ? text : `${text}；本问题不重复提醒`;
 }
 
 function messageFor(alert, sentAtMs = Date.now()) {
@@ -100,26 +113,20 @@ function messageFor(alert, sentAtMs = Date.now()) {
         action: event.state === 'resolved' ? '继续观察水温。' : '检查探头、接线和防水接头。',
       },
     };
-    const template = templates[event.type] ?? {
-      action: '检查鱼缸监控设备。',
-    };
     const readingLabel = event.type === 'temperature_gradient' ? '当时主缸水温' : '当时水温';
     const reading = event.type === 'sensor_fault' && event.state !== 'resolved'
       ? '无有效读数'
       : temperatureText(event.displayC);
-    const stateLine = `${eventTimeLabel(event.state)}：事件时间不可用`;
-    const sourceLine = `发送发起（云端）：${formatBeijingTime(sentAtMs)}`;
-    let body = `${readingLabel}：${reading}\n${stateLine}\n${sourceLine}\n时间均为北京时间`;
-    if (event.state === 'reminder') {
-      body += '\n截至该次判定，尚未满足解除条件。';
-    }
-    if (event.type === 'sensor_fault' && event.state === 'resolved') {
-      body += '\n探头已恢复。';
-    }
+    const action = templates[event.type]?.action ?? '检查鱼缸监控设备。';
+    const body = `设备：腾讯云\n情况：${readingLabel}：${reading}\n建议：${action}`
+      + `\n时间：判定 事件时间不可用；发送：${formatBeijingTime(sentAtMs)}`
+      + `（北京时间）\n次数：${countText(event)}`;
     return {
-      title: `${TEMPERATURE_DISPLAY_NAME}·主缸｜${eventTitle(event)}`,
-      body: `${body}\n建议：${template.action}`,
-      level: event.severity === 'n3' ? 'timeSensitive' : 'active',
+      title: `【${severityText(event)}·${notificationText(event)}】${TEMPERATURE_DISPLAY_NAME}·主缸｜${eventTitle(event)}`,
+      body,
+      level: event.state === 'resolved' || event.severity !== 'n3'
+        ? 'active'
+        : 'timeSensitive',
     };
   }
   if (alert.type === 'offline') {
@@ -128,15 +135,23 @@ function messageFor(alert, sentAtMs = Date.now()) {
       Math.floor((alert.detectedAtMs - alert.lastSeenAtMs) / 60_000),
     );
     return {
-      title: `设备离线｜${DISPLAY_NAME}`,
-      body: `已连续 ${minutes} 分钟未收到心跳，请检查 Wi-Fi、ESP32 供电和鱼缸现场。`,
+      title: `【注意·首次】鱼缸监控｜${alert.deviceId === 'esp1' ? 'ESP1' : alert.deviceId} 离线`,
+      body: `设备：${alert.deviceId === 'esp1' ? 'ESP1' : alert.deviceId}（由腾讯云检测）\n`
+        + `情况：已连续 ${minutes} 分钟未收到心跳。\n`
+        + '建议：检查 Wi-Fi、设备供电和鱼缸现场。\n'
+        + `时间：最后心跳 ${formatBeijingTime(alert.lastSeenAtMs)}；检测 ${formatBeijingTime(alert.detectedAtMs)}（北京时间）\n`
+        + '次数：本次离线首次告警',
       level: 'timeSensitive',
     };
   }
 
   return {
-    title: `设备恢复｜${DISPLAY_NAME}`,
-    body: '云端已重新收到设备心跳。',
+    title: `【信息·恢复】鱼缸监控｜${alert.deviceId === 'esp1' ? 'ESP1' : alert.deviceId} 已恢复`,
+    body: `设备：${alert.deviceId === 'esp1' ? 'ESP1' : alert.deviceId}（由腾讯云检测）\n`
+      + '情况：云端已重新收到设备心跳。\n'
+      + '建议：继续观察设备连接。\n'
+      + `时间：恢复检测 ${formatBeijingTime(alert.detectedAtMs)}（北京时间）\n`
+      + '次数：不计入告警次数',
     level: 'active',
   };
 }

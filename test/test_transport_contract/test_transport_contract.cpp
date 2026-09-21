@@ -51,9 +51,13 @@ int main() {
          std::string::npos);
 
   const auto bark = aquarium::transport::bark_message(event, "esp1");
-  assert(bark.title == "包包缸·主缸｜高温告警");
-  assert(bark.body.find("当时水温：27.6°C") != std::string::npos);
-  assert(bark.body.find("告警判定：时间未同步") != std::string::npos);
+  assert(bark.title == "【注意·首次】包包缸·主缸｜高温");
+  assert(bark.body.find("设备：设备") != std::string::npos);
+  assert(bark.body.find("情况：当时水温：27.6°C") != std::string::npos);
+  assert(bark.body.find("建议：核查最新水温及加热棒温控。") !=
+         std::string::npos);
+  assert(bark.body.find("时间：告警判定：时间未同步") != std::string::npos);
+  assert(bark.body.find("次数：本问题第 1 次告警") != std::string::npos);
   assert(bark.group == "aquarium");
   assert(bark.level == "timeSensitive");
   assert(bark.fingerprint == "aquarium:esp1:high_temperature");
@@ -63,9 +67,9 @@ int main() {
   const auto timed_bark = aquarium::transport::bark_message(
       event, "esp1", std::time_t{1'750'000'000},
       std::time_t{1'750'000'002}, "设备");
-  assert(timed_bark.body.find("告警判定：2025-06-15 23:06:40") !=
+  assert(timed_bark.body.find("时间：告警判定：2025-06-15 23:06:40") !=
          std::string::npos);
-  assert(timed_bark.body.find("发送发起（设备）：2025-06-15 23:06:42") !=
+  assert(timed_bark.body.find("发送：2025-06-15 23:06:42") !=
          std::string::npos);
 
   const auto adjusted_clock_bark = aquarium::transport::bark_message(
@@ -77,15 +81,16 @@ int main() {
 
   const auto invalid_send_time_bark = aquarium::transport::bark_message(
       event, "esp1", std::time_t{1'750'000'000}, std::time_t{-1}, "设备");
-  assert(invalid_send_time_bark.body.find("发送发起（设备）：时间不可用") !=
+  assert(invalid_send_time_bark.body.find("发送：时间不可用") !=
          std::string::npos);
 
   const auto scoped_bark = aquarium::transport::bark_message(
       aquarium::transport::ScopedTemperatureEvent{
           "laosi_tank", "老四缸", event},
       "esp1");
-  assert(scoped_bark.title == "老四缸｜高温告警");
-  assert(scoped_bark.body.find("当时水温：27.6°C") != std::string::npos);
+  assert(scoped_bark.title == "【注意·首次】老四缸｜高温");
+  assert(scoped_bark.body.find("情况：当时水温：27.6°C") !=
+         std::string::npos);
   assert(scoped_bark.fingerprint ==
          "aquarium:esp1:laosi_tank:high_temperature");
 
@@ -95,22 +100,24 @@ int main() {
           TemperatureEvent{EventType::low_temperature_critical,
                            EventState::opened, Severity::n3, 930000, 14.125}},
       "esp1");
-  assert(low_critical.title == "毛毛缸｜严重低温告警");
-  assert(low_critical.body.find("当时水温：14.1°C") != std::string::npos);
+  assert(low_critical.title == "【严重·首次】毛毛缸｜严重低温");
+  assert(low_critical.body.find("情况：当时水温：14.1°C") !=
+         std::string::npos);
 
   const auto high = aquarium::transport::bark_message(
       TemperatureEvent{EventType::high_temperature, EventState::opened,
                        Severity::n2, 930000, 28.16},
       "esp1");
-  assert(high.title == "包包缸·主缸｜高温告警");
-  assert(high.body.find("当时水温：28.2°C") != std::string::npos);
+  assert(high.title == "【注意·首次】包包缸·主缸｜高温");
+  assert(high.body.find("情况：当时水温：28.2°C") != std::string::npos);
 
   const auto high_critical = aquarium::transport::bark_message(
       TemperatureEvent{EventType::high_temperature_critical,
                        EventState::resolved, Severity::n3, 930000, 26.5},
       "esp1");
-  assert(high_critical.title == "包包缸·主缸｜严重高温告警已解除");
-  assert(high_critical.body.find("当时水温：26.5°C") != std::string::npos);
+  assert(high_critical.title == "【信息·恢复】包包缸·主缸｜严重高温已恢复");
+  assert(high_critical.body.find("情况：当时水温：26.5°C") !=
+         std::string::npos);
 
   const auto rapid_change = aquarium::transport::bark_message(
       aquarium::transport::ScopedTemperatureEvent{
@@ -118,22 +125,26 @@ int main() {
           TemperatureEvent{EventType::temperature_rapid_change,
                            EventState::escalated, Severity::n3, 930000, 24.16}},
       "esp1");
-  assert(rapid_change.title == "小黑缸｜升级为严重温度变化告警");
-  assert(rapid_change.body.find("当时水温：24.2°C") != std::string::npos);
+  assert(rapid_change.title == "【严重·升级】小黑缸｜严重温度变化");
+  assert(rapid_change.body.find("情况：当时水温：24.2°C") !=
+         std::string::npos);
 
   const auto rapid_change_resolved = aquarium::transport::bark_message(
       TemperatureEvent{EventType::temperature_rapid_change,
                        EventState::resolved, Severity::n3, 930000, 24.0},
       "esp1");
-  assert(rapid_change_resolved.title == "包包缸·主缸｜严重温度变化告警已解除");
-  assert(rapid_change_resolved.body.find("当时水温：24.0°C") != std::string::npos);
+  assert(rapid_change_resolved.title ==
+         "【信息·恢复】包包缸·主缸｜严重温度变化已恢复");
+  assert(rapid_change_resolved.body.find("情况：当时水温：24.0°C") !=
+         std::string::npos);
 
   const auto gradient = aquarium::transport::bark_message(
       TemperatureEvent{EventType::temperature_gradient, EventState::opened,
                        Severity::n2, 930000, 26.16},
       "esp1");
-  assert(gradient.title == "包包缸·主缸｜主缸与回水缸温差告警");
-  assert(gradient.body.find("当时主缸水温：26.2°C") != std::string::npos);
+  assert(gradient.title == "【注意·首次】包包缸·主缸｜主缸与回水缸温差");
+  assert(gradient.body.find("情况：当时主缸水温：26.2°C") !=
+         std::string::npos);
 
   const auto scoped_fault = aquarium::transport::bark_message(
       aquarium::transport::ScopedTemperatureEvent{
@@ -141,8 +152,9 @@ int main() {
           TemperatureEvent{EventType::sensor_fault, EventState::opened,
                            Severity::n2, 900000, 0.0}},
       "esp1");
-  assert(scoped_fault.title == "小黑缸｜温度探头异常告警");
-  assert(scoped_fault.body.find("当时水温：无有效读数") != std::string::npos);
+  assert(scoped_fault.title == "【注意·首次】小黑缸｜温度探头故障");
+  assert(scoped_fault.body.find("情况：当时水温：无有效读数") !=
+         std::string::npos);
   assert(scoped_fault.body.find("0C") == std::string::npos);
 
   const auto fault_reminder = aquarium::transport::bark_message(
@@ -151,21 +163,67 @@ int main() {
           TemperatureEvent{EventType::sensor_fault, EventState::reminder,
                            Severity::n2, 930000, 0.0}},
       "esp1");
-  assert(fault_reminder.title == "小黑缸｜温度探头故障持续提醒");
-  assert(fault_reminder.body.find("提醒判定：时间未同步") != std::string::npos);
+  assert(fault_reminder.title == "【注意·重复】小黑缸｜温度探头故障未解除");
+  assert(fault_reminder.body.find("时间：提醒判定：时间未同步") !=
+         std::string::npos);
 
   const auto fault_resolved = aquarium::transport::bark_message(
       TemperatureEvent{EventType::sensor_fault, EventState::resolved,
                        Severity::n2, 930000, 24.5},
       "esp1");
-  assert(fault_resolved.title == "包包缸·主缸｜温度探头已恢复");
-  assert(fault_resolved.body.find("探头已恢复") != std::string::npos);
+  assert(fault_resolved.title == "【信息·恢复】包包缸·主缸｜温度探头故障已恢复");
+  assert(fault_resolved.body.find("探头读数已恢复") != std::string::npos);
+
+  aquarium::transport::BarkAlertPolicy alert_policy;
+  const auto first_alert = alert_policy.prepare(event, "main_tank");
+  assert(first_alert.has_value());
+  assert(first_alert->notification_number == 1U);
+  const auto ordinary_reminder = alert_policy.prepare(
+      TemperatureEvent{EventType::high_temperature, EventState::reminder,
+                       Severity::n2, 4500000, 27.8},
+      "main_tank");
+  assert(!ordinary_reminder.has_value());
+  const auto critical_alert = alert_policy.prepare(
+      TemperatureEvent{EventType::high_temperature_critical, EventState::opened,
+                       Severity::n3, 4500000, 28.8},
+      "main_tank");
+  assert(critical_alert.has_value());
+  assert(critical_alert->state == EventState::escalated);
+  assert(critical_alert->notification_number == 2U);
+  const auto critical_repeat_one = alert_policy.prepare(
+      TemperatureEvent{EventType::high_temperature_critical, EventState::reminder,
+                       Severity::n3, 8100000, 28.8},
+      "main_tank");
+  const auto critical_repeat_two = alert_policy.prepare(
+      TemperatureEvent{EventType::high_temperature_critical, EventState::reminder,
+                       Severity::n3, 11700000, 28.8},
+      "main_tank");
+  const auto critical_repeat_three = alert_policy.prepare(
+      TemperatureEvent{EventType::high_temperature_critical, EventState::reminder,
+                       Severity::n3, 15300000, 28.8},
+      "main_tank");
+  assert(critical_repeat_one.has_value());
+  assert(critical_repeat_two.has_value());
+  assert(critical_repeat_one->repeat_number == 1U);
+  assert(critical_repeat_two->repeat_number == 2U);
+  assert(!critical_repeat_three.has_value());
+  const auto resolved = alert_policy.prepare(
+      TemperatureEvent{EventType::high_temperature_critical,
+                       EventState::resolved, Severity::n3, 18900000, 27.0},
+      "main_tank");
+  assert(resolved.has_value());
+  assert(resolved->notification_number == 0U);
+
+  const auto formatted_body = aquarium::transport::bark_message(
+      *first_alert, "esp1").body;
+  assert(formatted_body.find("建议：") ==
+         formatted_body.rfind("建议："));
 
   const auto bark_request =
       aquarium::transport::bark_request_json(bark, "unit-test-key");
   assert(bark_request.find("\"device_key\":\"unit-test-key\"") !=
          std::string::npos);
-  assert(bark_request.find("\"title\":\"包包缸·主缸｜高温告警\"") !=
+  assert(bark_request.find("\"title\":\"【注意·首次】包包缸·主缸｜高温\"") !=
          std::string::npos);
 
   const aquarium::transport::BarkMessage escaped{
@@ -203,6 +261,15 @@ int main() {
   scoped_outbox.pop();
   assert(scoped_outbox.front()->tank_key == "xiaohei_tank");
 
+  aquarium::transport::ScopedEventOutbox scoped_recovery(3);
+  assert(scoped_recovery.push(old_four_event));
+  assert(scoped_recovery.push(xiaohei_event));
+  assert(scoped_recovery.push(
+      {"laosi_tank", "老四缸",
+       {EventType::high_temperature, EventState::resolved, Severity::n2,
+        950000, 24.0}}));
+  assert(scoped_recovery.front()->tank_key == "xiaohei_tank");
+
   aquarium::DeliveryCoordinator delivery(2, true, true);
   const std::time_t event_time = 1'750'000'000;
   assert(delivery.enqueue(event, event_time));
@@ -223,6 +290,14 @@ int main() {
   assert(bark_only.enqueue(event));
   assert(bark_only.bark_front() != nullptr);
   assert(bark_only.mqtt_front() == nullptr);
+
+  aquarium::DeliveryCoordinator recovery_clears_pending(2, true, false);
+  assert(recovery_clears_pending.enqueue(event));
+  assert(recovery_clears_pending.enqueue(
+      TemperatureEvent{EventType::high_temperature, EventState::resolved,
+                       Severity::n2, 950000, 24.0}));
+  assert(recovery_clears_pending.bark_front()->state ==
+         EventState::resolved);
 
   aquarium::DeliveryCoordinator mqtt_only(2, false, true);
   assert(mqtt_only.enqueue(event));

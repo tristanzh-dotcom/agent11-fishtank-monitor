@@ -45,30 +45,12 @@ function nextState(previous, payload, nowMs) {
   };
 }
 
-function newlyActionableTemperatureEvents(previous, activeEvents) {
-  if (!Array.isArray(activeEvents)) return [];
-  const previousEvents = Array.isArray(previous?.activeEvents)
-    ? previous.activeEvents
-    : [];
-  return activeEvents
-    .filter((event) => event.state === 'opened' || event.state === 'escalated')
-    .filter((event) => previousEvents.every((prior) => (
-      prior.type !== event.type || prior.state !== event.state
-    )))
-    .map((event) => ({
-      type: 'temperature',
-      deviceId: 'esp1',
-      event,
-    }));
-}
-
 export function createHeartbeatHandler({
   store,
   deviceSecrets,
   clock = Date.now,
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   minimumDurationMs = 500,
-  notifier = null,
 }) {
   if (!store) throw new TypeError('A state store is required');
 
@@ -84,18 +66,6 @@ export function createHeartbeatHandler({
       const { payload } = authenticated;
       const previous = await store.getDeviceState(payload.deviceId);
       const state = nextState(previous, payload, startedAt);
-      if (notifier && typeof notifier.send === 'function') {
-        const alerts = newlyActionableTemperatureEvents(previous, payload.activeEvents)
-          .map((alert) => ({
-            ...alert,
-            deviceId: payload.deviceId,
-            mainC: payload.mainC,
-            sumpC: payload.sumpC,
-          }));
-        for (const alert of alerts) {
-          await notifier.send(alert);
-        }
-      }
       await store.saveDeviceState(payload.deviceId, state);
 
       response = jsonResponse(200, {

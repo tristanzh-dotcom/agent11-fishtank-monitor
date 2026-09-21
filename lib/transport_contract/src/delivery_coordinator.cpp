@@ -6,17 +6,39 @@ bool DeliveryCoordinator::enqueue(const TemperatureEvent& event,
                                   std::optional<std::time_t> event_time) {
   bool queued = false;
   if (bark_enabled_) {
+    if (event.state == EventState::resolved &&
+        bark_outbox_.size() >= bark_capacity_) {
+      remove_pending(event.type);
+    }
     if (bark_outbox_.size() >= bark_capacity_) {
       ++bark_dropped_count_;
     } else {
-      bark_outbox_.push_back(BarkDeliveryRecord{event, event_time});
-      queued = true;
+      const auto prepared = bark_policy_.prepare(event, "main_tank");
+      if (prepared.has_value()) {
+        if (prepared->state == EventState::resolved ||
+            prepared->state == EventState::escalated) {
+          remove_pending(prepared->type);
+        }
+        bark_outbox_.push_back(BarkDeliveryRecord{*prepared, event_time});
+        queued = true;
+      }
     }
   }
   if (mqtt_enabled_) {
     queued = mqtt_outbox_.push(event) || queued;
   }
   return queued;
+}
+
+void DeliveryCoordinator::remove_pending(EventType type) {
+  const auto problem = transport::BarkAlertPolicy::problem_type(type);
+  for (auto it = bark_outbox_.begin(); it != bark_outbox_.end();) {
+    if (transport::BarkAlertPolicy::problem_type(it->event.type) == problem) {
+      it = bark_outbox_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 const BarkDeliveryRecord* DeliveryCoordinator::bark_record_front() const {

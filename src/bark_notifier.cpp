@@ -23,7 +23,7 @@ bool BarkNotifier::notify(const TemperatureEvent& event,
   }
 
   const auto message = transport::bark_message(
-      event, aquarium_id, event_time, std::time(nullptr), "设备");
+      event, aquarium_id, event_time, std::time(nullptr), "温控ESP1号");
   const String payload =
       transport::bark_request_json(message, secrets::kBarkDeviceKey).c_str();
   WiFiClientSecure client;
@@ -51,7 +51,7 @@ bool BarkNotifier::notify(const transport::ScopedTemperatureEvent& event,
     return false;
   }
   const auto message = transport::bark_message(
-      event, aquarium_id, event_time, std::time(nullptr), "设备");
+      event, aquarium_id, event_time, std::time(nullptr), "温控ESP1号");
   const String payload =
       transport::bark_request_json(message, secrets::kBarkDeviceKey).c_str();
   WiFiClientSecure client;

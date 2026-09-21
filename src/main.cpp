@@ -51,8 +51,6 @@ std::array<aquarium::TemperatureEngine, 3> auxiliary_engines{
 aquarium::transport::ScopedEventOutbox auxiliary_delivery(16);
 aquarium::transport::DailySummaryScheduler daily_summary;
 aquarium::extension_lan::State extension_state{};
-aquarium::TemperatureEngine extension_engine(runtime_config.policy);
-std::optional<std::uint64_t> last_extension_source_sampled_at_ms;
 bool auxiliary_turn = false;
 bool time_sync_completed = false;
 aquarium::RetryBackoff wifi_backoff(1000U, 60000U);
@@ -365,20 +363,6 @@ void loop() {
                                runtime_config.auxiliary_tanks[index].label,
                                event,
                                event_time});
-    }
-  }
-
-  if (const auto extension_sample =
-          aquarium::extension_lan::nextTemperatureSample(
-              extension_state, now_ms, &last_extension_source_sampled_at_ms);
-      extension_sample.has_value()) {
-    const auto extension_events = extension_engine.ingest(*extension_sample);
-    for (const auto& event : extension_events) {
-      if (!runtime_config.bark_enabled) {
-        continue;
-      }
-      auxiliary_delivery.push({"south_american_pleco_tank", "南美异形缸",
-                               event, event_time});
     }
   }
 

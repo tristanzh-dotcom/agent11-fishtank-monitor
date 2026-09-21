@@ -6,6 +6,24 @@
 namespace aquarium::transport {
 namespace {
 
+EventType logical_type(EventType type) {
+  switch (type) {
+    case EventType::high_temperature:
+    case EventType::high_temperature_critical:
+      return EventType::high_temperature;
+    case EventType::low_temperature:
+    case EventType::low_temperature_critical:
+      return EventType::low_temperature;
+    default:
+      return type;
+  }
+}
+
+bool important_event(const TemperatureEvent& event) {
+  return event.type == EventType::sensor_fault ||
+         event.severity == Severity::n3;
+}
+
 std::string number(double value) {
   char buffer[24]{};
   std::snprintf(buffer, sizeof(buffer), "%.6g", value);
@@ -44,35 +62,35 @@ std::string event_name(const TemperatureEvent& event) {
 
 std::string bark_title(const TemperatureEvent& event,
                        const std::string& label) {
-  if (event.type == EventType::sensor_fault) {
-    if (event.state == EventState::opened) {
-      return label + "｜温度探头异常告警";
-    }
-    if (event.state == EventState::resolved) {
-      return label + "｜温度探头已恢复";
-    }
-  }
   const std::string name = event_name(event);
-  std::string state_text;
+  const char* severity = event.state == EventState::resolved
+                             ? "信息"
+                             : event.severity == Severity::n3 ? "严重" : "注意";
+  const char* notification = "首次";
   switch (event.state) {
     case EventState::opened:
-      state_text = name + "告警";
+      notification = event.notification_number > 1U ? "升级" : "首次";
       break;
     case EventState::escalated:
-      state_text = "升级为严重" +
-                   (name.rfind("严重", 0) == 0U
-                        ? name.substr(std::string("严重").size())
-                        : name) +
-                   "告警";
+      notification = "升级";
       break;
     case EventState::reminder:
-      state_text = name + "持续提醒";
+      notification = "重复";
       break;
     case EventState::resolved:
-      state_text = name + "告警已解除";
+      notification = "恢复";
       break;
   }
-  return label + "｜" + state_text;
+  std::string title = "【" + std::string(severity) + "·" + notification +
+                      "】" + label + "｜";
+  if (event.state == EventState::resolved) {
+    title += name + "已恢复";
+  } else if (event.state == EventState::reminder) {
+    title += name + "未解除";
+  } else {
+    title += name;
+  }
+  return title;
 }
 
 const char* event_time_label(EventState state) {
@@ -90,6 +108,7 @@ const char* event_time_label(EventState state) {
 }
 
 std::string suggestion(const TemperatureEvent& event) {
+  if (event.state == EventState::resolved) return "继续观察水温。";
   switch (event.type) {
     case EventType::high_temperature:
     case EventType::high_temperature_critical:
@@ -152,23 +171,44 @@ std::string bark_body(const TemperatureEvent& event,
                                            : temperature_text(event.display_c)));
   const std::string source_text =
       source != nullptr && *source != '\0' ? source : "设备";
-  std::string body = reading + "\n" + event_time_label(event.state) + "：" +
+  const std::uint32_t notification_number =
+      event.notification_number == 0U ? 1U : event.notification_number;
+  std::string count_text;
+  if (event.state == EventState::resolved) {
+    count_text = "不计入告警次数";
+  } else {
+    count_text = "本问题第 " + std::to_string(notification_number) +
+                 " 次告警";
+    if (event.state == EventState::reminder) {
+      const auto repeat_number = event.repeat_number == 0U
+                                     ? 1U
+                                     : event.repeat_number;
+      count_text += "；重复 " + std::to_string(repeat_number) + "/2";
+    } else if (!important_event(event)) {
+      count_text += "；本问题不重复提醒";
+    }
+  }
+  std::string body = "设备：" + source_text + "\n" +
+                     "情况：" + reading + "\n" +
+                     "建议：" + suggestion(event) + "\n" +
+                     "时间：" + event_time_label(event.state) + "：" +
                      calendar_time_text(event_time, "时间未同步") +
-                     "\n发送发起（" + source_text + "）：" +
+                     "；发送：" +
                      calendar_time_text(send_time, "时间不可用") +
-                     "\n时间均为北京时间";
+                     "（北京时间）\n" +
+                     "次数：" + count_text;
   if (event.state == EventState::reminder) {
-    body += "\n截至该次判定，尚未满足解除条件。";
+    body += "\n截至本次判定，异常仍未解除。";
   }
   if (event.type == EventType::sensor_fault &&
       event.state == EventState::resolved) {
-    body += "\n探头已恢复。";
+    body += "\n探头读数已恢复。";
   }
   if (event_time.has_value() && send_time.has_value() &&
       *send_time < *event_time) {
     body += "\n设备时钟已调整，不能用上述时间差判断延迟。";
   }
-  return body + "\n建议：" + suggestion(event);
+  return body;
 }
 
 std::string json_escape(const std::string& value) {
@@ -210,6 +250,78 @@ std::string json_escape(const std::string& value) {
 }
 
 }  // namespace
+
+std::optional<TemperatureEvent> BarkAlertPolicy::prepare(
+    const TemperatureEvent& event, const std::string& scope) {
+  const auto type = logical_type(event.type);
+  Slot* slot = nullptr;
+  for (auto& candidate : slots_) {
+    if (candidate.used && candidate.scope == scope && candidate.type == type) {
+      slot = &candidate;
+      break;
+    }
+  }
+  if (slot == nullptr) {
+    for (auto& candidate : slots_) {
+      if (!candidate.used) {
+        candidate.used = true;
+        candidate.scope = scope;
+        candidate.type = type;
+        slot = &candidate;
+        break;
+      }
+    }
+  }
+  if (slot == nullptr) return std::nullopt;
+
+  if (event.state == EventState::resolved) {
+    if (!slot->active) return std::nullopt;
+    auto resolved = event;
+    resolved.notification_number = 0;
+    resolved.repeat_number = 0;
+    *slot = {};
+    return resolved;
+  }
+
+  if (event.state == EventState::reminder) {
+    if (!slot->active || !important_event(event) ||
+        slot->repeat_number >= 2U) {
+      return std::nullopt;
+    }
+    auto reminder = event;
+    ++slot->repeat_number;
+    ++slot->notification_number;
+    reminder.notification_number = slot->notification_number;
+    reminder.repeat_number = slot->repeat_number;
+    return reminder;
+  }
+
+  if (slot->active) {
+    if (!slot->severe && important_event(event)) {
+      slot->severe = true;
+      ++slot->notification_number;
+      auto escalated = event;
+      escalated.state = EventState::escalated;
+      escalated.notification_number = slot->notification_number;
+      escalated.repeat_number = 0;
+      return escalated;
+    }
+    return std::nullopt;
+  }
+
+  slot->active = true;
+  slot->severe = important_event(event);
+  slot->notification_number = 1U;
+  slot->repeat_number = 0U;
+  auto first = event;
+  first.notification_number = 1U;
+  first.repeat_number = 0U;
+  return first;
+}
+
+EventType BarkAlertPolicy::problem_type(EventType type) {
+  return logical_type(type);
+}
 
 const char* event_type_name(EventType type) {
   switch (type) {

@@ -31,11 +31,11 @@ test('formats a temperature event as a Bark alert without putting the key in the
 
   assert.equal(request.url, 'https://bark.example.test/push');
   assert.equal(request.body.device_key, 'bark-key-not-in-url');
-  assert.equal(request.body.title, '包包缸·主缸｜高温告警');
-  assert.match(request.body.body, /当时水温：28\.1°C/);
-  assert.match(request.body.body, /告警判定：事件时间不可用/);
-  assert.match(request.body.body, /发送发起（云端）：2025-06-15 23:06:41/);
-  assert.match(request.body.body, /时间均为北京时间/);
+  assert.equal(request.body.title, '【注意·首次】包包缸·主缸｜高温');
+  assert.match(request.body.body, /设备：腾讯云/);
+  assert.match(request.body.body, /情况：当时水温：28\.1°C/);
+  assert.match(request.body.body, /时间：判定 事件时间不可用；发送：2025-06-15 23:06:41/);
+  assert.match(request.body.body, /次数：本问题第 1 次告警/);
   assert.match(request.body.body, /建议：核查最新水温及加热棒温控。/);
   assert.equal(request.body.body.includes('27.3°C'), false);
   assert.equal(request.body.body.includes('26.7°C'), false);
@@ -81,12 +81,12 @@ test('uses user-facing Chinese templates for low temperature and sensor faults',
     },
   });
 
-  assert.equal(messages[0].title, '包包缸·主缸｜低温告警');
-  assert.match(messages[0].body, /当时水温：23\.1°C/);
+  assert.equal(messages[0].title, '【注意·首次】包包缸·主缸｜低温');
+  assert.match(messages[0].body, /情况：当时水温：23\.1°C/);
   assert.match(messages[0].body, /建议：核查最新水温及加热设备。/);
-  assert.equal(messages[1].title, '包包缸·主缸｜温度探头异常告警');
-  assert.match(messages[1].body, /当时水温：无有效读数/);
-  assert.match(messages[1].body, /告警判定：事件时间不可用/);
+  assert.equal(messages[1].title, '【注意·首次】包包缸·主缸｜温度探头故障');
+  assert.match(messages[1].body, /情况：当时水温：无有效读数/);
+  assert.match(messages[1].body, /时间：判定 事件时间不可用/);
   assert.match(messages[1].body, /检查探头、接线和防水接头/);
 });
 
@@ -116,8 +116,8 @@ test('uses state-specific wording for a cloud escalation', async () => {
     },
   });
 
-  assert.equal(body.title, '包包缸·主缸｜升级为严重温度变化告警');
-  assert.match(body.body, /升级判定：事件时间不可用/);
+  assert.equal(body.title, '【严重·升级】包包缸·主缸｜严重温度变化');
+  assert.match(body.body, /时间：判定 事件时间不可用/);
 });
 
 test('reads a fresh cloud send time for each retry', async () => {
@@ -147,10 +147,10 @@ test('reads a fresh cloud send time for each retry', async () => {
   await notifier.send(alert);
   await notifier.send(alert);
 
-  assert.match(bodies[0].body, /发送发起（云端）：2025-06-15 23:06:40/);
-  assert.match(bodies[1].body, /发送发起（云端）：2025-06-15 23:06:42/);
-  assert.match(bodies[0].body, /告警判定：事件时间不可用/);
-  assert.match(bodies[1].body, /告警判定：事件时间不可用/);
+  assert.match(bodies[0].body, /发送：2025-06-15 23:06:40/);
+  assert.match(bodies[1].body, /发送：2025-06-15 23:06:42/);
+  assert.match(bodies[0].body, /时间：判定 事件时间不可用/);
+  assert.match(bodies[1].body, /时间：判定 事件时间不可用/);
 });
 
 test('uses the configured fish-tank display name for offline alerts', async () => {
@@ -171,5 +171,7 @@ test('uses the configured fish-tank display name for offline alerts', async () =
     detectedAtMs: 1_750_000_900_000,
   });
 
-  assert.equal(body.title, '设备离线｜包包大缸');
+  assert.equal(body.title, '【注意·首次】鱼缸监控｜ESP1 离线');
+  assert.match(body.body, /设备：ESP1（由腾讯云检测）/);
+  assert.match(body.body, /次数：本次离线首次告警/);
 });

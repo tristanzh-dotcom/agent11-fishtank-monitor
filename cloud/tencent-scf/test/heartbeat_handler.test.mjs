@@ -183,7 +183,7 @@ test('persists a valid temperature snapshot and clears it on an old heartbeat', 
   assert.equal('temperatureSnapshot' in store.inspect().state, false);
 });
 
-test('notifies once for a newly opened temperature event before saving state', async () => {
+test('does not forward a newly opened temperature event to cloud Bark', async () => {
   const store = memoryStore();
   const sleeps = [];
   const alerts = [];
@@ -201,19 +201,7 @@ test('notifies once for a newly opened temperature event before saving state', a
   );
 
   assert.equal(response.statusCode, 200);
-  assert.deepEqual(alerts, [{
-    type: 'temperature',
-    deviceId: 'esp1',
-    mainC: 26.4,
-    sumpC: 26.6,
-    event: {
-      type: event.type,
-      state: event.state,
-      severity: event.severity,
-      atMs: event.at_ms,
-      displayC: event.display_c,
-    },
-  }]);
+  assert.deepEqual(alerts, []);
   assert.equal(store.inspect().writes, 1);
 });
 
@@ -244,10 +232,9 @@ test('does not repeat an unchanged active event on the next heartbeat', async ()
   assert.deepEqual(alerts, []);
 });
 
-test('does not save state when a temperature alert cannot be delivered', async () => {
+test('saves temperature state without attempting a cloud temperature alert', async () => {
   const store = memoryStore();
   const sleeps = [];
-  const notifier = { async send() { throw new Error('Bark unavailable'); } };
   const event = {
     type: 'temperature_rapid_change',
     state: 'escalated',
@@ -256,12 +243,14 @@ test('does not save state when a temperature alert cannot be delivered', async (
     display_c: 30.1,
   };
 
-  const response = await handlerWithNotifier(store, sleeps, notifier)(
+  const response = await handlerWithNotifier(store, sleeps, {
+    async send() { throw new Error('Bark unavailable'); },
+  })(
     eventFor('cccccccccccccccc', [event]),
   );
 
-  assert.equal(response.statusCode, 503);
-  assert.equal(store.inspect().writes, 0);
+  assert.equal(response.statusCode, 200);
+  assert.equal(store.inspect().writes, 1);
 });
 
 test('invalid requests do not read or write COS and still take at least 500ms', async () => {

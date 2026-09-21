@@ -114,7 +114,10 @@ void test_daily_summary_body_reports_all_five_channels_and_states() {
 
   const auto message =
       aquarium::transport::daily_summary_message(*created, "esp1");
-  assert(message.title == "鱼缸温度提醒");
+  assert(message.title == "【信息·汇总】全部鱼缸｜鱼缸温度报告");
+  assert(message.body.find("设备：温控ESP1号") != std::string::npos);
+  assert(message.body.find("建议：无需操作") != std::string::npos);
+  assert(message.body.find("次数：不计入告警次数") != std::string::npos);
   assert(message.group == "aquarium-daily");
   assert(message.level == "active");
   assert(message.fingerprint == "aquarium:esp1:20260909:morning");

@@ -18,9 +18,12 @@ class ScopedEventOutbox {
   std::size_t dropped_count() const { return dropped_count_; }
 
  private:
+  void remove_pending(const std::string& tank_key, EventType type);
+
   std::size_t capacity_;
   std::size_t dropped_count_ = 0;
   std::deque<ScopedTemperatureEvent> events_;
+  BarkAlertPolicy bark_policy_;
 };
 
 }  // namespace aquarium::transport

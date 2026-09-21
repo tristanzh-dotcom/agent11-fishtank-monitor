@@ -198,8 +198,12 @@ BarkMessage daily_summary_message(const DailyTemperatureSummary& summary,
   const auto date = static_cast<std::uint32_t>(sampled_at.year * 10000 +
                                                sampled_at.month * 100 +
                                                sampled_at.day);
+  const std::string body =
+      "设备：温控ESP1号\n情况：" + daily_summary_body(summary) +
+      "\n建议：无需操作。\n时间：以情况中的采样时间为准（北京时间）\n"
+      "次数：不计入告警次数";
   return BarkMessage{
-      "鱼缸温度提醒", daily_summary_body(summary), "aquarium-daily", "active",
+      "【信息·汇总】全部鱼缸｜鱼缸温度报告", body, "aquarium-daily", "active",
       "aquarium:" + aquarium_id + ":" + std::to_string(date) + ":" +
           slot_name(summary.slot)};
 }

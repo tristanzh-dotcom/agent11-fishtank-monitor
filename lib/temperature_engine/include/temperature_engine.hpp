@@ -62,6 +62,8 @@ struct TemperatureEvent {
   Severity severity;
   std::uint64_t at_ms;
   double display_c;
+  std::uint8_t notification_number = 0;
+  std::uint8_t repeat_number = 0;
 };
 
 class TemperatureEngine {

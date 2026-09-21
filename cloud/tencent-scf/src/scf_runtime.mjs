@@ -68,9 +68,6 @@ export async function dispatchScfEvent(
         store: createStore(config, env, CosCtor),
         deviceSecrets: config.deviceSecrets,
         minimumDurationMs: minimumHeartbeatDurationMs,
-        notifier: env.BARK_KEY
-          ? createBarkNotifier({ barkKey: env.BARK_KEY, fetchImpl })
-          : null,
       })(event);
     }
     const config = readStateApiConfig(env);
