@@ -1,5 +1,7 @@
 # Agent11 温度监测与远程摘要 工作流交接
 
+> 2026-09-21 版本同步：ESP1 正式固件提交为 `ddd2c33bacac1e13c411e74520741d8d19db0aef`，环境 `waveshare_esp32s3_n16r8`，本地镜像 SHA-256 `0eeb630f8158e4ab053bb1cfadcb82867529726300e5dfb2a7bf6ef215c0c2d0`；串口已确认 `EXTENSION_LAN_READY`、`EXTENSION_LAN_PACKET_ACCEPTED`。Tab5 使用 `esp32p4_agent13` 正式固件并确认 `TAB5_EXTENSION_LAN_PACKET_ACCEPTED`；用户已验收手机查询显示 ESP1 四缸和 ESP2 南美异形缸。BASICR4 与长期稳定性仍不在本次完成范围。
+
 ### 次日启动胶囊 (Boot Prompt)
 
 请在明天开启新对话时，直接复制以下指令发给系统：
@@ -18,18 +20,19 @@
 
 - 权威项目根：`/Users/tristanzh/agent/agent11-fishtank-monitor`
 - 当前主题：Agent11 温度监测与远程摘要
-- Agent11 对应温控ESP1号；Tab5 和温控ESP2号不属于本次刷写目标。
+- Agent11 对应温控ESP1号；本次版本同步同时登记已验收的 Tab5 与温控ESP2号链路。
 - 本次目标是让现有远程快捷温度查询显示新增的南美草缸、南美异形缸，同时保持原有 Agent11 行为。
 
 ## 2. 今日完成事项
 
 ### 固件与设备
 
-- 本地 `HEAD=71dcdc8`，包含两个新增鱼缸的日报摘要字段。
-- 使用目标环境 `waveshare_esp32s3_n16r8_remote_five` 成功构建。
+- 本地 `HEAD=ddd2c33bacac1e13c411e74520741d8d19db0aef`，包含当前 ESP1 正式固件及扩展接收修复。
+- 当前正式固件使用目标环境 `waveshare_esp32s3_n16r8` 成功构建。
 - 已对刷写目标 `/dev/cu.usbmodem5B910349391` 完成上传；esptool 报告写入成功且 SHA 校验通过。
 - 串口读取到设备启动后的 `heartbeat delivered`。
 - 用户确认等待约两分钟后点击快捷查询，结果已包含新增两个鱼缸的采样信息。
+- 2026-09-21 用户进一步确认：Tab5 和手机查询均显示 ESP1 四个鱼缸及 ESP2 南美异形缸温度。
 
 ### 远程查询与问题处理
 
@@ -39,26 +42,23 @@
 
 ### 代码文件状态
 
-- 今日提交 `71dcdc8` 涉及日报摘要、Agent11 主流程、扩展 LAN 状态及相关测试/设计文件。
-- 当前工作区仍有未提交改动：
-  - `lib/extension_lan_state/src/extension_lan_state.cpp`
-  - `test/test_extension_lan_state/test_extension_lan_state.cpp`
-- 这些未提交改动需保留，下一次操作前先审阅，不得擅自清理或覆盖。
+- 当前提交 `ddd2c33` 涉及日报摘要、Agent11 主流程、扩展 LAN 状态及相关测试/设计文件。
+- 当前工作区仅有本次版本同步文档改动；固件代码提交已冻结。
 
 ## 3. 已确认决策
 
 - Agent11 当前不再为养水缸加热控制刷写固件。
 - 养水缸温度传感器、BASICR4 和加热棒控制归温控ESP2号；Agent11 不控制加热棒或市电。
 - 传感器和 BASICR4 到货后，只有出现实际故障且证据指向 Agent11 时，才考虑 Agent11 调试或重新刷写。
-- Tab5 当前固件和软件不在本次改动范围内。
+- Tab5 本次不修改源码；其正式固件版本和扩展接收验收登记在 home-platform 的 Tab5 acceptance ledger。
 
 ## 4. 验证状态
 
 ### 已运行命令
 
 ```bash
-/Users/tristanzh/.platformio/penv/bin/pio run -e waveshare_esp32s3_n16r8_remote_five
-/Users/tristanzh/.platformio/penv/bin/pio run -e waveshare_esp32s3_n16r8_remote_five -t upload --upload-port /dev/cu.usbmodem5B910349391
+/Users/tristanzh/.platformio/penv/bin/pio run -e waveshare_esp32s3_n16r8
+/Users/tristanzh/.platformio/penv/bin/pio run -e waveshare_esp32s3_n16r8 -t upload --upload-port /dev/cu.usbmodem5B910349491
 /Users/tristanzh/.platformio/penv/bin/pio device monitor -p /dev/cu.usbmodem5B910349391 -b 115200
 git status --short
 git log --since='24 hours ago' --name-status --oneline
@@ -93,6 +93,6 @@ git log --since='24 hours ago' --name-status --oneline
 - 固件目标配置：`platformio.ini`
 - 六缸摘要生成：`lib/transport_contract/src/daily_summary.cpp`、`src/main.cpp`
 - 远程摘要读取：`cloud/tencent-scf/src/state_read_handler.mjs`
-- 今日提交：`71dcdc8875b826b2ca05d75baeda239cd076d676`
+- 当前提交：`ddd2c33bacac1e13c411e74520741d8d19db0aef`
 - 当前工作区：`git status --short` 显示两项未提交改动，已保留。
 - 用户现场确认：快捷温度查询已显示南美草缸和南美异形缸。
