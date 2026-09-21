@@ -35,7 +35,7 @@ int main() {
   assert(std::string(config.auxiliary_tanks[2].label) == "毛毛缸");
   assert(config.auxiliary_tanks[0].policy.low_attention_c == 22.5);
   assert(config.auxiliary_tanks[0].policy.low_critical_c == 20.5);
-  assert(config.auxiliary_tanks[0].policy.low_recovery_c == 23.5);
+  assert(config.auxiliary_tanks[0].policy.low_recovery_c == 22.5);
   assert(config.auxiliary_tanks[1].policy.low_attention_c == 23.5);
   assert(config.auxiliary_tanks[1].policy.low_critical_c == 22.5);
   assert(config.auxiliary_tanks[1].policy.low_recovery_c == 23.5);

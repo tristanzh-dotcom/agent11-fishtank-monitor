@@ -1,5 +1,7 @@
 #pragma once
 
+#include "temperature_engine.hpp"
+
 #include <array>
 #include <cstdint>
 #include <optional>
@@ -38,6 +40,9 @@ std::array<std::uint8_t, kPacketSize> encode(
 bool accept(Reducer* reducer, const std::array<std::uint8_t, kPacketSize>& packet,
             std::uint64_t now_ms, const std::array<std::uint8_t, 32>& key);
 State freshState(const Reducer& reducer, std::uint64_t now_ms);
+std::optional<TemperatureSample> nextTemperatureSample(
+    const State& state, std::uint64_t at_ms,
+    std::optional<std::uint64_t>* last_source_sampled_at_ms);
 void begin();
 void tick(std::uint64_t now_ms);
 State snapshot(std::uint64_t now_ms);

@@ -179,6 +179,25 @@ State freshState(const Reducer& reducer, std::uint64_t now_ms) {
   return state;
 }
 
+std::optional<TemperatureSample> nextTemperatureSample(
+    const State& state, std::uint64_t at_ms,
+    std::optional<std::uint64_t>* last_source_sampled_at_ms) {
+  if (last_source_sampled_at_ms == nullptr) return std::nullopt;
+
+  const auto& temperature = state.temperature_c[kPlecoSlot];
+  if (temperature.has_value()) {
+    if (last_source_sampled_at_ms->has_value() &&
+        *last_source_sampled_at_ms == state.sampled_at_ms) {
+      return std::nullopt;
+    }
+    *last_source_sampled_at_ms = state.sampled_at_ms;
+    return TemperatureSample{at_ms, static_cast<double>(*temperature),
+                             std::nullopt};
+  }
+
+  return TemperatureSample{at_ms, std::nullopt, std::nullopt};
+}
+
 #if defined(ARDUINO)
 namespace {
 WiFiUDP udp;

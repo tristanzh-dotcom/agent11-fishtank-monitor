@@ -276,7 +276,7 @@ void test_auxiliary_engines_are_independent_without_gradient_events() {
   aquarium::TemperaturePolicy old_four_policy{};
   old_four_policy.low_attention_c = 22.5;
   old_four_policy.low_critical_c = 20.5;
-  old_four_policy.low_recovery_c = 23.5;
+  old_four_policy.low_recovery_c = 22.5;
 
   aquarium::TemperaturePolicy normal_policy{};
   TemperatureEngine old_four(old_four_policy);

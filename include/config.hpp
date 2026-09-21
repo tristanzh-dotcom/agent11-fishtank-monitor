@@ -118,7 +118,7 @@ constexpr RuntimeConfig default_runtime_config() {
       AuxiliaryTankConfig{"laosi_tank", "老四缸",
                           SensorRomAddress{{0x28, 0xE9, 0x53, 0xA0, 0x11, 0x00,
                                             0x00, 0x32}},
-                          auxiliary_policy(22.5, 20.5, 23.5)},
+                          auxiliary_policy(22.5, 20.5, 22.5)},
       AuxiliaryTankConfig{"xiaohei_tank", "小黑缸",
                           SensorRomAddress{{0x28, 0x01, 0xB7, 0x9F, 0x11, 0x00,
                                             0x00, 0xAD}},
