@@ -38,21 +38,36 @@ void test_high_temperature_escalates_after_5_minutes() {
   assert(events[0].state == EventState::opened);
 }
 
-void test_high_temperature_resolves_only_after_hysteresis_duration() {
+void test_high_temperature_resolves_at_attention_threshold_after_15_minutes() {
   TemperatureEngine engine;
 
   engine.ingest(sample(0, 27.6));
   const auto opened = engine.ingest(sample(900000, 27.6));
   assert(opened.size() == 1);
 
-  assert(engine.ingest(sample(900001, 26.5)).empty());
-  const auto still_recovering = engine.ingest(sample(1800000, 26.5));
-  assert(still_recovering.size() == 1);
-  assert(still_recovering[0].type == EventType::temperature_rapid_change);
+  assert(engine.ingest(sample(900001, 27.5)).empty());
+  assert(engine.ingest(sample(1800000, 27.5)).empty());
 
-  const auto resolved = engine.ingest(sample(1800001, 26.5));
+  const auto resolved = engine.ingest(sample(1800001, 27.5));
   assert(resolved.size() == 1);
   assert(resolved[0].type == EventType::high_temperature);
+  assert(resolved[0].state == EventState::resolved);
+}
+
+void test_low_temperature_resolves_at_attention_threshold_after_15_minutes() {
+  TemperatureEngine engine;
+
+  engine.ingest(sample(0, 23.4));
+  const auto opened = engine.ingest(sample(900000, 23.4));
+  assert(opened.size() == 1);
+  assert(opened[0].type == EventType::low_temperature);
+
+  assert(engine.ingest(sample(900001, 23.5)).empty());
+  assert(engine.ingest(sample(1800000, 23.5)).empty());
+
+  const auto resolved = engine.ingest(sample(1800001, 23.5));
+  assert(resolved.size() == 1);
+  assert(resolved[0].type == EventType::low_temperature);
   assert(resolved[0].state == EventState::resolved);
 }
 
@@ -185,11 +200,11 @@ void test_gradient_requires_hysteresis_and_fresh_recovery_duration() {
   assert(opened[0].type == EventType::temperature_gradient);
   assert(opened[0].state == EventState::opened);
 
-  assert(engine.ingest(TemperatureSample{600001, 26.0, 25.4}).empty());
+  assert(engine.ingest(TemperatureSample{600001, 26.0, 25.2}).empty());
   assert(engine.ingest(TemperatureSample{900000, 26.0, 25.3}).empty());
-  assert(engine.ingest(TemperatureSample{900001, 26.0, 25.4}).empty());
+  assert(engine.ingest(TemperatureSample{900001, 26.0, 25.2}).empty());
   const auto resolved =
-      engine.ingest(TemperatureSample{1500001, 26.0, 25.4});
+      engine.ingest(TemperatureSample{1500001, 26.0, 25.2});
   assert(resolved.size() == 1);
   assert(resolved[0].type == EventType::temperature_gradient);
   assert(resolved[0].state == EventState::resolved);
@@ -222,7 +237,7 @@ void test_sensor_fault_suppresses_temperature_reminders_and_requires_fresh_recov
   assert(fault_resolved[0].type == EventType::sensor_fault);
   assert(fault_resolved[0].state == EventState::resolved);
 
-  const auto high_resolved = engine.ingest(sample(5490000, 26.5));
+  const auto high_resolved = engine.ingest(sample(5490000, 27.5));
   assert(high_resolved.size() == 1);
   assert(high_resolved[0].type == EventType::high_temperature);
   assert(high_resolved[0].state == EventState::resolved);
@@ -286,7 +301,8 @@ void test_auxiliary_engines_are_independent_without_gradient_events() {
 int main() {
   test_high_temperature_opens_only_after_15_minutes();
   test_high_temperature_escalates_after_5_minutes();
-  test_high_temperature_resolves_only_after_hysteresis_duration();
+  test_high_temperature_resolves_at_attention_threshold_after_15_minutes();
+  test_low_temperature_resolves_at_attention_threshold_after_15_minutes();
   test_two_invalid_display_samples_open_a_sensor_fault();
   test_one_degree_change_over_30_minutes_opens_rapid_change();
   test_sustained_display_return_gradient_opens_diagnostic();

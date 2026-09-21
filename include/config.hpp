@@ -122,11 +122,11 @@ constexpr RuntimeConfig default_runtime_config() {
       AuxiliaryTankConfig{"xiaohei_tank", "小黑缸",
                           SensorRomAddress{{0x28, 0x01, 0xB7, 0x9F, 0x11, 0x00,
                                             0x00, 0xAD}},
-                          auxiliary_policy(23.5, 22.5, 24.5)},
+                          auxiliary_policy(23.5, 22.5, 23.5)},
       AuxiliaryTankConfig{"maomao_tank", "毛毛缸",
                           SensorRomAddress{{0x28, 0xA8, 0xE7, 0x9E, 0x11, 0x00,
                                             0x00, 0x7D}},
-                          auxiliary_policy(23.5, 22.5, 24.5)},
+                          auxiliary_policy(23.5, 22.5, 23.5)},
   };
   return config;
 }

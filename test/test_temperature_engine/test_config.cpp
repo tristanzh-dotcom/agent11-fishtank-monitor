@@ -10,6 +10,8 @@ int main() {
   assert(config.policy.high_critical_c == 28.5);
   assert(config.policy.low_attention_c == 23.5);
   assert(config.policy.low_critical_c == 22.5);
+  assert(config.policy.low_recovery_c == 23.5);
+  assert(config.policy.gradient_recovery_c == 0.8);
   assert(config.sample_interval_ms == 30000U);
   assert(std::string(config.aquarium_id) == "esp1");
   assert(config.bark_enabled);
@@ -36,13 +38,14 @@ int main() {
   assert(config.auxiliary_tanks[0].policy.low_recovery_c == 23.5);
   assert(config.auxiliary_tanks[1].policy.low_attention_c == 23.5);
   assert(config.auxiliary_tanks[1].policy.low_critical_c == 22.5);
-  assert(config.auxiliary_tanks[1].policy.low_recovery_c == 24.5);
+  assert(config.auxiliary_tanks[1].policy.low_recovery_c == 23.5);
   assert(config.auxiliary_tanks[2].policy.low_attention_c == 23.5);
   assert(config.auxiliary_tanks[2].policy.low_critical_c == 22.5);
-  assert(config.auxiliary_tanks[2].policy.low_recovery_c == 24.5);
+  assert(config.auxiliary_tanks[2].policy.low_recovery_c == 23.5);
   assert(config.auxiliary_tanks[0].policy.high_attention_c == 27.5);
   assert(config.auxiliary_tanks[0].policy.high_critical_c == 28.5);
-  assert(config.auxiliary_tanks[0].policy.high_recovery_c == 26.5);
+  assert(config.policy.high_recovery_c == 27.5);
+  assert(config.auxiliary_tanks[0].policy.high_recovery_c == 27.5);
   assert((config.auxiliary_tanks[0].sensor.bytes ==
           std::array<std::uint8_t, 8>{0x28, 0xE9, 0x53, 0xA0, 0x11, 0x00,
                                       0x00, 0x32}));

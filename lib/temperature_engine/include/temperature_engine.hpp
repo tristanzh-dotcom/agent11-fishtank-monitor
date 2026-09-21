@@ -40,12 +40,12 @@ struct TemperaturePolicy {
   double low_critical_c = 22.5;
   double high_attention_c = 27.5;
   double high_critical_c = 28.5;
-  double low_recovery_c = 24.5;
-  double high_recovery_c = 26.5;
+  double low_recovery_c = 23.5;
+  double high_recovery_c = 27.5;
   double rapid_change_c = 1.0;
   double rapid_change_critical_c = 2.0;
   double gradient_c = 0.8;
-  double gradient_recovery_c = 0.6;
+  double gradient_recovery_c = 0.8;
   std::uint64_t attention_duration_ms = 15U * 60U * 1000U;
   std::uint64_t critical_duration_ms = 5U * 60U * 1000U;
   std::uint64_t recovery_duration_ms = 15U * 60U * 1000U;
