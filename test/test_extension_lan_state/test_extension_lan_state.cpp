@@ -16,8 +16,10 @@ int main() {
   Reducer reducer{};
   assert(aquarium::extension_lan::accept(&reducer, packet, 1100U, key));
   const auto state = aquarium::extension_lan::freshState(reducer, 1100U);
-  assert(state.temperature_c[0].has_value());
-  assert(*state.temperature_c[0] == 25.4F);
+  assert(!state.temperature_c[0].has_value());
+  assert(state.thermal_state[0] == ThermalState::no_signal);
+  assert(state.temperature_c[1].has_value());
+  assert(*state.temperature_c[1] == 27.1F);
   assert(!aquarium::extension_lan::accept(&reducer, packet, 1200U, key));
   auto tampered = packet;
   tampered[29] ^= 1U;

@@ -7,6 +7,9 @@
 namespace aquarium::extension_lan {
 
 constexpr std::size_t kPacketSize = 72U;
+constexpr std::size_t kSlotCount = 2U;
+constexpr std::size_t kReservedNoSignalSlot = 0U;
+constexpr std::size_t kPlecoSlot = 1U;
 constexpr std::uint64_t kFreshnessMs = 75'000U;
 constexpr std::int16_t kMissingTemperature = -32768;
 
@@ -14,8 +17,10 @@ enum class ThermalState : std::uint8_t { normal, high, low, no_signal };
 
 struct State {
   std::uint64_t sampled_at_ms{};
-  std::array<std::optional<float>, 2> temperature_c{};
-  std::array<ThermalState, 2> thermal_state{
+  // TEX1 keeps slot 0 as a no-signal reservation; slot 1 carries the pleco
+  // tank. The frame shape remains two slots for compatibility.
+  std::array<std::optional<float>, kSlotCount> temperature_c{};
+  std::array<ThermalState, kSlotCount> thermal_state{
       ThermalState::no_signal, ThermalState::no_signal};
 };
 

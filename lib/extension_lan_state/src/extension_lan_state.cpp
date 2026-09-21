@@ -114,7 +114,7 @@ std::array<std::uint8_t, kPacketSize> encode(
   put64(packet.data() + 8U, source_id);
   put32(packet.data() + 16U, sequence);
   put64(packet.data() + 20U, state.sampled_at_ms);
-  for (std::size_t index = 0U; index < 2U; ++index) {
+  for (std::size_t index = 0U; index < kSlotCount; ++index) {
     put16(packet.data() + 28U + index * 2U,
           encodeTemperature(state.temperature_c[index]));
     packet[32U + index] =
@@ -143,7 +143,7 @@ bool accept(Reducer* reducer,
   }
   State state{};
   state.sampled_at_ms = sampled_at_ms;
-  for (std::size_t index = 0U; index < 2U; ++index) {
+  for (std::size_t index = 0U; index < kSlotCount; ++index) {
     const auto temperature = get16(packet.data() + 28U + index * 2U);
     if (!validTemperature(temperature) || packet[32U + index] > 3U ||
         (temperature == kMissingTemperature && packet[32U + index] != 3U) ||
@@ -168,6 +168,10 @@ bool accept(Reducer* reducer,
 State freshState(const Reducer& reducer, std::uint64_t now_ms) {
   if (!reducer.has_packet || now_ms < reducer.accepted_at_ms) return {};
   State state = reducer.state;
+  // Accept the legacy-compatible frame shape, but never expose data from the
+  // reserved first slot to Agent11 consumers.
+  state.temperature_c[kReservedNoSignalSlot].reset();
+  state.thermal_state[kReservedNoSignalSlot] = ThermalState::no_signal;
   if (now_ms - reducer.accepted_at_ms > kFreshnessMs) {
     state.temperature_c = {};
     state.thermal_state = {ThermalState::no_signal, ThermalState::no_signal};

@@ -238,27 +238,25 @@ aquarium::transport::DailyTemperatureSnapshot daily_snapshot(
               runtime_config.auxiliary_tanks[index].policy);
     }
   }
-  for (std::size_t index = 0U; index < extension_state.temperature_c.size();
-       ++index) {
-    auto& extension = snapshot.extension_tanks[index];
-    extension.temperature_c =
-        extension_state.temperature_c[index].has_value()
-            ? std::optional<double>{*extension_state.temperature_c[index]}
-            : std::nullopt;
-    extension.state = extension.temperature_c.has_value()
-                          ? aquarium::transport::SummaryReadingState::valid
-                          : aquarium::transport::SummaryReadingState::invalid;
-    if (extension.state ==
-        aquarium::transport::SummaryReadingState::valid) {
-      extension.status =
-          extension_state.thermal_state[index] ==
-                  aquarium::extension_lan::ThermalState::high
-              ? aquarium::transport::TemperatureReadingStatus::high
-              : extension_state.thermal_state[index] ==
-                        aquarium::extension_lan::ThermalState::low
-                    ? aquarium::transport::TemperatureReadingStatus::low
-                    : aquarium::transport::TemperatureReadingStatus::normal;
-    }
+  // Slot 0 remains reserved no-signal; only slot 1 is the pleco tank.
+  const std::size_t index = aquarium::extension_lan::kPlecoSlot;
+  auto& extension = snapshot.extension_tanks[index];
+  extension.temperature_c =
+      extension_state.temperature_c[index].has_value()
+          ? std::optional<double>{*extension_state.temperature_c[index]}
+          : std::nullopt;
+  extension.state = extension.temperature_c.has_value()
+                        ? aquarium::transport::SummaryReadingState::valid
+                        : aquarium::transport::SummaryReadingState::invalid;
+  if (extension.state == aquarium::transport::SummaryReadingState::valid) {
+    extension.status =
+        extension_state.thermal_state[index] ==
+                aquarium::extension_lan::ThermalState::high
+            ? aquarium::transport::TemperatureReadingStatus::high
+            : extension_state.thermal_state[index] ==
+                      aquarium::extension_lan::ThermalState::low
+                  ? aquarium::transport::TemperatureReadingStatus::low
+                  : aquarium::transport::TemperatureReadingStatus::normal;
   }
   return snapshot;
 }
