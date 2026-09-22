@@ -248,6 +248,7 @@ aquarium::transport::DailyTemperatureSnapshot daily_snapshot(
   extension.state = extension.temperature_c.has_value()
                         ? aquarium::transport::SummaryReadingState::valid
                         : aquarium::transport::SummaryReadingState::invalid;
+  extension.fresh = extension_state.fresh;
   if (extension.state == aquarium::transport::SummaryReadingState::valid) {
     extension.status =
         extension_state.thermal_state[index] ==

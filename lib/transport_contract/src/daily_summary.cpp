@@ -95,6 +95,13 @@ std::string auxiliary_text(const DailyTemperatureSnapshot& snapshot,
 }
 
 std::string extension_text(const ExtensionTankReading& reading) {
+  if (reading.state == SummaryReadingState::valid &&
+      reading.temperature_c.has_value() && !reading.fresh) {
+    char buffer[32]{};
+    std::snprintf(buffer, sizeof(buffer), "%.1f°C（数据暂未更新）",
+                  *reading.temperature_c);
+    return buffer;
+  }
   switch (reading.state) {
     case SummaryReadingState::valid:
       return temperature_text(reading.temperature_c, reading.status);

@@ -158,6 +158,19 @@ void test_daily_summary_body_appends_new_tanks_without_relabeling_old_ones() {
   assert(body.find("毛毛缸：20.1°C（温度严重偏低）") != std::string::npos);
 }
 
+void test_daily_summary_marks_retained_extension_value_as_not_updated() {
+  DailySummaryScheduler scheduler;
+  auto value = snapshot();
+  value.extension_tanks[1].fresh = false;
+  const auto created = scheduler.observe(
+      LocalDateTime{2026, 9, 9, 9, 0, 20, true}, 1000, value);
+  assert(created.has_value());
+  const auto body = aquarium::transport::daily_summary_body(*created);
+  assert(body.find("南美异形缸：27.1°C（数据暂未更新）") !=
+         std::string::npos);
+  assert(body.find("南美异形缸：无有效读数") == std::string::npos);
+}
+
 }  // namespace
 
 int main() {
@@ -166,5 +179,6 @@ int main() {
   test_daily_summary_body_reports_all_five_channels_and_states();
   test_temperature_status_uses_configured_thresholds();
   test_daily_summary_body_appends_new_tanks_without_relabeling_old_ones();
+  test_daily_summary_marks_retained_extension_value_as_not_updated();
   std::cout << "daily summary tests passed\n";
 }

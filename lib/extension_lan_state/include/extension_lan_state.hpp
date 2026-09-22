@@ -19,6 +19,7 @@ enum class ThermalState : std::uint8_t { normal, high, low, no_signal };
 
 struct State {
   std::uint64_t sampled_at_ms{};
+  bool fresh{};
   // TEX1 keeps slot 0 as a no-signal reservation; slot 1 carries the pleco
   // tank. The frame shape remains two slots for compatibility.
   std::array<std::optional<float>, kSlotCount> temperature_c{};

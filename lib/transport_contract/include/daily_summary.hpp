@@ -40,6 +40,7 @@ struct ExtensionTankReading {
   SummaryReadingState state = SummaryReadingState::invalid;
   std::optional<double> temperature_c;
   TemperatureReadingStatus status = TemperatureReadingStatus::invalid;
+  bool fresh = true;
 };
 
 struct DailyTemperatureSnapshot {

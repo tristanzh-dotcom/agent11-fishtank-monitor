@@ -168,13 +168,13 @@ bool accept(Reducer* reducer,
 State freshState(const Reducer& reducer, std::uint64_t now_ms) {
   if (!reducer.has_packet || now_ms < reducer.accepted_at_ms) return {};
   State state = reducer.state;
+  state.fresh = true;
   // Accept the legacy-compatible frame shape, but never expose data from the
   // reserved first slot to Agent11 consumers.
   state.temperature_c[kReservedNoSignalSlot].reset();
   state.thermal_state[kReservedNoSignalSlot] = ThermalState::no_signal;
   if (now_ms - reducer.accepted_at_ms > kFreshnessMs) {
-    state.temperature_c = {};
-    state.thermal_state = {ThermalState::no_signal, ThermalState::no_signal};
+    state.fresh = false;
   }
   return state;
 }
@@ -183,6 +183,7 @@ std::optional<TemperatureSample> nextTemperatureSample(
     const State& state, std::uint64_t at_ms,
     std::optional<std::uint64_t>* last_source_sampled_at_ms) {
   if (last_source_sampled_at_ms == nullptr) return std::nullopt;
+  if (!state.fresh) return std::nullopt;
 
   const auto& temperature = state.temperature_c[kPlecoSlot];
   if (temperature.has_value()) {
