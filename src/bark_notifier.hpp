@@ -11,6 +11,7 @@ namespace aquarium::firmware {
 
 class BarkNotifier {
  public:
+  bool notify(const transport::BarkMessage& message);
   bool notify(const TemperatureEvent& event, const char* aquarium_id,
               std::optional<std::time_t> event_time = std::nullopt);
   bool notify(const transport::ScopedTemperatureEvent& event,

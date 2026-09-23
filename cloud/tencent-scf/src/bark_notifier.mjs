@@ -135,23 +135,23 @@ function messageFor(alert, sentAtMs = Date.now()) {
       Math.floor((alert.detectedAtMs - alert.lastSeenAtMs) / 60_000),
     );
     return {
-      title: `【注意·首次】鱼缸监控｜${alert.deviceId === 'esp1' ? 'ESP1' : alert.deviceId} 离线`,
-      body: `设备：${alert.deviceId === 'esp1' ? 'ESP1' : alert.deviceId}（由腾讯云检测）\n`
-        + `情况：已连续 ${minutes} 分钟未收到心跳。\n`
-        + '建议：检查 Wi-Fi、设备供电和鱼缸现场。\n'
-        + `时间：最后心跳 ${formatBeijingTime(alert.lastSeenAtMs)}；检测 ${formatBeijingTime(alert.detectedAtMs)}（北京时间）\n`
-        + '次数：本次离线首次告警',
+      title: `【注意·首次】鱼缸监控｜温控ESP1号连接中断`,
+      body: '设备：温控ESP1号（云端监测）\n'
+        + `情况：已连续 ${minutes} 分钟未收到设备状态。\n`
+        + '建议：检查设备供电、Wi-Fi 和网络连接。\n'
+        + `时间：最后收到状态 ${formatBeijingTime(alert.lastSeenAtMs)}；检测 ${formatBeijingTime(alert.detectedAtMs)}（北京时间）\n`
+        + '提醒次数：本次离线首次提醒',
       level: 'timeSensitive',
     };
   }
 
   return {
-    title: `【信息·恢复】鱼缸监控｜${alert.deviceId === 'esp1' ? 'ESP1' : alert.deviceId} 已恢复`,
-    body: `设备：${alert.deviceId === 'esp1' ? 'ESP1' : alert.deviceId}（由腾讯云检测）\n`
-      + '情况：云端已重新收到设备心跳。\n'
-      + '建议：继续观察设备连接。\n'
+    title: '【信息·恢复】鱼缸监控｜温控ESP1号连接已恢复',
+    body: '设备：温控ESP1号（云端监测）\n'
+      + '情况：云端已重新收到设备状态。\n'
+      + '建议：无需操作，继续观察连接状态。\n'
       + `时间：恢复检测 ${formatBeijingTime(alert.detectedAtMs)}（北京时间）\n`
-      + '次数：不计入告警次数',
+      + '提醒次数：不计入告警次数',
     level: 'active',
   };
 }

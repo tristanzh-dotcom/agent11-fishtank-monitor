@@ -153,13 +153,13 @@ test('reads a fresh cloud send time for each retry', async () => {
   assert.match(bodies[1].body, /时间：判定 事件时间不可用/);
 });
 
-test('uses the configured fish-tank display name for offline alerts', async () => {
-  let body;
+test('uses the configured device name and common count label for connectivity alerts', async () => {
+  const bodies = [];
   const notifier = createBarkNotifier({
     barkKey: 'bark-key-not-in-url',
     serverUrl: 'https://bark.example.test',
     fetchImpl: async (_url, options) => {
-      body = JSON.parse(options.body);
+      bodies.push(JSON.parse(options.body));
       return { ok: true };
     },
   });
@@ -170,8 +170,17 @@ test('uses the configured fish-tank display name for offline alerts', async () =
     lastSeenAtMs: 1_750_000_000_000,
     detectedAtMs: 1_750_000_900_000,
   });
+  await notifier.send({
+    type: 'recovered',
+    deviceId: 'esp1',
+    lastSeenAtMs: 1_750_000_000_000,
+    detectedAtMs: 1_750_000_900_000,
+  });
 
-  assert.equal(body.title, '【注意·首次】鱼缸监控｜ESP1 离线');
-  assert.match(body.body, /设备：ESP1（由腾讯云检测）/);
-  assert.match(body.body, /次数：本次离线首次告警/);
+  assert.equal(bodies[0].title, '【注意·首次】鱼缸监控｜温控ESP1号连接中断');
+  assert.match(bodies[0].body, /设备：温控ESP1号（云端监测）/);
+  assert.match(bodies[0].body, /提醒次数：本次离线首次提醒/);
+  assert.equal(bodies[1].title, '【信息·恢复】鱼缸监控｜温控ESP1号连接已恢复');
+  assert.match(bodies[1].body, /设备：温控ESP1号（云端监测）/);
+  assert.match(bodies[1].body, /提醒次数：不计入告警次数/);
 });

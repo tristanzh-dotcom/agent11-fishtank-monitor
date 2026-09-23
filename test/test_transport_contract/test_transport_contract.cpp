@@ -84,6 +84,33 @@ int main() {
   assert(invalid_send_time_bark.body.find("发送：时间不可用") !=
          std::string::npos);
 
+  const auto extension_offline =
+      aquarium::transport::extension_connectivity_message(
+          aquarium::transport::ExtensionConnectivityEvent::offline,
+          75000U, std::time_t{1'750'000'000}, std::time_t{1'750'000'002});
+  assert(extension_offline.title ==
+         "【注意·首次】南美异形缸｜温控ESP2号连接中断");
+  assert(extension_offline.body.find(
+             "情况：已连续超过 75 秒未收到设备状态更新。") !=
+         std::string::npos);
+  assert(extension_offline.body.find("设备：温控ESP2号") !=
+         std::string::npos);
+  assert(extension_offline.body.find("提醒次数：本次中断仅提醒一次") !=
+         std::string::npos);
+  assert(extension_offline.level == "timeSensitive");
+
+  const auto extension_recovered =
+      aquarium::transport::extension_connectivity_message(
+          aquarium::transport::ExtensionConnectivityEvent::recovered,
+          75000U, std::time_t{1'750'000'000}, std::time_t{1'750'000'002});
+  assert(extension_recovered.title ==
+         "【信息·恢复】南美异形缸｜温控ESP2号连接已恢复");
+  assert(extension_recovered.body.find("情况：已重新收到设备状态更新。") !=
+         std::string::npos);
+  assert(extension_recovered.body.find("提醒次数：不计入告警次数") !=
+         std::string::npos);
+  assert(extension_recovered.level == "active");
+
   const auto scoped_bark = aquarium::transport::bark_message(
       aquarium::transport::ScopedTemperatureEvent{
           "laosi_tank", "老四缸", event},

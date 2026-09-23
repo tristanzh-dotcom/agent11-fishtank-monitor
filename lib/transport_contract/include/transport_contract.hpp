@@ -19,6 +19,8 @@ struct BarkMessage {
   std::string fingerprint;
 };
 
+enum class ExtensionConnectivityEvent : std::uint8_t { offline, recovered };
+
 struct ScopedTemperatureEvent {
   std::string tank_key;
   std::string tank_label;
@@ -62,6 +64,10 @@ BarkMessage bark_message(const ScopedTemperatureEvent& scoped_event,
                          std::optional<std::time_t> event_time = std::nullopt,
                          std::optional<std::time_t> send_time = std::nullopt,
                          const char* source = "设备");
+BarkMessage extension_connectivity_message(
+    ExtensionConnectivityEvent event, std::uint64_t stale_after_ms,
+    std::optional<std::time_t> event_time = std::nullopt,
+    std::optional<std::time_t> send_time = std::nullopt);
 std::string bark_request_json(const BarkMessage& message,
                               const std::string& device_key);
 

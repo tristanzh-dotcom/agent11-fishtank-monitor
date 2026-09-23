@@ -168,6 +168,7 @@ bool accept(Reducer* reducer,
 State freshState(const Reducer& reducer, std::uint64_t now_ms) {
   if (!reducer.has_packet || now_ms < reducer.accepted_at_ms) return {};
   State state = reducer.state;
+  state.has_packet = true;
   state.fresh = true;
   // Accept the legacy-compatible frame shape, but never expose data from the
   // reserved first slot to Agent11 consumers.
@@ -177,6 +178,28 @@ State freshState(const Reducer& reducer, std::uint64_t now_ms) {
     state.fresh = false;
   }
   return state;
+}
+
+ConnectivityEvent observeConnectivity(ConnectivityTracker* tracker,
+                                      const State& state) {
+  if (tracker == nullptr || !state.has_packet) {
+    return ConnectivityEvent::none;
+  }
+  if (!tracker->initialized) {
+    tracker->initialized = true;
+    tracker->offline = !state.fresh;
+    return tracker->offline ? ConnectivityEvent::offline
+                            : ConnectivityEvent::none;
+  }
+  if (!tracker->offline && !state.fresh) {
+    tracker->offline = true;
+    return ConnectivityEvent::offline;
+  }
+  if (tracker->offline && state.fresh) {
+    tracker->offline = false;
+    return ConnectivityEvent::recovered;
+  }
+  return ConnectivityEvent::none;
 }
 
 std::optional<TemperatureSample> nextTemperatureSample(

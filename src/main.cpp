@@ -51,6 +51,7 @@ std::array<aquarium::TemperatureEngine, 3> auxiliary_engines{
 aquarium::transport::ScopedEventOutbox auxiliary_delivery(16);
 aquarium::transport::DailySummaryScheduler daily_summary;
 aquarium::extension_lan::State extension_state{};
+aquarium::extension_lan::ConnectivityTracker extension_connectivity_tracker{};
 bool auxiliary_turn = false;
 bool time_sync_completed = false;
 aquarium::RetryBackoff wifi_backoff(1000U, 60000U);
@@ -325,6 +326,29 @@ void loop() {
   connect_wifi(now_ms);
   aquarium::extension_lan::tick(now_ms);
   observe_time_sync();
+  const auto latest_extension_state =
+      aquarium::extension_lan::snapshot(now_ms);
+  if (runtime_config.bark_enabled && WiFi.status() == WL_CONNECTED) {
+    const auto transition = aquarium::extension_lan::observeConnectivity(
+        &extension_connectivity_tracker, latest_extension_state);
+    if (transition != aquarium::extension_lan::ConnectivityEvent::none) {
+      const std::time_t event_epoch = std::time(nullptr);
+      const auto event_time =
+          event_epoch >= kMinimumReasonableEpochSeconds
+              ? std::optional<std::time_t>{event_epoch}
+              : std::nullopt;
+      const auto event_type =
+          transition == aquarium::extension_lan::ConnectivityEvent::offline
+              ? aquarium::transport::ExtensionConnectivityEvent::offline
+              : aquarium::transport::ExtensionConnectivityEvent::recovered;
+      const auto message = aquarium::transport::extension_connectivity_message(
+          event_type, aquarium::extension_lan::kFreshnessMs, event_time,
+          event_time);
+      const bool delivered = bark.notify(message);
+      Serial.println(delivered ? "extension connectivity bark delivered"
+                               : "extension connectivity bark failed");
+    }
+  }
 
   if (now_ms - last_sample_at_ms < runtime_config.sample_interval_ms) {
     delay(50);
@@ -333,7 +357,7 @@ void loop() {
   last_sample_at_ms = now_ms;
 
   const auto readings = reader.read(now_ms);
-  extension_state = aquarium::extension_lan::snapshot(now_ms);
+  extension_state = latest_extension_state;
   const auto& sample = readings.primary;
   observe_time_sync();
   const std::time_t sampled_at = std::time(nullptr);
