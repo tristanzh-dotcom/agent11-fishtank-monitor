@@ -195,8 +195,10 @@ std::string bark_body(const TemperatureEvent& event,
                      calendar_time_text(event_time, "时间未同步") +
                      "；发送：" +
                      calendar_time_text(send_time, "时间不可用") +
-                     "（北京时间）\n" +
-                     "次数：" + count_text;
+                     "（北京时间）";
+  if (event.state != EventState::resolved) {
+    body += "\n提醒次数：" + count_text;
+  }
   if (event.state == EventState::reminder) {
     body += "\n截至本次判定，异常仍未解除。";
   }

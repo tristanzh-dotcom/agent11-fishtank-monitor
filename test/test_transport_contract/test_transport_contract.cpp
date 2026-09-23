@@ -57,7 +57,7 @@ int main() {
   assert(bark.body.find("建议：核查最新水温及加热棒温控。") !=
          std::string::npos);
   assert(bark.body.find("时间：告警判定：时间未同步") != std::string::npos);
-  assert(bark.body.find("次数：本问题第 1 次告警") != std::string::npos);
+  assert(bark.body.find("提醒次数：本问题第 1 次告警") != std::string::npos);
   assert(bark.group == "aquarium");
   assert(bark.level == "timeSensitive");
   assert(bark.fingerprint == "aquarium:esp1:high_temperature");

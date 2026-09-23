@@ -182,9 +182,7 @@ void DailySummaryScheduler::expire(std::uint64_t monotonic_now_ms) {
 
 std::string daily_summary_body(const DailyTemperatureSummary& summary) {
   const auto& snapshot = summary.snapshot;
-  // Keep the reserved first extension slot visible as no-data until ESP3 is
-  // integrated; only slot 1 is a reportable extension tank today.
-  const ExtensionTankReading reserved_extension{};
+  // The first extension tank is reserved until ESP3 is integrated.
   std::string body = "采样时间：" + local_time_text(snapshot.sampled_at) +
                      "\n\n包包缸（主缸 / 回水缸）\n  主缸：" +
                      temperature_text(snapshot.main_c, snapshot.main_status) +
@@ -194,7 +192,7 @@ std::string daily_summary_body(const DailyTemperatureSummary& summary) {
                      "\n老四缸：" + auxiliary_text(snapshot, 0) +
                      "\n小黑缸：" + auxiliary_text(snapshot, 1) +
                      "\n毛毛缸：" + auxiliary_text(snapshot, 2) +
-                     "\n南美草缸：" + extension_text(reserved_extension) +
+                     "\n南美草缸：暂未接入" +
                      "\n南美异形缸：" + extension_text(snapshot.extension_tanks[1]);
   return body;
 }
@@ -207,8 +205,7 @@ BarkMessage daily_summary_message(const DailyTemperatureSummary& summary,
                                                sampled_at.day);
   const std::string body =
       "设备：温控ESP1号\n情况：" + daily_summary_body(summary) +
-      "\n建议：无需操作。\n时间：以情况中的采样时间为准（北京时间）\n"
-      "次数：不计入告警次数";
+      "\n建议：无需操作。";
   return BarkMessage{
       "【信息·汇总】全部鱼缸｜鱼缸温度报告", body, "aquarium-daily", "active",
       "aquarium:" + aquarium_id + ":" + std::to_string(date) + ":" +

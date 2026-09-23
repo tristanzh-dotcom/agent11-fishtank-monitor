@@ -117,7 +117,7 @@ void test_daily_summary_body_reports_all_five_channels_and_states() {
   assert(message.title == "【信息·汇总】全部鱼缸｜鱼缸温度报告");
   assert(message.body.find("设备：温控ESP1号") != std::string::npos);
   assert(message.body.find("建议：无需操作") != std::string::npos);
-  assert(message.body.find("次数：不计入告警次数") != std::string::npos);
+  assert(message.body.find("提醒次数：") == std::string::npos);
   assert(message.group == "aquarium-daily");
   assert(message.level == "active");
   assert(message.fingerprint == "aquarium:esp1:20260909:morning");
@@ -153,7 +153,7 @@ void test_daily_summary_body_appends_new_tanks_without_relabeling_old_ones() {
       LocalDateTime{2026, 9, 9, 9, 0, 20, true}, 1000, snapshot());
   assert(created.has_value());
   const auto body = aquarium::transport::daily_summary_body(*created);
-  assert(body.find("南美草缸：无有效读数") != std::string::npos);
+  assert(body.find("南美草缸：暂未接入") != std::string::npos);
   assert(body.find("南美异形缸：27.1°C") != std::string::npos);
   assert(body.find("毛毛缸：20.1°C（温度严重偏低）") != std::string::npos);
 }
