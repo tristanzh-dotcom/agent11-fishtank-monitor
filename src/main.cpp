@@ -9,6 +9,7 @@
 #include "retry_backoff.hpp"
 #include "scoped_event_outbox.hpp"
 #include "daily_summary.hpp"
+#include "diagnostic_log.hpp"
 #include "extension_lan_state.hpp"
 #include "grass_lan_state.hpp"
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
@@ -40,47 +41,11 @@ namespace {
 constexpr char kFirmwareVersion[] = "esp1-lan-rx-20260924.1";
 constexpr std::uint8_t kOneWirePin = 4;
 constexpr std::time_t kMinimumReasonableEpochSeconds = 1700000000;
-constexpr std::size_t kDiagnosticLogCapacity = 32U;
-constexpr std::uint32_t kDiagnosticStorageMagic = 0x44494147U;
-constexpr std::uint32_t kDiagnosticStorageVersion = 1U;
+constexpr std::size_t kDiagnosticLogCapacity =
+    aquarium::firmware::diagnostics::kCapacity;
 constexpr std::uint64_t kDiagnosticLoopGapMs = 10000U;
-
-enum class DiagnosticEvent : std::uint8_t {
-  boot,
-  wifi_down,
-  wifi_up,
-  loop_gap,
-  extension_first_packet,
-  extension_sender_session,
-  extension_stale,
-  extension_recovered,
-  // Append only: preserve the existing persisted event values and record layout.
-  extension_receive_gap,
-  grass_first_packet,
-  grass_sender_session,
-  grass_receive_gap,
-  grass_stale,
-  grass_recovered,
-};
-
-struct DiagnosticRecord {
-  std::uint32_t uptime_ms{};
-  std::uint32_t epoch_seconds{};
-  std::uint32_t value{};
-  std::uint32_t detail{};
-  DiagnosticEvent event{};
-};
-
-struct DiagnosticStorage {
-  std::uint32_t magic{};
-  std::uint32_t version{};
-  std::uint32_t next{};
-  std::uint32_t count{};
-  std::uint32_t overwritten{};
-  std::array<DiagnosticRecord, kDiagnosticLogCapacity> records{};
-};
-static_assert(sizeof(DiagnosticStorage) <= 1024U,
-              "connectivity diagnostics must stay small");
+using DiagnosticEvent = aquarium::firmware::diagnostics::Event;
+using DiagnosticRecord = aquarium::firmware::diagnostics::Record;
 
 aquarium::firmware::RuntimeConfig runtime_config =
     aquarium::firmware::default_runtime_config();
@@ -107,10 +72,7 @@ aquarium::RetryBackoff wifi_backoff(1000U, 60000U);
 aquarium::heartbeat::HeartbeatSchedule heartbeat_schedule(
     runtime_config.heartbeat_interval_ms, 5000U,
     runtime_config.heartbeat_interval_ms);
-std::array<DiagnosticRecord, kDiagnosticLogCapacity> diagnostic_records{};
-std::size_t diagnostic_next{};
-std::size_t diagnostic_count{};
-std::uint32_t diagnostic_overwritten{};
+aquarium::firmware::diagnostics::Log diagnostic_log{};
 std::uint64_t diagnostic_last_receive_at_ms{};
 bool diagnostic_received_packet{};
 std::uint64_t diagnostic_grass_last_receive_at_ms{};
@@ -122,8 +84,13 @@ bool diagnostic_wifi_down_pending{};
 std::uint64_t diagnostic_wifi_down_since_ms{};
 std::uint64_t diagnostic_last_loop_ms{};
 bool diagnostic_has_loop_time{};
+bool diagnostic_grass_rejection_recorded{};
 
 void load_diagnostic_log() {
+  aquarium::firmware::diagnostics::Log initialized{};
+  initialized.magic = aquarium::firmware::diagnostics::kMagic;
+  initialized.version = aquarium::firmware::diagnostics::kVersion;
+  diagnostic_log = initialized;
   Preferences preferences;
   if (!preferences.begin("net_diag", false)) {
     diagnostic_storage_ok = false;
@@ -131,35 +98,33 @@ void load_diagnostic_log() {
     return;
   }
   diagnostic_storage_ok = true;
-  if (preferences.isKey("ring")) {
-    DiagnosticStorage stored{};
-    const bool loaded =
-        preferences.getBytesLength("ring") == sizeof(stored) &&
-        preferences.getBytes("ring", &stored, sizeof(stored)) == sizeof(stored);
-    if (loaded && stored.magic == kDiagnosticStorageMagic &&
-        stored.version == kDiagnosticStorageVersion &&
-        stored.next < kDiagnosticLogCapacity &&
-        stored.count <= kDiagnosticLogCapacity) {
-      diagnostic_records = stored.records;
-      diagnostic_next = stored.next;
-      diagnostic_count = stored.count;
-      diagnostic_overwritten = stored.overwritten;
+  const auto length = preferences.getBytesLength("ring");
+  if (length == sizeof(diagnostic_log) &&
+      preferences.getBytes("ring", &diagnostic_log,
+                           sizeof(diagnostic_log)) == sizeof(diagnostic_log) &&
+      aquarium::firmware::diagnostics::valid(diagnostic_log)) {
+    // Current version loaded.
+  } else if (length == sizeof(aquarium::firmware::diagnostics::LegacyLog)) {
+    aquarium::firmware::diagnostics::LegacyLog legacy{};
+    if (preferences.getBytes("ring", &legacy, sizeof(legacy)) ==
+            sizeof(legacy) &&
+        aquarium::firmware::diagnostics::migrateLegacy(legacy,
+                                                       &diagnostic_log)) {
+      diagnostic_dirty = true;
+      Serial.println("DIAG_STORAGE migrated");
     } else {
       Serial.println("DIAG_STORAGE invalid");
+      diagnostic_dirty = true;
     }
+  } else if (length != 0U) {
+    Serial.println("DIAG_STORAGE invalid");
+    diagnostic_dirty = true;
   }
   preferences.end();
 }
 
 void persist_diagnostic_log() {
   if (!diagnostic_dirty) return;
-  DiagnosticStorage stored{};
-  stored.magic = kDiagnosticStorageMagic;
-  stored.version = kDiagnosticStorageVersion;
-  stored.next = static_cast<std::uint32_t>(diagnostic_next);
-  stored.count = static_cast<std::uint32_t>(diagnostic_count);
-  stored.overwritten = diagnostic_overwritten;
-  stored.records = diagnostic_records;
   diagnostic_dirty = false;
 
   Preferences preferences;
@@ -168,10 +133,10 @@ void persist_diagnostic_log() {
     Serial.println("DIAG_STORAGE write_unavailable");
     return;
   }
-  const std::size_t written = preferences.putBytes("ring", &stored,
-                                                    sizeof(stored));
+  const std::size_t written = preferences.putBytes(
+      "ring", &diagnostic_log, sizeof(diagnostic_log));
   preferences.end();
-  diagnostic_storage_ok = written == sizeof(stored);
+  diagnostic_storage_ok = written == sizeof(diagnostic_log);
   if (!diagnostic_storage_ok) Serial.println("DIAG_STORAGE write_failed");
 }
 
@@ -188,27 +153,33 @@ void record_diagnostic(DiagnosticEvent event, std::uint64_t uptime_ms,
   record.value = value;
   record.detail = detail;
   record.event = event;
-  diagnostic_records[diagnostic_next] = record;
-  diagnostic_next = (diagnostic_next + 1U) % diagnostic_records.size();
-  if (diagnostic_count < diagnostic_records.size()) {
-    ++diagnostic_count;
-  } else {
-    ++diagnostic_overwritten;
-  }
+  aquarium::firmware::diagnostics::append(&diagnostic_log, record);
   diagnostic_dirty = true;
+}
+
+void record_grass_diagnostic(DiagnosticEvent event, std::uint64_t uptime_ms,
+                             std::uint32_t value = 0U,
+                             std::uint32_t detail = 0U) {
+  record_diagnostic(event, uptime_ms, value, detail);
+  const auto counters = aquarium::grass_lan::receiveCounters();
+  const auto index = (diagnostic_log.next + kDiagnosticLogCapacity - 1U) %
+                     kDiagnosticLogCapacity;
+  aquarium::firmware::diagnostics::setReceiveSnapshot(
+      &diagnostic_log.records[index], counters.received, counters.accepted,
+      counters.rejected);
 }
 
 void dump_diagnostic_log() {
   Serial.printf("DIAG_BEGIN count=%u overwritten=%lu storage=%s\n",
-                static_cast<unsigned>(diagnostic_count),
-                static_cast<unsigned long>(diagnostic_overwritten),
+                static_cast<unsigned>(diagnostic_log.count),
+                static_cast<unsigned long>(diagnostic_log.overwritten),
                 diagnostic_storage_ok ? "ok" : "unavailable");
   const std::size_t oldest =
-      (diagnostic_next + diagnostic_records.size() - diagnostic_count) %
-      diagnostic_records.size();
-  for (std::size_t offset = 0U; offset < diagnostic_count; ++offset) {
-    const auto& record = diagnostic_records[(oldest + offset) %
-                                             diagnostic_records.size()];
+      (diagnostic_log.next + kDiagnosticLogCapacity - diagnostic_log.count) %
+      kDiagnosticLogCapacity;
+  for (std::size_t offset = 0U; offset < diagnostic_log.count; ++offset) {
+    const auto& record = diagnostic_log.records[(oldest + offset) %
+                                                 kDiagnosticLogCapacity];
     const auto epoch = static_cast<unsigned long>(record.epoch_seconds);
     const auto uptime = static_cast<unsigned long>(record.uptime_ms);
     switch (record.event) {
@@ -275,11 +246,23 @@ void dump_diagnostic_log() {
                       epoch, uptime, static_cast<unsigned long>(record.value),
                       static_cast<unsigned long>(record.detail));
         break;
+      case DiagnosticEvent::grass_rejected:
+        Serial.printf("DIAG event=GRASS_REJECTED epoch_s=%lu uptime_ms=%lu rejected=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value));
+        break;
       case DiagnosticEvent::extension_recovered:
         Serial.printf("DIAG event=EXT_RECOVERED epoch_s=%lu uptime_ms=%lu silence_ms=%lu missed_frames=%lu\n",
                       epoch, uptime, static_cast<unsigned long>(record.value),
                       static_cast<unsigned long>(record.detail));
         break;
+    }
+    if ((record.receive.flags &
+         aquarium::firmware::diagnostics::kHasReceiveSnapshot) != 0U) {
+      Serial.printf("DIAG_RX event_index=%u received=%u accepted=%u rejected=%u saturated=%u\n",
+                    static_cast<unsigned>(offset), record.receive.received,
+                    record.receive.accepted, record.receive.rejected,
+                    (record.receive.flags & aquarium::firmware::diagnostics::
+                         kReceiveSnapshotSaturated) != 0U ? 1U : 0U);
     }
   }
   const auto extension_rx = aquarium::extension_lan::receiveCounters();
@@ -711,6 +694,13 @@ void loop() {
   // using the current clock, before making this source's connectivity decision.
   now_ms = monotonic_millis();
   aquarium::grass_lan::tick(now_ms);
+  const auto grass_rx = aquarium::grass_lan::receiveCounters();
+  if (!diagnostic_grass_rejection_recorded && grass_rx.rejected > 0U) {
+    record_grass_diagnostic(DiagnosticEvent::grass_rejected, now_ms,
+                            grass_rx.rejected);
+    persist_diagnostic_log();
+    diagnostic_grass_rejection_recorded = true;
+  }
   grass_state = aquarium::grass_lan::snapshot(now_ms);
   record_grass_packet(grass_state);
   if (runtime_config.bark_enabled && WiFi.status() == WL_CONNECTED) {
@@ -719,15 +709,17 @@ void loop() {
                                                  grass_state);
     if (grass_transition != aquarium::grass_lan::ConnectivityEvent::none) {
       if (grass_transition == aquarium::grass_lan::ConnectivityEvent::offline) {
-        record_diagnostic(DiagnosticEvent::grass_stale, now_ms,
-                          static_cast<std::uint32_t>(now_ms - grass_state.received_at_ms),
-                          grass_state.sequence);
+        record_grass_diagnostic(
+            DiagnosticEvent::grass_stale, now_ms,
+            static_cast<std::uint32_t>(now_ms - grass_state.received_at_ms),
+            grass_state.sequence);
       } else {
-        record_diagnostic(DiagnosticEvent::grass_recovered,
-                          grass_state.received_at_ms,
-                          static_cast<std::uint32_t>(grass_state.receive_gap_ms),
-                          grass_state.missed_frames);
+        record_grass_diagnostic(
+            DiagnosticEvent::grass_recovered, grass_state.received_at_ms,
+            static_cast<std::uint32_t>(grass_state.receive_gap_ms),
+            grass_state.missed_frames);
       }
+      persist_diagnostic_log();
       const std::time_t event_epoch = std::time(nullptr);
       const auto event_time =
           event_epoch >= kMinimumReasonableEpochSeconds

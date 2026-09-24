@@ -17,8 +17,12 @@ struct { bool bark_enabled = true; } runtime_config;
 ext::ConnectivityTracker extension_connectivity_tracker;
 grass::ConnectivityTracker grass_connectivity_tracker;
 grass::State grass_state;
-enum class DiagnosticEvent { extension_stale, extension_recovered, grass_stale, grass_recovered };
+enum class DiagnosticEvent { extension_stale, extension_recovered, grass_stale, grass_recovered, grass_rejected };
 void record_diagnostic(DiagnosticEvent, std::uint64_t, std::uint32_t, std::uint32_t) {}
+bool diagnostic_grass_rejection_recorded{};
+void record_grass_diagnostic(DiagnosticEvent, std::uint64_t,
+                             std::uint32_t = 0U, std::uint32_t = 0U) {}
+void persist_diagnostic_log() {}
 void record_extension_packet(const ext::State&) {}
 void record_grass_packet(const grass::State&) {}
 void connect_wifi(std::uint64_t) {}
