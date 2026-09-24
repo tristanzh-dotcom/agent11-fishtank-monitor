@@ -37,6 +37,7 @@ namespace {
 #include "tab5_lan_secret.hpp"
 #endif
 
+constexpr char kFirmwareVersion[] = "esp1-lan-rx-20260924.1";
 constexpr std::uint8_t kOneWirePin = 4;
 constexpr std::time_t kMinimumReasonableEpochSeconds = 1700000000;
 constexpr std::size_t kDiagnosticLogCapacity = 32U;
@@ -53,6 +54,13 @@ enum class DiagnosticEvent : std::uint8_t {
   extension_sender_session,
   extension_stale,
   extension_recovered,
+  // Append only: preserve the existing persisted event values and record layout.
+  extension_receive_gap,
+  grass_first_packet,
+  grass_sender_session,
+  grass_receive_gap,
+  grass_stale,
+  grass_recovered,
 };
 
 struct DiagnosticRecord {
@@ -105,6 +113,8 @@ std::size_t diagnostic_count{};
 std::uint32_t diagnostic_overwritten{};
 std::uint64_t diagnostic_last_receive_at_ms{};
 bool diagnostic_received_packet{};
+std::uint64_t diagnostic_grass_last_receive_at_ms{};
+bool diagnostic_grass_received_packet{};
 bool diagnostic_dirty{};
 bool diagnostic_storage_ok{};
 bool diagnostic_wifi_seen_connected{};
@@ -237,6 +247,34 @@ void dump_diagnostic_log() {
                       epoch, uptime, static_cast<unsigned long>(record.value),
                       static_cast<unsigned long>(record.detail));
         break;
+      case DiagnosticEvent::extension_receive_gap:
+        Serial.printf("DIAG event=EXT_RECEIVE_GAP epoch_s=%lu uptime_ms=%lu gap_ms=%lu missed_frames=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value),
+                      static_cast<unsigned long>(record.detail));
+        break;
+      case DiagnosticEvent::grass_first_packet:
+        Serial.printf("DIAG event=GRASS_FIRST_PACKET epoch_s=%lu uptime_ms=%lu sequence=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value));
+        break;
+      case DiagnosticEvent::grass_sender_session:
+        Serial.printf("DIAG event=GRASS_SENDER_SESSION epoch_s=%lu uptime_ms=%lu first_sequence=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value));
+        break;
+      case DiagnosticEvent::grass_receive_gap:
+        Serial.printf("DIAG event=GRASS_RECEIVE_GAP epoch_s=%lu uptime_ms=%lu gap_ms=%lu missed_frames=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value),
+                      static_cast<unsigned long>(record.detail));
+        break;
+      case DiagnosticEvent::grass_stale:
+        Serial.printf("DIAG event=GRASS_STALE epoch_s=%lu uptime_ms=%lu age_ms=%lu sequence=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value),
+                      static_cast<unsigned long>(record.detail));
+        break;
+      case DiagnosticEvent::grass_recovered:
+        Serial.printf("DIAG event=GRASS_RECOVERED epoch_s=%lu uptime_ms=%lu silence_ms=%lu missed_frames=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value),
+                      static_cast<unsigned long>(record.detail));
+        break;
       case DiagnosticEvent::extension_recovered:
         Serial.printf("DIAG event=EXT_RECOVERED epoch_s=%lu uptime_ms=%lu silence_ms=%lu missed_frames=%lu\n",
                       epoch, uptime, static_cast<unsigned long>(record.value),
@@ -244,6 +282,17 @@ void dump_diagnostic_log() {
         break;
     }
   }
+  const auto extension_rx = aquarium::extension_lan::receiveCounters();
+  const auto grass_rx = aquarium::grass_lan::receiveCounters();
+  Serial.printf("DIAG firmware=%s counters_scope=boot\n", kFirmwareVersion);
+  Serial.printf("DIAG_RX source=ESP2 received=%lu accepted=%lu rejected=%lu\n",
+                static_cast<unsigned long>(extension_rx.received),
+                static_cast<unsigned long>(extension_rx.accepted),
+                static_cast<unsigned long>(extension_rx.rejected));
+  Serial.printf("DIAG_RX source=ESP3 received=%lu accepted=%lu rejected=%lu\n",
+                static_cast<unsigned long>(grass_rx.received),
+                static_cast<unsigned long>(grass_rx.accepted),
+                static_cast<unsigned long>(grass_rx.rejected));
   Serial.println("DIAG_END");
 }
 
@@ -278,7 +327,33 @@ void record_extension_packet(const aquarium::extension_lan::State& state) {
     record_diagnostic(DiagnosticEvent::extension_sender_session,
                       state.received_at_ms, state.sequence);
   }
+  if (state.receive_gap_ms > 15000U || state.missed_frames > 0U) {
+    record_diagnostic(DiagnosticEvent::extension_receive_gap,
+                      state.received_at_ms,
+                      static_cast<std::uint32_t>(state.receive_gap_ms),
+                      state.missed_frames);
+  }
   diagnostic_last_receive_at_ms = state.received_at_ms;
+}
+
+void record_grass_packet(const aquarium::grass_lan::State& state) {
+  if (!state.has_packet ||
+      state.received_at_ms == diagnostic_grass_last_receive_at_ms) return;
+  if (!diagnostic_grass_received_packet) {
+    record_diagnostic(DiagnosticEvent::grass_first_packet,
+                      state.received_at_ms, state.sequence);
+    diagnostic_grass_received_packet = true;
+  } else if (state.sender_session_changed) {
+    record_diagnostic(DiagnosticEvent::grass_sender_session,
+                      state.received_at_ms, state.sequence);
+  }
+  if (state.receive_gap_ms > 45000U || state.missed_frames > 0U) {
+    record_diagnostic(DiagnosticEvent::grass_receive_gap,
+                      state.received_at_ms,
+                      static_cast<std::uint32_t>(state.receive_gap_ms),
+                      state.missed_frames);
+  }
+  diagnostic_grass_last_receive_at_ms = state.received_at_ms;
 }
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
 WiFiUDP tab5_lan_udp;
@@ -562,6 +637,7 @@ void connect_wifi(std::uint64_t now_ms) {
 
 void setup() {
   Serial.begin(115200);
+  Serial.printf("ESP1_FIRMWARE_VERSION=%s\n", kFirmwareVersion);
   load_diagnostic_log();
   record_diagnostic(DiagnosticEvent::boot, monotonic_millis(),
                     static_cast<std::uint32_t>(esp_reset_reason()));
@@ -580,7 +656,7 @@ void setup() {
 void loop() {
   static std::uint64_t last_sample_at_ms = 0;
   process_diagnostic_command();
-  const std::uint64_t now_ms = monotonic_millis();
+  std::uint64_t now_ms = monotonic_millis();
   if (diagnostic_has_loop_time &&
       now_ms - diagnostic_last_loop_ms >= kDiagnosticLoopGapMs) {
     record_diagnostic(
@@ -591,12 +667,10 @@ void loop() {
   diagnostic_has_loop_time = true;
 
   connect_wifi(now_ms);
+  now_ms = monotonic_millis();
   aquarium::extension_lan::tick(now_ms);
-  aquarium::grass_lan::tick(now_ms);
   observe_time_sync();
-  const auto latest_extension_state =
-      aquarium::extension_lan::snapshot(now_ms);
-  grass_state = aquarium::grass_lan::snapshot(now_ms);
+  auto latest_extension_state = aquarium::extension_lan::snapshot(now_ms);
   record_extension_packet(latest_extension_state);
   if (runtime_config.bark_enabled && WiFi.status() == WL_CONNECTED) {
     const auto transition = aquarium::extension_lan::observeConnectivity(
@@ -632,10 +706,28 @@ void loop() {
       Serial.println(delivered ? "extension connectivity bark delivered"
                                : "extension connectivity bark failed");
     }
+  }
+  // The ESP2 Bark request above is synchronous. Poll ESP3 after it returns,
+  // using the current clock, before making this source's connectivity decision.
+  now_ms = monotonic_millis();
+  aquarium::grass_lan::tick(now_ms);
+  grass_state = aquarium::grass_lan::snapshot(now_ms);
+  record_grass_packet(grass_state);
+  if (runtime_config.bark_enabled && WiFi.status() == WL_CONNECTED) {
     const auto grass_transition =
         aquarium::grass_lan::observeConnectivity(&grass_connectivity_tracker,
                                                  grass_state);
     if (grass_transition != aquarium::grass_lan::ConnectivityEvent::none) {
+      if (grass_transition == aquarium::grass_lan::ConnectivityEvent::offline) {
+        record_diagnostic(DiagnosticEvent::grass_stale, now_ms,
+                          static_cast<std::uint32_t>(now_ms - grass_state.received_at_ms),
+                          grass_state.sequence);
+      } else {
+        record_diagnostic(DiagnosticEvent::grass_recovered,
+                          grass_state.received_at_ms,
+                          static_cast<std::uint32_t>(grass_state.receive_gap_ms),
+                          grass_state.missed_frames);
+      }
       const std::time_t event_epoch = std::time(nullptr);
       const auto event_time =
           event_epoch >= kMinimumReasonableEpochSeconds
@@ -654,6 +746,10 @@ void loop() {
     }
   }
 
+  // Account for elapsed notification time before sampling and summary freshness.
+  now_ms = monotonic_millis();
+  latest_extension_state = aquarium::extension_lan::snapshot(now_ms);
+  grass_state = aquarium::grass_lan::snapshot(now_ms);
   if (now_ms - last_sample_at_ms < runtime_config.sample_interval_ms) {
     persist_diagnostic_log();
     delay(50);

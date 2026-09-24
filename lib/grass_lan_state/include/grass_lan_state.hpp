@@ -12,6 +12,12 @@ enum class ThermalState : std::uint8_t { normal, high, low, no_signal };
 
 struct State {
   std::uint64_t sampled_at_ms{};
+  // Receiver-local diagnostics, excluded from the TGR1 wire packet.
+  std::uint64_t received_at_ms{};
+  std::uint64_t receive_gap_ms{};
+  std::uint32_t sequence{};
+  std::uint32_t missed_frames{};
+  bool sender_session_changed{};
   std::array<std::optional<float>, 2> temperature_c{};
   std::array<ThermalState, 2> thermal_state{
       ThermalState::no_signal, ThermalState::no_signal};
@@ -51,10 +57,16 @@ struct ConnectivityTracker {
   bool initialized{};
   bool offline{};
 };
+struct ReceiveCounters {
+  std::uint32_t received{};
+  std::uint32_t accepted{};
+  std::uint32_t rejected{};
+};
 ConnectivityEvent observeConnectivity(ConnectivityTracker* tracker,
                                       const State& state);
 void begin();
 void tick(std::uint64_t now_ms);
 State snapshot(std::uint64_t now_ms);
+ReceiveCounters receiveCounters();
 
 }  // namespace aquarium::grass_lan

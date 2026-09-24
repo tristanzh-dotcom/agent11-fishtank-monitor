@@ -238,6 +238,7 @@ WiFiUDP udp;
 Reducer reducer;
 std::array<std::uint8_t, 32> key{};
 bool ready{};
+ReceiveCounters counters{};
 constexpr std::uint16_t kPort = 35112U;
 }
 
@@ -253,22 +254,47 @@ void begin() {
 
 void tick(std::uint64_t now_ms) {
   if (!ready || WiFi.status() != WL_CONNECTED) return;
-  const int packet_size = udp.parsePacket();
-  if (packet_size != static_cast<int>(kPacketSize)) return;
-  std::array<std::uint8_t, kPacketSize> packet{};
-  if (udp.read(packet.data(), packet.size()) ==
-          static_cast<int>(packet.size()) &&
-      accept(&reducer, packet, now_ms, key)) {
-    Serial.println("EXTENSION_LAN_PACKET_ACCEPTED");
+  std::uint64_t receive_gap_ms{};
+  std::uint32_t missed_frames{};
+  bool session_changed{};
+  bool accepted_any{};
+  for (int handled = 0; handled < 4; ++handled) {
+    const int packet_size = udp.parsePacket();
+    if (packet_size <= 0) break;
+    ++counters.received;
+    std::array<std::uint8_t, kPacketSize> packet{};
+    if (packet_size == static_cast<int>(packet.size()) &&
+        udp.read(packet.data(), packet.size()) ==
+            static_cast<int>(packet.size()) &&
+        accept(&reducer, packet, now_ms, key)) {
+      ++counters.accepted;
+      accepted_any = true;
+      if (reducer.state.receive_gap_ms > receive_gap_ms)
+        receive_gap_ms = reducer.state.receive_gap_ms;
+      missed_frames += reducer.state.missed_frames;
+      session_changed |= reducer.state.sender_session_changed;
+      Serial.println("EXTENSION_LAN_PACKET_ACCEPTED");
+    } else {
+      ++counters.rejected;
+    }
+    // NetworkUDP will not advance to another datagram until this one is drained.
+    while (udp.available() > 0) udp.read();
   }
-  while (udp.available() > 0) udp.read();
+  if (accepted_any) {
+    // Preserve evidence from the first packet when several queued packets drain.
+    reducer.state.receive_gap_ms = receive_gap_ms;
+    reducer.state.missed_frames = missed_frames;
+    reducer.state.sender_session_changed = session_changed;
+  }
 }
 
 State snapshot(std::uint64_t now_ms) { return freshState(reducer, now_ms); }
+ReceiveCounters receiveCounters() { return counters; }
 #else
 void begin() {}
 void tick(std::uint64_t) {}
 State snapshot(std::uint64_t) { return {}; }
+ReceiveCounters receiveCounters() { return {}; }
 #endif
 
 }  // namespace aquarium::extension_lan

@@ -171,6 +171,18 @@ bool accept(Reducer* reducer,
   } else if (reducer->has_packet) {
     reducer->retired_source_id = reducer->source_id;
   }
+  decoded.snapshot.received_at_ms = now_ms;
+  decoded.snapshot.sequence = decoded.sequence;
+  if (reducer->has_packet) {
+    decoded.snapshot.sender_session_changed =
+        decoded.source_id != reducer->source_id;
+    if (!decoded.snapshot.sender_session_changed) {
+      decoded.snapshot.receive_gap_ms = now_ms - reducer->accepted_at_ms;
+      const auto sequence_delta = decoded.sequence - reducer->sequence;
+      if (sequence_delta > 1U)
+        decoded.snapshot.missed_frames = sequence_delta - 1U;
+    }
+  }
   reducer->source_id = decoded.source_id;
   reducer->sequence = decoded.sequence;
   reducer->accepted_at_ms = now_ms;
@@ -212,6 +224,7 @@ WiFiUDP grass_udp;
 Reducer grass_reducer;
 std::array<std::uint8_t, 32> grass_key{};
 bool grass_ready{};
+ReceiveCounters counters{};
 }  // namespace
 
 void begin() {
@@ -230,25 +243,45 @@ void begin() {
 
 void tick(std::uint64_t now_ms) {
   if (!grass_ready || WiFi.status() != WL_CONNECTED) return;
+  std::uint64_t receive_gap_ms{};
+  std::uint32_t missed_frames{};
+  bool session_changed{};
+  bool accepted_any{};
   for (int handled = 0; handled < 4; ++handled) {
     const int packet_size = grass_udp.parsePacket();
     if (packet_size <= 0) break;
+    ++counters.received;
     std::array<std::uint8_t, kPacketSize> packet{};
     if (packet_size == static_cast<int>(packet.size()) &&
         grass_udp.read(packet.data(), packet.size()) ==
             static_cast<int>(packet.size()) &&
         accept(&grass_reducer, packet, now_ms, grass_key)) {
+      ++counters.accepted;
+      accepted_any = true;
+      if (grass_reducer.snapshot.receive_gap_ms > receive_gap_ms)
+        receive_gap_ms = grass_reducer.snapshot.receive_gap_ms;
+      missed_frames += grass_reducer.snapshot.missed_frames;
+      session_changed |= grass_reducer.snapshot.sender_session_changed;
       Serial.println("GRASS_LAN_PACKET_ACCEPTED");
+    } else {
+      ++counters.rejected;
     }
     while (grass_udp.available() > 0) grass_udp.read();
+  }
+  if (accepted_any) {
+    grass_reducer.snapshot.receive_gap_ms = receive_gap_ms;
+    grass_reducer.snapshot.missed_frames = missed_frames;
+    grass_reducer.snapshot.sender_session_changed = session_changed;
   }
 }
 
 State snapshot(std::uint64_t now_ms) { return freshState(grass_reducer, now_ms); }
+ReceiveCounters receiveCounters() { return counters; }
 #else
 void begin() {}
 void tick(std::uint64_t) {}
 State snapshot(std::uint64_t) { return {}; }
+ReceiveCounters receiveCounters() { return {}; }
 #endif
 
 }  // namespace aquarium::grass_lan

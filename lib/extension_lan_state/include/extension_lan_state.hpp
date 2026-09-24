@@ -42,6 +42,13 @@ struct ConnectivityTracker {
   bool offline{};
 };
 
+// Receiver-local counters since boot; not part of the wire or NVS schema.
+struct ReceiveCounters {
+  std::uint32_t received{};
+  std::uint32_t accepted{};
+  std::uint32_t rejected{};
+};
+
 struct Reducer {
   bool has_packet{};
   std::uint64_t source_id{};
@@ -64,5 +71,6 @@ std::optional<TemperatureSample> nextTemperatureSample(
 void begin();
 void tick(std::uint64_t now_ms);
 State snapshot(std::uint64_t now_ms);
+ReceiveCounters receiveCounters();
 
 }  // namespace aquarium::extension_lan
