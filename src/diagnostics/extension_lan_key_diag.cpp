@@ -9,6 +9,7 @@ namespace {
 constexpr char kNamespace[] = "extension_lan";
 constexpr char kKeyName[] = "state_key";
 constexpr char kPrefix[] = "EXTENSION_LAN_KEY ";
+constexpr char kGrassPrefix[] = "GRASS_LAN_KEY ";
 
 int hexValue(char value) {
   if (value >= '0' && value <= '9') return value - '0';
@@ -29,20 +30,25 @@ bool decodeKey(const String& input, std::array<std::uint8_t, 32>* output) {
 }
 
 void writeKey(const String& line) {
-  if (!line.startsWith(kPrefix)) return;
+  const bool grass = line.startsWith(kGrassPrefix);
+  if (!grass && !line.startsWith(kPrefix)) return;
   std::array<std::uint8_t, 32> key{};
-  if (!decodeKey(line.substring(sizeof(kPrefix) - 1U), &key)) {
-    Serial.println("EXTENSION_LAN_KEY_REJECTED");
+  if (!decodeKey(line.substring(grass ? sizeof(kGrassPrefix) - 1U :
+                                 sizeof(kPrefix) - 1U), &key)) {
+    Serial.println(grass ? "GRASS_LAN_KEY_REJECTED" :
+                           "EXTENSION_LAN_KEY_REJECTED");
     return;
   }
   Preferences preferences;
-  const bool opened = preferences.begin(kNamespace, false);
+  const bool opened = preferences.begin(grass ? "grass_lan" : kNamespace, false);
   const bool stored = opened &&
       preferences.putBytes(kKeyName, key.data(), key.size()) == key.size();
   if (opened) preferences.end();
   key.fill(0U);
-  Serial.println(stored ? "EXTENSION_LAN_KEY_STORED"
-                        : "EXTENSION_LAN_KEY_STORE_FAILED");
+  Serial.println(grass ? (stored ? "GRASS_LAN_KEY_STORED" :
+                                  "GRASS_LAN_KEY_STORE_FAILED")
+                       : (stored ? "EXTENSION_LAN_KEY_STORED" :
+                                   "EXTENSION_LAN_KEY_STORE_FAILED"));
 }
 }  // namespace
 

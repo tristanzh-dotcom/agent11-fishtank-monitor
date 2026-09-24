@@ -423,11 +423,12 @@ BarkMessage bark_message(const ScopedTemperatureEvent& scoped_event,
 BarkMessage extension_connectivity_message(
     ExtensionConnectivityEvent event, std::uint64_t stale_after_ms,
     std::optional<std::time_t> event_time,
-    std::optional<std::time_t> send_time) {
+    std::optional<std::time_t> send_time, const char* tank_name,
+    const char* device_name, const char* device_key) {
   const bool offline = event == ExtensionConnectivityEvent::offline;
   const std::string title = offline
-                                ? "【注意·首次】南美异形缸｜温控ESP2号连接中断"
-                                : "【信息·恢复】南美异形缸｜温控ESP2号连接已恢复";
+                                ? std::string("【注意·首次】") + tank_name + "｜" + device_name + "连接中断"
+                                : std::string("【信息·恢复】") + tank_name + "｜" + device_name + "连接已恢复";
   const std::string situation =
       offline
           ? "已连续超过 " + std::to_string(stale_after_ms / 1000U) +
@@ -439,15 +440,15 @@ BarkMessage extension_connectivity_message(
   const std::string time_label = offline ? "判定：" : "恢复判定：";
   const std::string count = offline ? "本次中断仅提醒一次" : "不计入告警次数";
   const std::string body =
-      "设备：温控ESP2号\n情况：" + situation + "\n建议：" + advice +
+      std::string("设备：") + device_name + "\n情况：" + situation + "\n建议：" + advice +
       "\n时间：" + time_label +
       calendar_time_text(event_time, "时间未同步") + "；发送：" +
       calendar_time_text(send_time, "时间不可用") + "（北京时间）\n提醒次数：" +
       count;
   return BarkMessage{title, body, "aquarium",
                      offline ? "timeSensitive" : "active",
-                     offline ? "aquarium:esp2:connectivity:offline"
-                             : "aquarium:esp2:connectivity:recovered"};
+                     std::string("aquarium:") + device_key + ":connectivity:" +
+                         (offline ? "offline" : "recovered")};
 }
 
 std::string bark_request_json(const BarkMessage& message,

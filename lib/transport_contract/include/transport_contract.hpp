@@ -67,7 +67,10 @@ BarkMessage bark_message(const ScopedTemperatureEvent& scoped_event,
 BarkMessage extension_connectivity_message(
     ExtensionConnectivityEvent event, std::uint64_t stale_after_ms,
     std::optional<std::time_t> event_time = std::nullopt,
-    std::optional<std::time_t> send_time = std::nullopt);
+    std::optional<std::time_t> send_time = std::nullopt,
+    const char* tank_name = "南美异形缸",
+    const char* device_name = "温控ESP2号",
+    const char* device_key = "esp2");
 std::string bark_request_json(const BarkMessage& message,
                               const std::string& device_key);
 

@@ -10,20 +10,25 @@
 #include "scoped_event_outbox.hpp"
 #include "daily_summary.hpp"
 #include "extension_lan_state.hpp"
+#include "grass_lan_state.hpp"
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
 #include "tab5_lan_state.hpp"
 #endif
 
 #include <Arduino.h>
+#include <Preferences.h>
 #include <WiFi.h>
 #include <esp_sntp.h>
+#include <esp_system.h>
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
 #include <WiFiUdp.h>
 #endif
 
 #include <array>
 #include <algorithm>
+#include <cstdint>
 #include <ctime>
+#include <cstring>
 #include <optional>
 
 namespace {
@@ -34,6 +39,40 @@ namespace {
 
 constexpr std::uint8_t kOneWirePin = 4;
 constexpr std::time_t kMinimumReasonableEpochSeconds = 1700000000;
+constexpr std::size_t kDiagnosticLogCapacity = 32U;
+constexpr std::uint32_t kDiagnosticStorageMagic = 0x44494147U;
+constexpr std::uint32_t kDiagnosticStorageVersion = 1U;
+constexpr std::uint64_t kDiagnosticLoopGapMs = 10000U;
+
+enum class DiagnosticEvent : std::uint8_t {
+  boot,
+  wifi_down,
+  wifi_up,
+  loop_gap,
+  extension_first_packet,
+  extension_sender_session,
+  extension_stale,
+  extension_recovered,
+};
+
+struct DiagnosticRecord {
+  std::uint32_t uptime_ms{};
+  std::uint32_t epoch_seconds{};
+  std::uint32_t value{};
+  std::uint32_t detail{};
+  DiagnosticEvent event{};
+};
+
+struct DiagnosticStorage {
+  std::uint32_t magic{};
+  std::uint32_t version{};
+  std::uint32_t next{};
+  std::uint32_t count{};
+  std::uint32_t overwritten{};
+  std::array<DiagnosticRecord, kDiagnosticLogCapacity> records{};
+};
+static_assert(sizeof(DiagnosticStorage) <= 1024U,
+              "connectivity diagnostics must stay small");
 
 aquarium::firmware::RuntimeConfig runtime_config =
     aquarium::firmware::default_runtime_config();
@@ -52,12 +91,195 @@ aquarium::transport::ScopedEventOutbox auxiliary_delivery(16);
 aquarium::transport::DailySummaryScheduler daily_summary;
 aquarium::extension_lan::State extension_state{};
 aquarium::extension_lan::ConnectivityTracker extension_connectivity_tracker{};
+aquarium::grass_lan::State grass_state{};
+aquarium::grass_lan::ConnectivityTracker grass_connectivity_tracker{};
 bool auxiliary_turn = false;
 bool time_sync_completed = false;
 aquarium::RetryBackoff wifi_backoff(1000U, 60000U);
 aquarium::heartbeat::HeartbeatSchedule heartbeat_schedule(
     runtime_config.heartbeat_interval_ms, 5000U,
     runtime_config.heartbeat_interval_ms);
+std::array<DiagnosticRecord, kDiagnosticLogCapacity> diagnostic_records{};
+std::size_t diagnostic_next{};
+std::size_t diagnostic_count{};
+std::uint32_t diagnostic_overwritten{};
+std::uint64_t diagnostic_last_receive_at_ms{};
+bool diagnostic_received_packet{};
+bool diagnostic_dirty{};
+bool diagnostic_storage_ok{};
+bool diagnostic_wifi_seen_connected{};
+bool diagnostic_wifi_down_pending{};
+std::uint64_t diagnostic_wifi_down_since_ms{};
+std::uint64_t diagnostic_last_loop_ms{};
+bool diagnostic_has_loop_time{};
+
+void load_diagnostic_log() {
+  Preferences preferences;
+  if (!preferences.begin("net_diag", false)) {
+    diagnostic_storage_ok = false;
+    Serial.println("DIAG_STORAGE unavailable");
+    return;
+  }
+  diagnostic_storage_ok = true;
+  if (preferences.isKey("ring")) {
+    DiagnosticStorage stored{};
+    const bool loaded =
+        preferences.getBytesLength("ring") == sizeof(stored) &&
+        preferences.getBytes("ring", &stored, sizeof(stored)) == sizeof(stored);
+    if (loaded && stored.magic == kDiagnosticStorageMagic &&
+        stored.version == kDiagnosticStorageVersion &&
+        stored.next < kDiagnosticLogCapacity &&
+        stored.count <= kDiagnosticLogCapacity) {
+      diagnostic_records = stored.records;
+      diagnostic_next = stored.next;
+      diagnostic_count = stored.count;
+      diagnostic_overwritten = stored.overwritten;
+    } else {
+      Serial.println("DIAG_STORAGE invalid");
+    }
+  }
+  preferences.end();
+}
+
+void persist_diagnostic_log() {
+  if (!diagnostic_dirty) return;
+  DiagnosticStorage stored{};
+  stored.magic = kDiagnosticStorageMagic;
+  stored.version = kDiagnosticStorageVersion;
+  stored.next = static_cast<std::uint32_t>(diagnostic_next);
+  stored.count = static_cast<std::uint32_t>(diagnostic_count);
+  stored.overwritten = diagnostic_overwritten;
+  stored.records = diagnostic_records;
+  diagnostic_dirty = false;
+
+  Preferences preferences;
+  if (!preferences.begin("net_diag", false)) {
+    diagnostic_storage_ok = false;
+    Serial.println("DIAG_STORAGE write_unavailable");
+    return;
+  }
+  const std::size_t written = preferences.putBytes("ring", &stored,
+                                                    sizeof(stored));
+  preferences.end();
+  diagnostic_storage_ok = written == sizeof(stored);
+  if (!diagnostic_storage_ok) Serial.println("DIAG_STORAGE write_failed");
+}
+
+void record_diagnostic(DiagnosticEvent event, std::uint64_t uptime_ms,
+                       std::uint32_t value = 0U,
+                       std::uint32_t detail = 0U) {
+  const std::time_t wall_time = std::time(nullptr);
+  DiagnosticRecord record{};
+  record.uptime_ms = static_cast<std::uint32_t>(uptime_ms);
+  record.epoch_seconds =
+      wall_time >= kMinimumReasonableEpochSeconds
+          ? static_cast<std::uint32_t>(wall_time)
+          : 0U;
+  record.value = value;
+  record.detail = detail;
+  record.event = event;
+  diagnostic_records[diagnostic_next] = record;
+  diagnostic_next = (diagnostic_next + 1U) % diagnostic_records.size();
+  if (diagnostic_count < diagnostic_records.size()) {
+    ++diagnostic_count;
+  } else {
+    ++diagnostic_overwritten;
+  }
+  diagnostic_dirty = true;
+}
+
+void dump_diagnostic_log() {
+  Serial.printf("DIAG_BEGIN count=%u overwritten=%lu storage=%s\n",
+                static_cast<unsigned>(diagnostic_count),
+                static_cast<unsigned long>(diagnostic_overwritten),
+                diagnostic_storage_ok ? "ok" : "unavailable");
+  const std::size_t oldest =
+      (diagnostic_next + diagnostic_records.size() - diagnostic_count) %
+      diagnostic_records.size();
+  for (std::size_t offset = 0U; offset < diagnostic_count; ++offset) {
+    const auto& record = diagnostic_records[(oldest + offset) %
+                                             diagnostic_records.size()];
+    const auto epoch = static_cast<unsigned long>(record.epoch_seconds);
+    const auto uptime = static_cast<unsigned long>(record.uptime_ms);
+    switch (record.event) {
+      case DiagnosticEvent::boot:
+        Serial.printf("DIAG event=BOOT epoch_s=%lu uptime_ms=%lu reset_reason=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value));
+        break;
+      case DiagnosticEvent::wifi_down:
+        Serial.printf("DIAG event=WIFI_DOWN epoch_s=%lu uptime_ms=%lu\n",
+                      epoch, uptime);
+        break;
+      case DiagnosticEvent::wifi_up:
+        if (record.value == UINT32_MAX) {
+          Serial.printf("DIAG event=WIFI_UP epoch_s=%lu uptime_ms=%lu reconnect_ms=na\n",
+                        epoch, uptime);
+        } else {
+          Serial.printf("DIAG event=WIFI_UP epoch_s=%lu uptime_ms=%lu reconnect_ms=%lu\n",
+                        epoch, uptime,
+                        static_cast<unsigned long>(record.value));
+        }
+        break;
+      case DiagnosticEvent::loop_gap:
+        Serial.printf("DIAG event=LOOP_GAP epoch_s=%lu uptime_ms=%lu gap_ms=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value));
+        break;
+      case DiagnosticEvent::extension_first_packet:
+        Serial.printf("DIAG event=EXT_FIRST_PACKET epoch_s=%lu uptime_ms=%lu sequence=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value));
+        break;
+      case DiagnosticEvent::extension_sender_session:
+        Serial.printf("DIAG event=EXT_SENDER_SESSION epoch_s=%lu uptime_ms=%lu first_sequence=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value));
+        break;
+      case DiagnosticEvent::extension_stale:
+        Serial.printf("DIAG event=EXT_STALE epoch_s=%lu uptime_ms=%lu age_ms=%lu sequence=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value),
+                      static_cast<unsigned long>(record.detail));
+        break;
+      case DiagnosticEvent::extension_recovered:
+        Serial.printf("DIAG event=EXT_RECOVERED epoch_s=%lu uptime_ms=%lu silence_ms=%lu missed_frames=%lu\n",
+                      epoch, uptime, static_cast<unsigned long>(record.value),
+                      static_cast<unsigned long>(record.detail));
+        break;
+    }
+  }
+  Serial.println("DIAG_END");
+}
+
+void process_diagnostic_command() {
+  static char command[12]{};
+  static std::size_t length{};
+  while (Serial.available() > 0) {
+    const int input = Serial.read();
+    if (input == '\r') continue;
+    if (input == '\n') {
+      command[length] = '\0';
+      if (std::strcmp(command, "DIAG") == 0) dump_diagnostic_log();
+      length = 0U;
+    } else if (length + 1U < sizeof(command)) {
+      command[length++] = static_cast<char>(input);
+    } else {
+      length = 0U;
+    }
+  }
+}
+
+void record_extension_packet(const aquarium::extension_lan::State& state) {
+  if (!state.has_packet ||
+      state.received_at_ms == diagnostic_last_receive_at_ms) {
+    return;
+  }
+  if (!diagnostic_received_packet) {
+    record_diagnostic(DiagnosticEvent::extension_first_packet,
+                      state.received_at_ms, state.sequence);
+    diagnostic_received_packet = true;
+  } else if (state.sender_session_changed) {
+    record_diagnostic(DiagnosticEvent::extension_sender_session,
+                      state.received_at_ms, state.sequence);
+  }
+  diagnostic_last_receive_at_ms = state.received_at_ms;
+}
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
 WiFiUDP tab5_lan_udp;
 std::uint64_t tab5_source_id{};
@@ -239,7 +461,7 @@ aquarium::transport::DailyTemperatureSnapshot daily_snapshot(
               runtime_config.auxiliary_tanks[index].policy);
     }
   }
-  // Slot 0 remains reserved no-signal; only slot 1 is the pleco tank.
+  // ESP3 supplies grass in slot 0; ESP2 supplies pleco in slot 1.
   const std::size_t index = aquarium::extension_lan::kPlecoSlot;
   auto& extension = snapshot.extension_tanks[index];
   extension.temperature_c =
@@ -258,6 +480,24 @@ aquarium::transport::DailyTemperatureSnapshot daily_snapshot(
             : extension_state.thermal_state[index] ==
                       aquarium::extension_lan::ThermalState::low
                   ? aquarium::transport::TemperatureReadingStatus::low
+            : aquarium::transport::TemperatureReadingStatus::normal;
+  }
+  auto& grass = snapshot.extension_tanks[0];
+  grass.temperature_c = grass_state.temperature_c[0].has_value()
+                            ? std::optional<double>{
+                                  *grass_state.temperature_c[0]}
+                            : std::nullopt;
+  grass.state = grass.temperature_c.has_value()
+                    ? aquarium::transport::SummaryReadingState::valid
+                    : aquarium::transport::SummaryReadingState::invalid;
+  grass.fresh = grass_state.fresh;
+  if (grass.state == aquarium::transport::SummaryReadingState::valid) {
+    grass.status =
+        grass_state.thermal_state[0] == aquarium::grass_lan::ThermalState::high
+            ? aquarium::transport::TemperatureReadingStatus::high
+            : grass_state.thermal_state[0] ==
+                      aquarium::grass_lan::ThermalState::low
+                  ? aquarium::transport::TemperatureReadingStatus::low
                   : aquarium::transport::TemperatureReadingStatus::normal;
   }
   return snapshot;
@@ -270,6 +510,14 @@ void connect_wifi(std::uint64_t now_ms) {
     if (!was_connected) {
       Serial.print("wifi connected ip=");
       Serial.println(WiFi.localIP());
+      const std::uint32_t reconnect_ms =
+          diagnostic_wifi_down_pending
+              ? static_cast<std::uint32_t>(now_ms -
+                                           diagnostic_wifi_down_since_ms)
+              : UINT32_MAX;
+      record_diagnostic(DiagnosticEvent::wifi_up, now_ms, reconnect_ms);
+      diagnostic_wifi_seen_connected = true;
+      diagnostic_wifi_down_pending = false;
       was_connected = true;
     }
     wifi_backoff.record_success();
@@ -278,6 +526,11 @@ void connect_wifi(std::uint64_t now_ms) {
   if (was_connected) {
     Serial.println("wifi disconnected");
     was_connected = false;
+    if (diagnostic_wifi_seen_connected) {
+      record_diagnostic(DiagnosticEvent::wifi_down, now_ms);
+      diagnostic_wifi_down_pending = true;
+      diagnostic_wifi_down_since_ms = now_ms;
+    }
   }
   if (!wifi_backoff.should_attempt(now_ms)) {
     return;
@@ -309,10 +562,15 @@ void connect_wifi(std::uint64_t now_ms) {
 
 void setup() {
   Serial.begin(115200);
+  load_diagnostic_log();
+  record_diagnostic(DiagnosticEvent::boot, monotonic_millis(),
+                    static_cast<std::uint32_t>(esp_reset_reason()));
+  persist_diagnostic_log();
   connect_wifi(monotonic_millis());
   heartbeat.begin_time_sync();
   reader.begin();
   aquarium::extension_lan::begin();
+  aquarium::grass_lan::begin();
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
   tab5_source_id = (static_cast<std::uint64_t>(esp_random()) << 32U) |
                    static_cast<std::uint64_t>(esp_random());
@@ -321,17 +579,43 @@ void setup() {
 
 void loop() {
   static std::uint64_t last_sample_at_ms = 0;
+  process_diagnostic_command();
   const std::uint64_t now_ms = monotonic_millis();
+  if (diagnostic_has_loop_time &&
+      now_ms - diagnostic_last_loop_ms >= kDiagnosticLoopGapMs) {
+    record_diagnostic(
+        DiagnosticEvent::loop_gap, now_ms,
+        static_cast<std::uint32_t>(now_ms - diagnostic_last_loop_ms));
+  }
+  diagnostic_last_loop_ms = now_ms;
+  diagnostic_has_loop_time = true;
 
   connect_wifi(now_ms);
   aquarium::extension_lan::tick(now_ms);
+  aquarium::grass_lan::tick(now_ms);
   observe_time_sync();
   const auto latest_extension_state =
       aquarium::extension_lan::snapshot(now_ms);
+  grass_state = aquarium::grass_lan::snapshot(now_ms);
+  record_extension_packet(latest_extension_state);
   if (runtime_config.bark_enabled && WiFi.status() == WL_CONNECTED) {
     const auto transition = aquarium::extension_lan::observeConnectivity(
         &extension_connectivity_tracker, latest_extension_state);
     if (transition != aquarium::extension_lan::ConnectivityEvent::none) {
+      if (transition == aquarium::extension_lan::ConnectivityEvent::offline) {
+        record_diagnostic(
+            DiagnosticEvent::extension_stale, now_ms,
+            static_cast<std::uint32_t>(now_ms -
+                                       latest_extension_state.received_at_ms),
+            latest_extension_state.sequence);
+      } else {
+        record_diagnostic(
+            DiagnosticEvent::extension_recovered,
+            latest_extension_state.received_at_ms,
+            static_cast<std::uint32_t>(
+                latest_extension_state.receive_gap_ms),
+            latest_extension_state.missed_frames);
+      }
       const std::time_t event_epoch = std::time(nullptr);
       const auto event_time =
           event_epoch >= kMinimumReasonableEpochSeconds
@@ -348,9 +632,30 @@ void loop() {
       Serial.println(delivered ? "extension connectivity bark delivered"
                                : "extension connectivity bark failed");
     }
+    const auto grass_transition =
+        aquarium::grass_lan::observeConnectivity(&grass_connectivity_tracker,
+                                                 grass_state);
+    if (grass_transition != aquarium::grass_lan::ConnectivityEvent::none) {
+      const std::time_t event_epoch = std::time(nullptr);
+      const auto event_time =
+          event_epoch >= kMinimumReasonableEpochSeconds
+              ? std::optional<std::time_t>{event_epoch}
+              : std::nullopt;
+      const auto event_type =
+          grass_transition == aquarium::grass_lan::ConnectivityEvent::offline
+              ? aquarium::transport::ExtensionConnectivityEvent::offline
+              : aquarium::transport::ExtensionConnectivityEvent::recovered;
+      const auto message = aquarium::transport::extension_connectivity_message(
+          event_type, 75000U, event_time, event_time, "南美草缸", "ESP3",
+          "esp3");
+      const bool delivered = bark.notify(message);
+      Serial.println(delivered ? "ESP3 connectivity bark delivered"
+                               : "ESP3 connectivity bark failed");
+    }
   }
 
   if (now_ms - last_sample_at_ms < runtime_config.sample_interval_ms) {
+    persist_diagnostic_log();
     delay(50);
     return;
   }
@@ -455,4 +760,5 @@ void loop() {
       heartbeat_schedule.record_failure(now_ms);
     }
   }
+  persist_diagnostic_log();
 }

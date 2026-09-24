@@ -182,7 +182,6 @@ void DailySummaryScheduler::expire(std::uint64_t monotonic_now_ms) {
 
 std::string daily_summary_body(const DailyTemperatureSummary& summary) {
   const auto& snapshot = summary.snapshot;
-  // The first extension tank is reserved until ESP3 is integrated.
   std::string body = "采样时间：" + local_time_text(snapshot.sampled_at) +
                      "\n\n包包缸（主缸 / 回水缸）\n  主缸：" +
                      temperature_text(snapshot.main_c, snapshot.main_status) +
@@ -192,7 +191,7 @@ std::string daily_summary_body(const DailyTemperatureSummary& summary) {
                      "\n老四缸：" + auxiliary_text(snapshot, 0) +
                      "\n小黑缸：" + auxiliary_text(snapshot, 1) +
                      "\n毛毛缸：" + auxiliary_text(snapshot, 2) +
-                     "\n南美草缸：暂未接入" +
+                     "\n南美草缸：" + extension_text(snapshot.extension_tanks[0]) +
                      "\n南美异形缸：" + extension_text(snapshot.extension_tanks[1]);
   return body;
 }

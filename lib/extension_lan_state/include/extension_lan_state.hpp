@@ -19,6 +19,13 @@ enum class ThermalState : std::uint8_t { normal, high, low, no_signal };
 
 struct State {
   std::uint64_t sampled_at_ms{};
+  // Receiver-local metadata used for bounded connectivity diagnostics; these
+  // fields are not part of the TEX1 wire packet.
+  std::uint64_t received_at_ms{};
+  std::uint64_t receive_gap_ms{};
+  std::uint32_t sequence{};
+  std::uint32_t missed_frames{};
+  bool sender_session_changed{};
   bool has_packet{};
   bool fresh{};
   // TEX1 keeps slot 0 as a no-signal reservation; slot 1 carries the pleco

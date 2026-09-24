@@ -143,6 +143,16 @@ bool accept(Reducer* reducer,
   }
   State state{};
   state.sampled_at_ms = sampled_at_ms;
+  state.received_at_ms = now_ms;
+  state.sequence = sequence;
+  if (reducer->has_packet) {
+    state.sender_session_changed = reducer->source_id != source_id;
+    if (!state.sender_session_changed) {
+      state.receive_gap_ms = now_ms - reducer->accepted_at_ms;
+      const std::uint32_t sequence_delta = sequence - reducer->sequence;
+      if (sequence_delta > 1U) state.missed_frames = sequence_delta - 1U;
+    }
+  }
   for (std::size_t index = 0U; index < kSlotCount; ++index) {
     const auto temperature = get16(packet.data() + 28U + index * 2U);
     if (!validTemperature(temperature) || packet[32U + index] > 3U ||

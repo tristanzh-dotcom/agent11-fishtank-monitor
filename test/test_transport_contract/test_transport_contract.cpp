@@ -111,6 +111,13 @@ int main() {
          std::string::npos);
   assert(extension_recovered.level == "active");
 
+  const auto grass_offline = aquarium::transport::extension_connectivity_message(
+      aquarium::transport::ExtensionConnectivityEvent::offline,
+      75000U, std::time_t{1'750'000'000}, std::time_t{1'750'000'002},
+      "南美草缸", "ESP3", "esp3");
+  assert(grass_offline.title == "【注意·首次】南美草缸｜ESP3连接中断");
+  assert(grass_offline.fingerprint == "aquarium:esp3:connectivity:offline");
+
   const auto scoped_bark = aquarium::transport::bark_message(
       aquarium::transport::ScopedTemperatureEvent{
           "laosi_tank", "老四缸", event},
