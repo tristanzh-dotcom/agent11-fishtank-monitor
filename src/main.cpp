@@ -38,7 +38,7 @@ namespace {
 #include "tab5_lan_secret.hpp"
 #endif
 
-constexpr char kFirmwareVersion[] = "esp1-lan-rx-20260924.1";
+constexpr char kFirmwareVersion[] = "esp1-disconnect-diag-20260925.1";
 constexpr std::uint8_t kOneWirePin = 4;
 constexpr std::time_t kMinimumReasonableEpochSeconds = 1700000000;
 constexpr std::size_t kDiagnosticLogCapacity =
