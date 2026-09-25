@@ -5,6 +5,7 @@
 #include <WiFiUdp.h>
 #include <cassert>
 #include <cstdio>
+#include <cstring>
 #include <ctime>
 #include <vector>
 
@@ -58,6 +59,8 @@ void connectivity_pass() {
 
 int main() {
   ext::begin(); grass::begin();
+  WiFi.rssi_queries = 0U;
+  Serial.rssi_markers = 0U;
   ext::State s{};
   s.temperature_c[1] = 26.0F;
   s.thermal_state[1] = ext::ThermalState::normal;
@@ -73,11 +76,19 @@ int main() {
   clock_ms = 166001;
   connectivity_pass();
   assert(bark.messages.size() == 2U);
+  assert(WiFi.rssi_queries == 1U);
+  assert(Serial.rssi_markers == 1U);
+  assert(std::strstr(Serial.last_rssi_marker, "event=GRASS_STALE") != nullptr);
+  assert(std::strstr(Serial.last_rssi_marker, "rssi_dbm=-61") != nullptr);
   connectivity_pass();
   assert(bark.messages.size() == 2U);
   queue_grass(7); clock_ms = 181000;
   connectivity_pass();
   assert(bark.messages.size() == 3U);
+  assert(WiFi.rssi_queries == 2U);
+  assert(Serial.rssi_markers == 2U);
+  assert(std::strstr(Serial.last_rssi_marker, "event=GRASS_RECOVERED") != nullptr);
+  assert(std::strstr(Serial.last_rssi_marker, "rssi_dbm=-61") != nullptr);
   connectivity_pass();
   assert(bark.messages.size() == 3U);
   std::puts("PASS main_loop_packet_during_bark_and_real_outage");

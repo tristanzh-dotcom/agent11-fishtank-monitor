@@ -715,6 +715,12 @@ void loop() {
         aquarium::grass_lan::observeConnectivity(&grass_connectivity_tracker,
                                                  grass_state);
     if (grass_transition != aquarium::grass_lan::ConnectivityEvent::none) {
+      const char* grass_event_name =
+          grass_transition == aquarium::grass_lan::ConnectivityEvent::offline
+              ? "GRASS_STALE"
+              : "GRASS_RECOVERED";
+      Serial.printf("DIAG_WIFI_RSSI event=%s rssi_dbm=%d\n",
+                    grass_event_name, WiFi.RSSI());
       if (grass_transition == aquarium::grass_lan::ConnectivityEvent::offline) {
         record_grass_diagnostic(
             DiagnosticEvent::grass_stale, now_ms,
