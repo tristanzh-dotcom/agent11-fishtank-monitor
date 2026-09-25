@@ -2,6 +2,9 @@
 set -eu
 cd "$(dirname "$0")/.."
 mkdir -p .build
+c++ -std=c++17 -Wall -Wextra -Werror -Ilib/wifi_power_policy/include \
+  test/test_wifi_power_policy.cpp -o .build/wifi_power_policy_tests
+.build/wifi_power_policy_tests
 c++ -std=c++17 -Wall -Wextra -Werror -DARDUINO \
   -Itest/lan_runtime_stubs -Ilib/temperature_engine/include \
   -Ilib/extension_lan_state/include -Ilib/grass_lan_state/include \

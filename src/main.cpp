@@ -12,6 +12,7 @@
 #include "diagnostic_log.hpp"
 #include "extension_lan_state.hpp"
 #include "grass_lan_state.hpp"
+#include "wifi_power_policy.hpp"
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
 #include "tab5_lan_state.hpp"
 #endif
@@ -38,7 +39,7 @@ namespace {
 #include "tab5_lan_secret.hpp"
 #endif
 
-constexpr char kFirmwareVersion[] = "esp1-disconnect-diag-20260925.1";
+constexpr char kFirmwareVersion[] = "esp1-wifi-ps-none-20260925.1";
 constexpr std::uint8_t kOneWirePin = 4;
 constexpr std::time_t kMinimumReasonableEpochSeconds = 1700000000;
 constexpr std::size_t kDiagnosticLogCapacity =
@@ -268,6 +269,8 @@ void dump_diagnostic_log() {
   const auto extension_rx = aquarium::extension_lan::receiveCounters();
   const auto grass_rx = aquarium::grass_lan::receiveCounters();
   Serial.printf("DIAG firmware=%s counters_scope=boot\n", kFirmwareVersion);
+  Serial.printf("DIAG wifi_power_save=%s\n",
+                WiFi.getSleep() == WIFI_PS_NONE ? "none" : "enabled");
   Serial.printf("DIAG_RX source=ESP2 received=%lu accepted=%lu rejected=%lu\n",
                 static_cast<unsigned long>(extension_rx.received),
                 static_cast<unsigned long>(extension_rx.accepted),
@@ -620,6 +623,10 @@ void connect_wifi(std::uint64_t now_ms) {
 
 void setup() {
   Serial.begin(115200);
+  const bool wifi_power_policy_ok =
+      aquarium::firmware::configureNoWifiPowerSave(WiFi, WIFI_PS_NONE);
+  Serial.println(wifi_power_policy_ok ? "ESP1_WIFI_PS=NONE"
+                                      : "ESP1_WIFI_PS=SET_FAILED");
   Serial.printf("ESP1_FIRMWARE_VERSION=%s\n", kFirmwareVersion);
   load_diagnostic_log();
   record_diagnostic(DiagnosticEvent::boot, monotonic_millis(),
