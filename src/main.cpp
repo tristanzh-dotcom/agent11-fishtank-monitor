@@ -13,6 +13,7 @@
 #include "extension_lan_state.hpp"
 #include "grass_lan_state.hpp"
 #include "wifi_power_policy.hpp"
+#include "lan_air_probe.hpp"
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
 #include "tab5_lan_state.hpp"
 #endif
@@ -39,7 +40,7 @@ namespace {
 #include "tab5_lan_secret.hpp"
 #endif
 
-constexpr char kFirmwareVersion[] = "esp1-wifi-ps-none-20260925.1";
+constexpr char kFirmwareVersion[] = "esp1-air-observe-20260926.1";
 constexpr std::uint8_t kOneWirePin = 4;
 constexpr std::time_t kMinimumReasonableEpochSeconds = 1700000000;
 constexpr std::size_t kDiagnosticLogCapacity =
@@ -283,7 +284,7 @@ void dump_diagnostic_log() {
 }
 
 void process_diagnostic_command() {
-  static char command[12]{};
+  static char command[24]{};
   static std::size_t length{};
   while (Serial.available() > 0) {
     const int input = Serial.read();
@@ -291,6 +292,7 @@ void process_diagnostic_command() {
     if (input == '\n') {
       command[length] = '\0';
       if (std::strcmp(command, "DIAG") == 0) dump_diagnostic_log();
+      else aquarium::diagnostics::airCommand(command);
       length = 0U;
     } else if (length + 1U < sizeof(command)) {
       command[length++] = static_cast<char>(input);
@@ -646,6 +648,7 @@ void setup() {
 void loop() {
   static std::uint64_t last_sample_at_ms = 0;
   process_diagnostic_command();
+  aquarium::diagnostics::tickAirProbe();
   std::uint64_t now_ms = monotonic_millis();
   if (diagnostic_has_loop_time &&
       now_ms - diagnostic_last_loop_ms >= kDiagnosticLoopGapMs) {

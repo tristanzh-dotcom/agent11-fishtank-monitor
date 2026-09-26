@@ -27,7 +27,7 @@
   - `src/main.cpp`：在 ESP3 stale/recovery 时记录 RSSI。
   - `test/lan_runtime_stubs/WiFi.h`：提供 RSSI 测试替身并捕获诊断标记。
   - `test/test_lan_main_pass.cpp`：断言 stale/recovery 标记及 RSSI。
-- 上述未提交改动合计 40 行新增、0 行删除；暂存区为空。不要覆盖、丢弃或顺手重构。
+- 首次收工 Git 取证时，上述固件/测试改动尚未提交，合计 40 行新增、0 行删除；当时暂存区为空。本 handover 随后由 TZ 手动纳入 `7304ef9`。不要覆盖、丢弃或顺手重构既有源码差异。
 
 ### 监听结果
 
@@ -47,10 +47,11 @@
 
 ## 验证与代码状态
 
-- 本次只读命令：`git status --short`、`git diff --stat`、`git diff --name-only`、`git diff --cached --name-only`、`git log --since=midnight --name-status --oneline`、`git rev-parse HEAD`、`git diff --check`。`git diff --check` 通过。
-- HEAD：`d08bd300cbdabd4db167534d614421ecfda9d4c3`。今日历史中可见 `1e067b5`（持久诊断日志）、`0c8d197`（主循环诊断）、`d08bd30`（Wi-Fi 省电策略）。它们已在 HEAD 历史；当前仅上述三个 RSSI 文件有未提交更改。
+- 首次收工 Git 取证时，HEAD 为 `d08bd300cbdabd4db167534d614421ecfda9d4c3`；当时 `git diff --check` 对三处源码差异通过。交接文档未发现模板占位词或行尾空白。
+- 收工期间 TZ 手动创建提交 `7304ef94b98b8c18f9eddb95ea7e2d21c17c8404`（2026-09-25 22:22:22 CST），其中包含上述三个 RSSI 文件和当时版本的本 handover。TZ 已明确确认提交由其手动完成；本会话未执行暂存或提交命令。
+- 提交后当前 HEAD 为 `7304ef94b98b8c18f9eddb95ea7e2d21c17c8404`。本会话随后仅对 handover 作两处说明修订；收工时唯一工作区差异是该 handover，代码无未提交差异。今日历史还包括 `1e067b5`（持久诊断日志）、`0c8d197`（主循环诊断）、`d08bd30`（Wi-Fi 省电策略）。
 - 前序运行记录：`sh test/run_lan_receive.sh` 的 7 个 LAN 场景和主循环测试通过；`pio run -e waveshare_esp32s3_n16r8` 构建通过。上述检查未在收工轮次重跑。
-- 本收工只新建此 handover 文件；没有新增测试、构建、设备操作或 Git 写入。
+- 本会话未运行测试、构建或设备操作，也未执行 Git 写入。TZ 手动提交发生在本会话收工期间；当前两处后续 handover 修订尚未提交。
 
 ## 下一步
 

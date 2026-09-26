@@ -1,0 +1,496 @@
+{"at": "2026-09-26T11:07:48.512767+08:00", "elapsed": 0.064, "source": "ESP1", "line": "DIAG_BEGIN count=32 overwritten=1667 storage=ok"}
+{"at": "2026-09-26T11:07:48.512898+08:00", "elapsed": 0.064, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790382988 uptime_ms=37042648 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.512925+08:00", "elapsed": 0.064, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790383408 uptime_ms=37463242 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.512942+08:00", "elapsed": 0.064, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790384009 uptime_ms=38064093 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.543005+08:00", "elapsed": 0.094, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790384155 uptime_ms=38209426 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.543040+08:00", "elapsed": 0.094, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385362 uptime_ms=39416608 gap_ms=30618 missed_frames=2"}
+{"at": "2026-09-26T11:07:48.543058+08:00", "elapsed": 0.094, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385792 uptime_ms=39846819 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.573143+08:00", "elapsed": 0.124, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385812 uptime_ms=39866766 gap_ms=19947 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.573189+08:00", "elapsed": 0.124, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385882 uptime_ms=39936786 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.573205+08:00", "elapsed": 0.124, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790386468 uptime_ms=40522657 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.573219+08:00", "elapsed": 0.124, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790387805 uptime_ms=41859568 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.573233+08:00", "elapsed": 0.124, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388165 uptime_ms=42219993 gap_ms=20042 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.603309+08:00", "elapsed": 0.154, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388265 uptime_ms=42320062 gap_ms=19951 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.603345+08:00", "elapsed": 0.154, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388496 uptime_ms=42550486 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.603361+08:00", "elapsed": 0.154, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388916 uptime_ms=42971054 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.633429+08:00", "elapsed": 0.184, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389507 uptime_ms=43561780 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.633466+08:00", "elapsed": 0.184, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389617 uptime_ms=43672081 gap_ms=30092 missed_frames=2"}
+{"at": "2026-09-26T11:07:48.633485+08:00", "elapsed": 0.184, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389678 uptime_ms=43732273 gap_ms=20251 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.663570+08:00", "elapsed": 0.215, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389698 uptime_ms=43752253 gap_ms=19980 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.663606+08:00", "elapsed": 0.215, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389818 uptime_ms=43872383 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.663627+08:00", "elapsed": 0.215, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390118 uptime_ms=44172803 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.663648+08:00", "elapsed": 0.215, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390599 uptime_ms=44653285 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.692108+08:00", "elapsed": 0.243, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390779 uptime_ms=44833619 gap_ms=20008 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.692270+08:00", "elapsed": 0.243, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790391140 uptime_ms=45194244 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.692308+08:00", "elapsed": 0.243, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790391214 uptime_ms=45268888 gap_ms=59887 missed_frames=1"}
+{"at": "2026-09-26T11:07:48.692333+08:00", "elapsed": 0.243, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=20 reset_reason=1"}
+{"at": "2026-09-26T11:07:48.692357+08:00", "elapsed": 0.243, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=9305 reconnect_ms=na"}
+{"at": "2026-09-26T11:07:48.718390+08:00", "elapsed": 0.269, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=9305 sequence=17047"}
+{"at": "2026-09-26T11:07:48.718546+08:00", "elapsed": 0.27, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790391845 uptime_ms=33199 sequence=1715"}
+{"at": "2026-09-26T11:07:48.718601+08:00", "elapsed": 0.27, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=21 reset_reason=1"}
+{"at": "2026-09-26T11:07:48.718640+08:00", "elapsed": 0.27, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=8609 reconnect_ms=na"}
+{"at": "2026-09-26T11:07:48.718727+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_FIRMWARE_VERSION=esp3-tx-observe-20260925.1"}
+{"at": "2026-09-26T11:07:48.718770+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG_BEGIN count=16 overwritten=43 storage=ok"}
+{"at": "2026-09-26T11:07:48.718804+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=0 uptime_ms=3109 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.718839+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337015 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.718873+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337018 uptime_ms=3559 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.718907+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337368 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.718938+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337371 uptime_ms=3058 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.718970+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337395 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.719003+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337399 uptime_ms=3617 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.719034+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337477 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.719066+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337481 uptime_ms=3711 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.719096+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337663 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.719128+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337666 uptime_ms=3260 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.719158+08:00", "elapsed": 0.27, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790340322 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.743137+08:00", "elapsed": 0.294, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=14047 sequence=17065"}
+{"at": "2026-09-26T11:07:48.743219+08:00", "elapsed": 0.294, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790392016 uptime_ms=29404 sequence=1"}
+{"at": "2026-09-26T11:07:48.743259+08:00", "elapsed": 0.294, "source": "ESP1", "line": "DIAG firmware=esp1-wifi-ps-none-20260925.1 counters_scope=boot"}
+{"at": "2026-09-26T11:07:48.743287+08:00", "elapsed": 0.294, "source": "ESP1", "line": "DIAG wifi_power_save=none"}
+{"at": "2026-09-26T11:07:48.743340+08:00", "elapsed": 0.294, "source": "ESP1", "line": "DIAG_RX source=ESP2 received=7 accepted=7 rejected=0"}
+{"at": "2026-09-26T11:07:48.743390+08:00", "elapsed": 0.294, "source": "ESP1", "line": "DIAG_RX source=ESP3 received=2 accepted=2 rejected=0"}
+{"at": "2026-09-26T11:07:48.743434+08:00", "elapsed": 0.294, "source": "ESP1", "line": "DIAG_END"}
+{"at": "2026-09-26T11:07:48.743485+08:00", "elapsed": 0.294, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790340326 uptime_ms=3760 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.743520+08:00", "elapsed": 0.295, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392207 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.743553+08:00", "elapsed": 0.295, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392210 uptime_ms=3210 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.743584+08:00", "elapsed": 0.295, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392068 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:07:48.743610+08:00", "elapsed": 0.295, "source": "ESP3", "line": "ESP3_DIAG_END"}
+{"at": "2026-09-26T11:07:51.301984+08:00", "elapsed": 2.853, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:07:52.023709+08:00", "elapsed": 3.575, "source": "ESP3", "line": "ESP3_WIFI_CONNECTED_DHCP"}
+{"at": "2026-09-26T11:08:01.138830+08:00", "elapsed": 12.69, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:08:11.242305+08:00", "elapsed": 22.793, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:08:18.508682+08:00", "elapsed": 30.06, "source": "ESP1", "line": "DIAG_BEGIN count=32 overwritten=1667 storage=ok"}
+{"at": "2026-09-26T11:08:18.508904+08:00", "elapsed": 30.06, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790382988 uptime_ms=37042648 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.508955+08:00", "elapsed": 30.06, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790383408 uptime_ms=37463242 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.509007+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG_BEGIN count=16 overwritten=44 storage=ok"}
+{"at": "2026-09-26T11:08:18.509037+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337015 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509066+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337018 uptime_ms=3559 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509093+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337368 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509119+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337371 uptime_ms=3058 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509143+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337395 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509169+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337399 uptime_ms=3617 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509193+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337477 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509219+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337481 uptime_ms=3711 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509245+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337663 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509270+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337666 uptime_ms=3260 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509294+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790340322 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509340+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790340326 uptime_ms=3760 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.509363+08:00", "elapsed": 30.06, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392207 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.539475+08:00", "elapsed": 30.09, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790384009 uptime_ms=38064093 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.539572+08:00", "elapsed": 30.091, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790384155 uptime_ms=38209426 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.539614+08:00", "elapsed": 30.091, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385362 uptime_ms=39416608 gap_ms=30618 missed_frames=2"}
+{"at": "2026-09-26T11:08:18.539653+08:00", "elapsed": 30.091, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385792 uptime_ms=39846819 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.539703+08:00", "elapsed": 30.091, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392210 uptime_ms=3210 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.539738+08:00", "elapsed": 30.091, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392068 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.539772+08:00", "elapsed": 30.091, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392071 uptime_ms=3362 value=0 detail=0"}
+{"at": "2026-09-26T11:08:18.539800+08:00", "elapsed": 30.091, "source": "ESP3", "line": "ESP3_DIAG_END"}
+{"at": "2026-09-26T11:08:18.568403+08:00", "elapsed": 30.119, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385812 uptime_ms=39866766 gap_ms=19947 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.568563+08:00", "elapsed": 30.12, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385882 uptime_ms=39936786 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.568624+08:00", "elapsed": 30.12, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790386468 uptime_ms=40522657 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.596032+08:00", "elapsed": 30.147, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790387805 uptime_ms=41859568 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.596183+08:00", "elapsed": 30.147, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388165 uptime_ms=42219993 gap_ms=20042 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.596242+08:00", "elapsed": 30.147, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388265 uptime_ms=42320062 gap_ms=19951 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.596285+08:00", "elapsed": 30.147, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388496 uptime_ms=42550486 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.624006+08:00", "elapsed": 30.175, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388916 uptime_ms=42971054 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.624117+08:00", "elapsed": 30.175, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389507 uptime_ms=43561780 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.624163+08:00", "elapsed": 30.175, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389617 uptime_ms=43672081 gap_ms=30092 missed_frames=2"}
+{"at": "2026-09-26T11:08:18.651700+08:00", "elapsed": 30.203, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389678 uptime_ms=43732273 gap_ms=20251 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.651780+08:00", "elapsed": 30.203, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389698 uptime_ms=43752253 gap_ms=19980 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.651822+08:00", "elapsed": 30.203, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389818 uptime_ms=43872383 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.675243+08:00", "elapsed": 30.226, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390118 uptime_ms=44172803 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.675342+08:00", "elapsed": 30.226, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390599 uptime_ms=44653285 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.675382+08:00", "elapsed": 30.226, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390779 uptime_ms=44833619 gap_ms=20008 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.704728+08:00", "elapsed": 30.256, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790391140 uptime_ms=45194244 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.704850+08:00", "elapsed": 30.256, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790391214 uptime_ms=45268888 gap_ms=59887 missed_frames=1"}
+{"at": "2026-09-26T11:08:18.704899+08:00", "elapsed": 30.256, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=20 reset_reason=1"}
+{"at": "2026-09-26T11:08:18.704939+08:00", "elapsed": 30.256, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=9305 reconnect_ms=na"}
+{"at": "2026-09-26T11:08:18.704977+08:00", "elapsed": 30.256, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=9305 sequence=17047"}
+{"at": "2026-09-26T11:08:18.735063+08:00", "elapsed": 30.286, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790391845 uptime_ms=33199 sequence=1715"}
+{"at": "2026-09-26T11:08:18.735190+08:00", "elapsed": 30.286, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=21 reset_reason=1"}
+{"at": "2026-09-26T11:08:18.735242+08:00", "elapsed": 30.286, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=8609 reconnect_ms=na"}
+{"at": "2026-09-26T11:08:18.735281+08:00", "elapsed": 30.286, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=14047 sequence=17065"}
+{"at": "2026-09-26T11:08:18.735318+08:00", "elapsed": 30.286, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790392016 uptime_ms=29404 sequence=1"}
+{"at": "2026-09-26T11:08:18.763786+08:00", "elapsed": 30.315, "source": "ESP1", "line": "DIAG firmware=esp1-wifi-ps-none-20260925.1 counters_scope=boot"}
+{"at": "2026-09-26T11:08:18.763865+08:00", "elapsed": 30.315, "source": "ESP1", "line": "DIAG wifi_power_save=none"}
+{"at": "2026-09-26T11:08:18.763906+08:00", "elapsed": 30.315, "source": "ESP1", "line": "DIAG_RX source=ESP2 received=10 accepted=10 rejected=0"}
+{"at": "2026-09-26T11:08:18.763968+08:00", "elapsed": 30.315, "source": "ESP1", "line": "DIAG_RX source=ESP3 received=2 accepted=2 rejected=0"}
+{"at": "2026-09-26T11:08:18.764016+08:00", "elapsed": 30.315, "source": "ESP1", "line": "DIAG_END"}
+{"at": "2026-09-26T11:08:19.373460+08:00", "elapsed": 30.924, "source": "ESP3", "line": "ESP3_TX seq=1 uptime_ms=30705 result=ok"}
+{"at": "2026-09-26T11:08:19.551756+08:00", "elapsed": 31.103, "source": "ESP1", "line": "GRASS_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:08:19.665385+08:00", "elapsed": 31.216, "source": "UDP", "seq": 1, "uptime_ms": 30089}
+{"at": "2026-09-26T11:08:21.092037+08:00", "elapsed": 32.643, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:08:31.222067+08:00", "elapsed": 42.773, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:08:41.372059+08:00", "elapsed": 52.923, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:08:48.488679+08:00", "elapsed": 60.04, "source": "ESP1", "line": "DIAG_BEGIN count=32 overwritten=1668 storage=ok"}
+{"at": "2026-09-26T11:08:48.488826+08:00", "elapsed": 60.04, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790383408 uptime_ms=37463242 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.488859+08:00", "elapsed": 60.04, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790384009 uptime_ms=38064093 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.488894+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG_BEGIN count=16 overwritten=44 storage=ok"}
+{"at": "2026-09-26T11:08:48.488939+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337015 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.488956+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337018 uptime_ms=3559 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.488971+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337368 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.488987+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337371 uptime_ms=3058 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.489001+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337395 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.489018+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337399 uptime_ms=3617 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.489033+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337477 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.489048+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337481 uptime_ms=3711 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.489062+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337663 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.489078+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337666 uptime_ms=3260 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.489102+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790340322 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.489115+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790340326 uptime_ms=3760 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.489128+08:00", "elapsed": 60.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392207 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.519206+08:00", "elapsed": 60.07, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790384155 uptime_ms=38209426 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.519248+08:00", "elapsed": 60.07, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385362 uptime_ms=39416608 gap_ms=30618 missed_frames=2"}
+{"at": "2026-09-26T11:08:48.519268+08:00", "elapsed": 60.07, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385792 uptime_ms=39846819 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.519291+08:00", "elapsed": 60.07, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392210 uptime_ms=3210 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.519306+08:00", "elapsed": 60.07, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392068 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.519320+08:00", "elapsed": 60.07, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392071 uptime_ms=3362 value=0 detail=0"}
+{"at": "2026-09-26T11:08:48.519335+08:00", "elapsed": 60.07, "source": "ESP3", "line": "ESP3_DIAG_END"}
+{"at": "2026-09-26T11:08:48.549413+08:00", "elapsed": 60.1, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385812 uptime_ms=39866766 gap_ms=19947 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.549457+08:00", "elapsed": 60.1, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385882 uptime_ms=39936786 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.549476+08:00", "elapsed": 60.1, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790386468 uptime_ms=40522657 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.549497+08:00", "elapsed": 60.1, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790387805 uptime_ms=41859568 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.571935+08:00", "elapsed": 60.123, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388165 uptime_ms=42219993 gap_ms=20042 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.572104+08:00", "elapsed": 60.123, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388265 uptime_ms=42320062 gap_ms=19951 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.572156+08:00", "elapsed": 60.123, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388496 uptime_ms=42550486 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.601794+08:00", "elapsed": 60.153, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388916 uptime_ms=42971054 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.601948+08:00", "elapsed": 60.153, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389507 uptime_ms=43561780 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.602013+08:00", "elapsed": 60.153, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389617 uptime_ms=43672081 gap_ms=30092 missed_frames=2"}
+{"at": "2026-09-26T11:08:48.631309+08:00", "elapsed": 60.182, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389678 uptime_ms=43732273 gap_ms=20251 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.631457+08:00", "elapsed": 60.182, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389698 uptime_ms=43752253 gap_ms=19980 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.631517+08:00", "elapsed": 60.182, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389818 uptime_ms=43872383 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.631561+08:00", "elapsed": 60.182, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390118 uptime_ms=44172803 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.658510+08:00", "elapsed": 60.209, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390599 uptime_ms=44653285 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.658628+08:00", "elapsed": 60.21, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390779 uptime_ms=44833619 gap_ms=20008 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.658679+08:00", "elapsed": 60.21, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790391140 uptime_ms=45194244 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.687342+08:00", "elapsed": 60.238, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790391214 uptime_ms=45268888 gap_ms=59887 missed_frames=1"}
+{"at": "2026-09-26T11:08:48.687455+08:00", "elapsed": 60.238, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=20 reset_reason=1"}
+{"at": "2026-09-26T11:08:48.687500+08:00", "elapsed": 60.238, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=9305 reconnect_ms=na"}
+{"at": "2026-09-26T11:08:48.687538+08:00", "elapsed": 60.238, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=9305 sequence=17047"}
+{"at": "2026-09-26T11:08:48.687574+08:00", "elapsed": 60.238, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790391845 uptime_ms=33199 sequence=1715"}
+{"at": "2026-09-26T11:08:48.687607+08:00", "elapsed": 60.239, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=21 reset_reason=1"}
+{"at": "2026-09-26T11:08:48.710019+08:00", "elapsed": 60.261, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=8609 reconnect_ms=na"}
+{"at": "2026-09-26T11:08:48.710154+08:00", "elapsed": 60.261, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=14047 sequence=17065"}
+{"at": "2026-09-26T11:08:48.710206+08:00", "elapsed": 60.261, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790392016 uptime_ms=29404 sequence=1"}
+{"at": "2026-09-26T11:08:48.735082+08:00", "elapsed": 60.286, "source": "ESP1", "line": "DIAG event=GRASS_SENDER_SESSION epoch_s=1790392099 uptime_ms=112326 first_sequence=1"}
+{"at": "2026-09-26T11:08:48.735177+08:00", "elapsed": 60.286, "source": "ESP1", "line": "DIAG firmware=esp1-wifi-ps-none-20260925.1 counters_scope=boot"}
+{"at": "2026-09-26T11:08:48.735247+08:00", "elapsed": 60.286, "source": "ESP1", "line": "DIAG wifi_power_save=none"}
+{"at": "2026-09-26T11:08:48.735286+08:00", "elapsed": 60.286, "source": "ESP1", "line": "DIAG_RX source=ESP2 received=13 accepted=13 rejected=0"}
+{"at": "2026-09-26T11:08:48.735340+08:00", "elapsed": 60.286, "source": "ESP1", "line": "DIAG_RX source=ESP3 received=3 accepted=3 rejected=0"}
+{"at": "2026-09-26T11:08:48.735372+08:00", "elapsed": 60.286, "source": "ESP1", "line": "DIAG_END"}
+{"at": "2026-09-26T11:08:49.408592+08:00", "elapsed": 60.96, "source": "ESP3", "line": "ESP3_TX seq=2 uptime_ms=60743 result=ok"}
+{"at": "2026-09-26T11:08:49.465369+08:00", "elapsed": 61.016, "source": "UDP", "seq": 2, "uptime_ms": 60127}
+{"at": "2026-09-26T11:08:49.701359+08:00", "elapsed": 61.252, "source": "ESP1", "line": "GRASS_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:08:51.195799+08:00", "elapsed": 62.747, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:09:01.319507+08:00", "elapsed": 72.87, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:09:11.181106+08:00", "elapsed": 82.732, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:09:18.485274+08:00", "elapsed": 90.036, "source": "ESP1", "line": "DIAG_BEGIN count=32 overwritten=1668 storage=ok"}
+{"at": "2026-09-26T11:09:18.485555+08:00", "elapsed": 90.036, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790383408 uptime_ms=37463242 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.485654+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG_BEGIN count=16 overwritten=44 storage=ok"}
+{"at": "2026-09-26T11:09:18.485701+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337015 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.485743+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337018 uptime_ms=3559 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.485782+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337368 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.485820+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337371 uptime_ms=3058 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.485854+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337395 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.485889+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337399 uptime_ms=3617 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.485923+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337477 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.485957+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337481 uptime_ms=3711 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.485991+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337663 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.486025+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337666 uptime_ms=3260 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.486060+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790340322 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.486094+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790340326 uptime_ms=3760 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.486130+08:00", "elapsed": 90.037, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392207 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.508094+08:00", "elapsed": 90.059, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790384009 uptime_ms=38064093 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.508329+08:00", "elapsed": 90.059, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790384155 uptime_ms=38209426 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.508403+08:00", "elapsed": 90.059, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385362 uptime_ms=39416608 gap_ms=30618 missed_frames=2"}
+{"at": "2026-09-26T11:09:18.508462+08:00", "elapsed": 90.059, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392210 uptime_ms=3210 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.508490+08:00", "elapsed": 90.059, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392068 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.508515+08:00", "elapsed": 90.059, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392071 uptime_ms=3362 value=0 detail=0"}
+{"at": "2026-09-26T11:09:18.508536+08:00", "elapsed": 90.059, "source": "ESP3", "line": "ESP3_DIAG_END"}
+{"at": "2026-09-26T11:09:18.533572+08:00", "elapsed": 90.084, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385792 uptime_ms=39846819 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.533754+08:00", "elapsed": 90.085, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385812 uptime_ms=39866766 gap_ms=19947 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.558992+08:00", "elapsed": 90.11, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385882 uptime_ms=39936786 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.559140+08:00", "elapsed": 90.11, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790386468 uptime_ms=40522657 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.559173+08:00", "elapsed": 90.11, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790387805 uptime_ms=41859568 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.559200+08:00", "elapsed": 90.11, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388165 uptime_ms=42219993 gap_ms=20042 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.584388+08:00", "elapsed": 90.135, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388265 uptime_ms=42320062 gap_ms=19951 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.584524+08:00", "elapsed": 90.135, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388496 uptime_ms=42550486 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.584555+08:00", "elapsed": 90.135, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388916 uptime_ms=42971054 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.609728+08:00", "elapsed": 90.161, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389507 uptime_ms=43561780 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.609852+08:00", "elapsed": 90.161, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389617 uptime_ms=43672081 gap_ms=30092 missed_frames=2"}
+{"at": "2026-09-26T11:09:18.609878+08:00", "elapsed": 90.161, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389678 uptime_ms=43732273 gap_ms=20251 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.633537+08:00", "elapsed": 90.184, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389698 uptime_ms=43752253 gap_ms=19980 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.633608+08:00", "elapsed": 90.184, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389818 uptime_ms=43872383 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.633624+08:00", "elapsed": 90.184, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390118 uptime_ms=44172803 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.658742+08:00", "elapsed": 90.21, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390599 uptime_ms=44653285 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.658801+08:00", "elapsed": 90.21, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390779 uptime_ms=44833619 gap_ms=20008 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.658816+08:00", "elapsed": 90.21, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790391140 uptime_ms=45194244 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.683890+08:00", "elapsed": 90.235, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790391214 uptime_ms=45268888 gap_ms=59887 missed_frames=1"}
+{"at": "2026-09-26T11:09:18.683936+08:00", "elapsed": 90.235, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=20 reset_reason=1"}
+{"at": "2026-09-26T11:09:18.683955+08:00", "elapsed": 90.235, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=9305 reconnect_ms=na"}
+{"at": "2026-09-26T11:09:18.683971+08:00", "elapsed": 90.235, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=9305 sequence=17047"}
+{"at": "2026-09-26T11:09:18.709065+08:00", "elapsed": 90.26, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790391845 uptime_ms=33199 sequence=1715"}
+{"at": "2026-09-26T11:09:18.709123+08:00", "elapsed": 90.26, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=21 reset_reason=1"}
+{"at": "2026-09-26T11:09:18.709142+08:00", "elapsed": 90.26, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=8609 reconnect_ms=na"}
+{"at": "2026-09-26T11:09:18.709161+08:00", "elapsed": 90.26, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=14047 sequence=17065"}
+{"at": "2026-09-26T11:09:18.709179+08:00", "elapsed": 90.26, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790392016 uptime_ms=29404 sequence=1"}
+{"at": "2026-09-26T11:09:18.733480+08:00", "elapsed": 90.284, "source": "ESP1", "line": "DIAG event=GRASS_SENDER_SESSION epoch_s=1790392099 uptime_ms=112326 first_sequence=1"}
+{"at": "2026-09-26T11:09:18.733620+08:00", "elapsed": 90.284, "source": "ESP1", "line": "DIAG firmware=esp1-wifi-ps-none-20260925.1 counters_scope=boot"}
+{"at": "2026-09-26T11:09:18.733654+08:00", "elapsed": 90.285, "source": "ESP1", "line": "DIAG wifi_power_save=none"}
+{"at": "2026-09-26T11:09:18.733677+08:00", "elapsed": 90.285, "source": "ESP1", "line": "DIAG_RX source=ESP2 received=16 accepted=16 rejected=0"}
+{"at": "2026-09-26T11:09:18.733712+08:00", "elapsed": 90.285, "source": "ESP1", "line": "DIAG_RX source=ESP3 received=4 accepted=4 rejected=0"}
+{"at": "2026-09-26T11:09:18.733733+08:00", "elapsed": 90.285, "source": "ESP1", "line": "DIAG_END"}
+{"at": "2026-09-26T11:09:19.460440+08:00", "elapsed": 91.011, "source": "ESP3", "line": "ESP3_TX seq=3 uptime_ms=90786 result=ok"}
+{"at": "2026-09-26T11:09:19.558608+08:00", "elapsed": 91.109, "source": "UDP", "seq": 3, "uptime_ms": 90170}
+{"at": "2026-09-26T11:09:19.783235+08:00", "elapsed": 91.334, "source": "ESP1", "line": "GRASS_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:09:21.282984+08:00", "elapsed": 92.834, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:09:31.126870+08:00", "elapsed": 102.678, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:09:41.287828+08:00", "elapsed": 112.839, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:09:48.488715+08:00", "elapsed": 120.04, "source": "ESP1", "line": "DIAG_BEGIN count=32 overwritten=1668 storage=ok"}
+{"at": "2026-09-26T11:09:48.489012+08:00", "elapsed": 120.04, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790383408 uptime_ms=37463242 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.489102+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG_BEGIN count=16 overwritten=44 storage=ok"}
+{"at": "2026-09-26T11:09:48.489135+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337015 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489166+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337018 uptime_ms=3559 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489193+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337368 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489219+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337371 uptime_ms=3058 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489260+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337395 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489285+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337399 uptime_ms=3617 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489311+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337477 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489337+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337481 uptime_ms=3711 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489359+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337663 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489384+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337666 uptime_ms=3260 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489406+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790340322 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489429+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790340326 uptime_ms=3760 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.489451+08:00", "elapsed": 120.04, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392207 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.510828+08:00", "elapsed": 120.062, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790384009 uptime_ms=38064093 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.511014+08:00", "elapsed": 120.062, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790384155 uptime_ms=38209426 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.511047+08:00", "elapsed": 120.062, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385362 uptime_ms=39416608 gap_ms=30618 missed_frames=2"}
+{"at": "2026-09-26T11:09:48.511094+08:00", "elapsed": 120.062, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392210 uptime_ms=3210 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.511114+08:00", "elapsed": 120.062, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392068 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.511133+08:00", "elapsed": 120.062, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392071 uptime_ms=3362 value=0 detail=0"}
+{"at": "2026-09-26T11:09:48.511147+08:00", "elapsed": 120.062, "source": "ESP3", "line": "ESP3_DIAG_END"}
+{"at": "2026-09-26T11:09:48.536360+08:00", "elapsed": 120.087, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385792 uptime_ms=39846819 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.536537+08:00", "elapsed": 120.087, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385812 uptime_ms=39866766 gap_ms=19947 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.560123+08:00", "elapsed": 120.111, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385882 uptime_ms=39936786 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.560309+08:00", "elapsed": 120.111, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790386468 uptime_ms=40522657 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.560341+08:00", "elapsed": 120.111, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790387805 uptime_ms=41859568 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.560363+08:00", "elapsed": 120.111, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388165 uptime_ms=42219993 gap_ms=20042 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.581589+08:00", "elapsed": 120.132, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388265 uptime_ms=42320062 gap_ms=19951 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.581770+08:00", "elapsed": 120.133, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388496 uptime_ms=42550486 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.606994+08:00", "elapsed": 120.158, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388916 uptime_ms=42971054 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.607236+08:00", "elapsed": 120.158, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389507 uptime_ms=43561780 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.607295+08:00", "elapsed": 120.158, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389617 uptime_ms=43672081 gap_ms=30092 missed_frames=2"}
+{"at": "2026-09-26T11:09:48.631136+08:00", "elapsed": 120.182, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389678 uptime_ms=43732273 gap_ms=20251 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.631348+08:00", "elapsed": 120.182, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389698 uptime_ms=43752253 gap_ms=19980 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.631404+08:00", "elapsed": 120.182, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389818 uptime_ms=43872383 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.656062+08:00", "elapsed": 120.207, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390118 uptime_ms=44172803 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.656241+08:00", "elapsed": 120.207, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390599 uptime_ms=44653285 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.656280+08:00", "elapsed": 120.207, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390779 uptime_ms=44833619 gap_ms=20008 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.681520+08:00", "elapsed": 120.232, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790391140 uptime_ms=45194244 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.681709+08:00", "elapsed": 120.233, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790391214 uptime_ms=45268888 gap_ms=59887 missed_frames=1"}
+{"at": "2026-09-26T11:09:48.681769+08:00", "elapsed": 120.233, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=20 reset_reason=1"}
+{"at": "2026-09-26T11:09:48.681809+08:00", "elapsed": 120.233, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=9305 reconnect_ms=na"}
+{"at": "2026-09-26T11:09:48.706741+08:00", "elapsed": 120.258, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=9305 sequence=17047"}
+{"at": "2026-09-26T11:09:48.706942+08:00", "elapsed": 120.258, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790391845 uptime_ms=33199 sequence=1715"}
+{"at": "2026-09-26T11:09:48.707007+08:00", "elapsed": 120.258, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=21 reset_reason=1"}
+{"at": "2026-09-26T11:09:48.707055+08:00", "elapsed": 120.258, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=8609 reconnect_ms=na"}
+{"at": "2026-09-26T11:09:48.707097+08:00", "elapsed": 120.258, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=14047 sequence=17065"}
+{"at": "2026-09-26T11:09:48.732309+08:00", "elapsed": 120.283, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790392016 uptime_ms=29404 sequence=1"}
+{"at": "2026-09-26T11:09:48.732481+08:00", "elapsed": 120.283, "source": "ESP1", "line": "DIAG event=GRASS_SENDER_SESSION epoch_s=1790392099 uptime_ms=112326 first_sequence=1"}
+{"at": "2026-09-26T11:09:48.732546+08:00", "elapsed": 120.283, "source": "ESP1", "line": "DIAG firmware=esp1-wifi-ps-none-20260925.1 counters_scope=boot"}
+{"at": "2026-09-26T11:09:48.732586+08:00", "elapsed": 120.283, "source": "ESP1", "line": "DIAG wifi_power_save=none"}
+{"at": "2026-09-26T11:09:48.732624+08:00", "elapsed": 120.283, "source": "ESP1", "line": "DIAG_RX source=ESP2 received=19 accepted=19 rejected=0"}
+{"at": "2026-09-26T11:09:48.757885+08:00", "elapsed": 120.309, "source": "ESP1", "line": "DIAG_RX source=ESP3 received=5 accepted=5 rejected=0"}
+{"at": "2026-09-26T11:09:48.758087+08:00", "elapsed": 120.309, "source": "ESP1", "line": "DIAG_END"}
+{"at": "2026-09-26T11:09:49.508646+08:00", "elapsed": 121.06, "source": "ESP3", "line": "ESP3_TX seq=4 uptime_ms=120829 result=ok"}
+{"at": "2026-09-26T11:09:49.584280+08:00", "elapsed": 121.135, "source": "ESP1", "line": "GRASS_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:09:49.658617+08:00", "elapsed": 121.209, "source": "UDP", "seq": 4, "uptime_ms": 120213}
+{"at": "2026-09-26T11:09:51.097630+08:00", "elapsed": 122.648, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:10:01.244542+08:00", "elapsed": 132.795, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:10:11.099637+08:00", "elapsed": 142.65, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:10:18.477305+08:00", "elapsed": 150.028, "source": "ESP3", "line": "ESP3_DIAG_BEGIN count=16 overwritten=44 storage=ok"}
+{"at": "2026-09-26T11:10:18.477512+08:00", "elapsed": 150.028, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337015 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477576+08:00", "elapsed": 150.028, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337018 uptime_ms=3559 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477621+08:00", "elapsed": 150.028, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337368 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477663+08:00", "elapsed": 150.028, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337371 uptime_ms=3058 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477699+08:00", "elapsed": 150.028, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337395 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477736+08:00", "elapsed": 150.029, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337399 uptime_ms=3617 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477772+08:00", "elapsed": 150.029, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337477 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477808+08:00", "elapsed": 150.029, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337481 uptime_ms=3711 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477841+08:00", "elapsed": 150.029, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337663 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477876+08:00", "elapsed": 150.029, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337666 uptime_ms=3260 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477909+08:00", "elapsed": 150.029, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790340322 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477943+08:00", "elapsed": 150.029, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790340326 uptime_ms=3760 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.477976+08:00", "elapsed": 150.029, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392207 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.500033+08:00", "elapsed": 150.051, "source": "ESP1", "line": "DIAG_BEGIN count=32 overwritten=1668 storage=ok"}
+{"at": "2026-09-26T11:10:18.500258+08:00", "elapsed": 150.051, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790383408 uptime_ms=37463242 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.500331+08:00", "elapsed": 150.051, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790384009 uptime_ms=38064093 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.500412+08:00", "elapsed": 150.051, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392210 uptime_ms=3210 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.500458+08:00", "elapsed": 150.051, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392068 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.500501+08:00", "elapsed": 150.051, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392071 uptime_ms=3362 value=0 detail=0"}
+{"at": "2026-09-26T11:10:18.500552+08:00", "elapsed": 150.051, "source": "ESP3", "line": "ESP3_DIAG_END"}
+{"at": "2026-09-26T11:10:18.523260+08:00", "elapsed": 150.074, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790384155 uptime_ms=38209426 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.523461+08:00", "elapsed": 150.074, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385362 uptime_ms=39416608 gap_ms=30618 missed_frames=2"}
+{"at": "2026-09-26T11:10:18.548682+08:00", "elapsed": 150.099, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385792 uptime_ms=39846819 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.548853+08:00", "elapsed": 150.1, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385812 uptime_ms=39866766 gap_ms=19947 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.548916+08:00", "elapsed": 150.1, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385882 uptime_ms=39936786 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.548962+08:00", "elapsed": 150.1, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790386468 uptime_ms=40522657 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.573829+08:00", "elapsed": 150.125, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790387805 uptime_ms=41859568 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.574009+08:00", "elapsed": 150.125, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388165 uptime_ms=42219993 gap_ms=20042 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.574077+08:00", "elapsed": 150.125, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388265 uptime_ms=42320062 gap_ms=19951 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.594417+08:00", "elapsed": 150.145, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388496 uptime_ms=42550486 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.594621+08:00", "elapsed": 150.145, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388916 uptime_ms=42971054 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.619834+08:00", "elapsed": 150.171, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389507 uptime_ms=43561780 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.619955+08:00", "elapsed": 150.171, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389617 uptime_ms=43672081 gap_ms=30092 missed_frames=2"}
+{"at": "2026-09-26T11:10:18.619993+08:00", "elapsed": 150.171, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389678 uptime_ms=43732273 gap_ms=20251 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.620021+08:00", "elapsed": 150.171, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389698 uptime_ms=43752253 gap_ms=19980 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.645154+08:00", "elapsed": 150.196, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389818 uptime_ms=43872383 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.645250+08:00", "elapsed": 150.196, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390118 uptime_ms=44172803 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.670400+08:00", "elapsed": 150.221, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390599 uptime_ms=44653285 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.670508+08:00", "elapsed": 150.221, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390779 uptime_ms=44833619 gap_ms=20008 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.670554+08:00", "elapsed": 150.221, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790391140 uptime_ms=45194244 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.670593+08:00", "elapsed": 150.221, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790391214 uptime_ms=45268888 gap_ms=59887 missed_frames=1"}
+{"at": "2026-09-26T11:10:18.695801+08:00", "elapsed": 150.247, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=20 reset_reason=1"}
+{"at": "2026-09-26T11:10:18.695919+08:00", "elapsed": 150.247, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=9305 reconnect_ms=na"}
+{"at": "2026-09-26T11:10:18.695945+08:00", "elapsed": 150.247, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=9305 sequence=17047"}
+{"at": "2026-09-26T11:10:18.695968+08:00", "elapsed": 150.247, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790391845 uptime_ms=33199 sequence=1715"}
+{"at": "2026-09-26T11:10:18.721176+08:00", "elapsed": 150.272, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=21 reset_reason=1"}
+{"at": "2026-09-26T11:10:18.721355+08:00", "elapsed": 150.272, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=8609 reconnect_ms=na"}
+{"at": "2026-09-26T11:10:18.721419+08:00", "elapsed": 150.272, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=14047 sequence=17065"}
+{"at": "2026-09-26T11:10:18.721463+08:00", "elapsed": 150.272, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790392016 uptime_ms=29404 sequence=1"}
+{"at": "2026-09-26T11:10:18.743988+08:00", "elapsed": 150.295, "source": "ESP1", "line": "DIAG event=GRASS_SENDER_SESSION epoch_s=1790392099 uptime_ms=112326 first_sequence=1"}
+{"at": "2026-09-26T11:10:18.744127+08:00", "elapsed": 150.295, "source": "ESP1", "line": "DIAG firmware=esp1-wifi-ps-none-20260925.1 counters_scope=boot"}
+{"at": "2026-09-26T11:10:18.744178+08:00", "elapsed": 150.295, "source": "ESP1", "line": "DIAG wifi_power_save=none"}
+{"at": "2026-09-26T11:10:18.744226+08:00", "elapsed": 150.295, "source": "ESP1", "line": "DIAG_RX source=ESP2 received=22 accepted=22 rejected=0"}
+{"at": "2026-09-26T11:10:18.744280+08:00", "elapsed": 150.295, "source": "ESP1", "line": "DIAG_RX source=ESP3 received=6 accepted=6 rejected=0"}
+{"at": "2026-09-26T11:10:18.744312+08:00", "elapsed": 150.295, "source": "ESP1", "line": "DIAG_END"}
+{"at": "2026-09-26T11:10:19.541814+08:00", "elapsed": 151.093, "source": "ESP3", "line": "ESP3_TX seq=5 uptime_ms=150872 result=ok"}
+{"at": "2026-09-26T11:10:19.690681+08:00", "elapsed": 151.241, "source": "ESP1", "line": "GRASS_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:10:19.763347+08:00", "elapsed": 151.314, "source": "UDP", "seq": 5, "uptime_ms": 150256}
+{"at": "2026-09-26T11:10:21.204469+08:00", "elapsed": 152.755, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:10:31.444400+08:00", "elapsed": 162.995, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:10:41.199857+08:00", "elapsed": 172.751, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:10:48.478350+08:00", "elapsed": 180.029, "source": "ESP3", "line": "ESP3_DIAG_BEGIN count=16 overwritten=44 storage=ok"}
+{"at": "2026-09-26T11:10:48.478605+08:00", "elapsed": 180.029, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337015 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.478674+08:00", "elapsed": 180.029, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337018 uptime_ms=3559 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.478718+08:00", "elapsed": 180.029, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337368 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.478758+08:00", "elapsed": 180.029, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337371 uptime_ms=3058 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.478795+08:00", "elapsed": 180.03, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337395 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.478833+08:00", "elapsed": 180.03, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337399 uptime_ms=3617 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.478868+08:00", "elapsed": 180.03, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337477 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.478924+08:00", "elapsed": 180.03, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337481 uptime_ms=3711 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.478957+08:00", "elapsed": 180.03, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337663 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.478991+08:00", "elapsed": 180.03, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337666 uptime_ms=3260 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.479022+08:00", "elapsed": 180.03, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790340322 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.479054+08:00", "elapsed": 180.03, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790340326 uptime_ms=3760 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.479085+08:00", "elapsed": 180.03, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392207 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.504249+08:00", "elapsed": 180.055, "source": "ESP1", "line": "DIAG_BEGIN count=32 overwritten=1668 storage=ok"}
+{"at": "2026-09-26T11:10:48.504386+08:00", "elapsed": 180.055, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790383408 uptime_ms=37463242 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.504435+08:00", "elapsed": 180.055, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790384009 uptime_ms=38064093 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.504494+08:00", "elapsed": 180.055, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392210 uptime_ms=3210 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.504532+08:00", "elapsed": 180.055, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392068 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.504578+08:00", "elapsed": 180.055, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392071 uptime_ms=3362 value=0 detail=0"}
+{"at": "2026-09-26T11:10:48.504608+08:00", "elapsed": 180.055, "source": "ESP3", "line": "ESP3_DIAG_END"}
+{"at": "2026-09-26T11:10:48.529777+08:00", "elapsed": 180.081, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790384155 uptime_ms=38209426 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.529929+08:00", "elapsed": 180.081, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385362 uptime_ms=39416608 gap_ms=30618 missed_frames=2"}
+{"at": "2026-09-26T11:10:48.529977+08:00", "elapsed": 180.081, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385792 uptime_ms=39846819 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.550273+08:00", "elapsed": 180.101, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385812 uptime_ms=39866766 gap_ms=19947 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.550467+08:00", "elapsed": 180.101, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385882 uptime_ms=39936786 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.550541+08:00", "elapsed": 180.101, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790386468 uptime_ms=40522657 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.575790+08:00", "elapsed": 180.127, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790387805 uptime_ms=41859568 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.575989+08:00", "elapsed": 180.127, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388165 uptime_ms=42219993 gap_ms=20042 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.576047+08:00", "elapsed": 180.127, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388265 uptime_ms=42320062 gap_ms=19951 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.600733+08:00", "elapsed": 180.152, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388496 uptime_ms=42550486 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.600975+08:00", "elapsed": 180.152, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388916 uptime_ms=42971054 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.601091+08:00", "elapsed": 180.152, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389507 uptime_ms=43561780 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.624452+08:00", "elapsed": 180.175, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389617 uptime_ms=43672081 gap_ms=30092 missed_frames=2"}
+{"at": "2026-09-26T11:10:48.624628+08:00", "elapsed": 180.175, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389678 uptime_ms=43732273 gap_ms=20251 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.624662+08:00", "elapsed": 180.175, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389698 uptime_ms=43752253 gap_ms=19980 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.649843+08:00", "elapsed": 180.201, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389818 uptime_ms=43872383 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.649968+08:00", "elapsed": 180.201, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390118 uptime_ms=44172803 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.650001+08:00", "elapsed": 180.201, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390599 uptime_ms=44653285 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.674463+08:00", "elapsed": 180.225, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390779 uptime_ms=44833619 gap_ms=20008 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.674662+08:00", "elapsed": 180.225, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790391140 uptime_ms=45194244 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.674696+08:00", "elapsed": 180.225, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790391214 uptime_ms=45268888 gap_ms=59887 missed_frames=1"}
+{"at": "2026-09-26T11:10:48.696375+08:00", "elapsed": 180.247, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=20 reset_reason=1"}
+{"at": "2026-09-26T11:10:48.696740+08:00", "elapsed": 180.247, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=9305 reconnect_ms=na"}
+{"at": "2026-09-26T11:10:48.696796+08:00", "elapsed": 180.248, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=9305 sequence=17047"}
+{"at": "2026-09-26T11:10:48.696838+08:00", "elapsed": 180.248, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790391845 uptime_ms=33199 sequence=1715"}
+{"at": "2026-09-26T11:10:48.722068+08:00", "elapsed": 180.273, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=21 reset_reason=1"}
+{"at": "2026-09-26T11:10:48.722243+08:00", "elapsed": 180.273, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=8609 reconnect_ms=na"}
+{"at": "2026-09-26T11:10:48.722282+08:00", "elapsed": 180.273, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=14047 sequence=17065"}
+{"at": "2026-09-26T11:10:48.722310+08:00", "elapsed": 180.273, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790392016 uptime_ms=29404 sequence=1"}
+{"at": "2026-09-26T11:10:48.747474+08:00", "elapsed": 180.298, "source": "ESP1", "line": "DIAG event=GRASS_SENDER_SESSION epoch_s=1790392099 uptime_ms=112326 first_sequence=1"}
+{"at": "2026-09-26T11:10:48.747579+08:00", "elapsed": 180.298, "source": "ESP1", "line": "DIAG firmware=esp1-wifi-ps-none-20260925.1 counters_scope=boot"}
+{"at": "2026-09-26T11:10:48.747606+08:00", "elapsed": 180.298, "source": "ESP1", "line": "DIAG wifi_power_save=none"}
+{"at": "2026-09-26T11:10:48.747631+08:00", "elapsed": 180.298, "source": "ESP1", "line": "DIAG_RX source=ESP2 received=25 accepted=25 rejected=0"}
+{"at": "2026-09-26T11:10:48.747666+08:00", "elapsed": 180.298, "source": "ESP1", "line": "DIAG_RX source=ESP3 received=7 accepted=7 rejected=0"}
+{"at": "2026-09-26T11:10:48.747688+08:00", "elapsed": 180.298, "source": "ESP1", "line": "DIAG_END"}
+{"at": "2026-09-26T11:10:49.575160+08:00", "elapsed": 181.126, "source": "ESP3", "line": "ESP3_TX seq=6 uptime_ms=180915 result=ok"}
+{"at": "2026-09-26T11:10:49.801352+08:00", "elapsed": 181.352, "source": "ESP1", "line": "GRASS_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:10:49.876842+08:00", "elapsed": 181.428, "source": "UDP", "seq": 6, "uptime_ms": 180299}
+{"at": "2026-09-26T11:10:51.291316+08:00", "elapsed": 182.842, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:11:01.135528+08:00", "elapsed": 192.686, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:11:11.291035+08:00", "elapsed": 202.842, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:11:18.500950+08:00", "elapsed": 210.052, "source": "ESP1", "line": "DIAG_BEGIN count=32 overwritten=1668 storage=ok"}
+{"at": "2026-09-26T11:11:18.501215+08:00", "elapsed": 210.052, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790383408 uptime_ms=37463242 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.501308+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG_BEGIN count=16 overwritten=44 storage=ok"}
+{"at": "2026-09-26T11:11:18.501355+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337015 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501396+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337018 uptime_ms=3559 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501435+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337368 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501473+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337371 uptime_ms=3058 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501507+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337395 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501542+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337399 uptime_ms=3617 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501576+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337477 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501611+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337481 uptime_ms=3711 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501644+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790337663 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501679+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790337666 uptime_ms=3260 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501713+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790340322 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501745+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790340326 uptime_ms=3760 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.501779+08:00", "elapsed": 210.052, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392207 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.525422+08:00", "elapsed": 210.076, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790384009 uptime_ms=38064093 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.525577+08:00", "elapsed": 210.076, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790384155 uptime_ms=38209426 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.525612+08:00", "elapsed": 210.076, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385362 uptime_ms=39416608 gap_ms=30618 missed_frames=2"}
+{"at": "2026-09-26T11:11:18.525650+08:00", "elapsed": 210.076, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392210 uptime_ms=3210 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.525674+08:00", "elapsed": 210.076, "source": "ESP3", "line": "ESP3_DIAG event=BOOT epoch_s=1790392068 uptime_ms=9 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.525695+08:00", "elapsed": 210.076, "source": "ESP3", "line": "ESP3_DIAG event=WIFI_UP epoch_s=1790392071 uptime_ms=3362 value=0 detail=0"}
+{"at": "2026-09-26T11:11:18.525712+08:00", "elapsed": 210.076, "source": "ESP3", "line": "ESP3_DIAG_END"}
+{"at": "2026-09-26T11:11:18.550809+08:00", "elapsed": 210.102, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385792 uptime_ms=39846819 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.550869+08:00", "elapsed": 210.102, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385812 uptime_ms=39866766 gap_ms=19947 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.550886+08:00", "elapsed": 210.102, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790385882 uptime_ms=39936786 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.576039+08:00", "elapsed": 210.127, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790386468 uptime_ms=40522657 gap_ms=60237 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.576105+08:00", "elapsed": 210.127, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790387805 uptime_ms=41859568 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.576120+08:00", "elapsed": 210.127, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388165 uptime_ms=42219993 gap_ms=20042 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.576134+08:00", "elapsed": 210.127, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388265 uptime_ms=42320062 gap_ms=19951 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.599786+08:00", "elapsed": 210.15, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388496 uptime_ms=42550486 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.599866+08:00", "elapsed": 210.151, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790388916 uptime_ms=42971054 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.624968+08:00", "elapsed": 210.176, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389507 uptime_ms=43561780 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.625011+08:00", "elapsed": 210.176, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389617 uptime_ms=43672081 gap_ms=30092 missed_frames=2"}
+{"at": "2026-09-26T11:11:18.625031+08:00", "elapsed": 210.176, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389678 uptime_ms=43732273 gap_ms=20251 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.650080+08:00", "elapsed": 210.201, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389698 uptime_ms=43752253 gap_ms=19980 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.650109+08:00", "elapsed": 210.201, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790389818 uptime_ms=43872383 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.650128+08:00", "elapsed": 210.201, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390118 uptime_ms=44172803 gap_ms=19942 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.675197+08:00", "elapsed": 210.226, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390599 uptime_ms=44653285 gap_ms=19992 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.675233+08:00", "elapsed": 210.226, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790390779 uptime_ms=44833619 gap_ms=20008 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.675256+08:00", "elapsed": 210.226, "source": "ESP1", "line": "DIAG event=EXT_RECEIVE_GAP epoch_s=1790391140 uptime_ms=45194244 gap_ms=20242 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.700432+08:00", "elapsed": 210.251, "source": "ESP1", "line": "DIAG event=GRASS_RECEIVE_GAP epoch_s=1790391214 uptime_ms=45268888 gap_ms=59887 missed_frames=1"}
+{"at": "2026-09-26T11:11:18.700635+08:00", "elapsed": 210.251, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=20 reset_reason=1"}
+{"at": "2026-09-26T11:11:18.700674+08:00", "elapsed": 210.251, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=9305 reconnect_ms=na"}
+{"at": "2026-09-26T11:11:18.700703+08:00", "elapsed": 210.251, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=9305 sequence=17047"}
+{"at": "2026-09-26T11:11:18.700731+08:00", "elapsed": 210.251, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790391845 uptime_ms=33199 sequence=1715"}
+{"at": "2026-09-26T11:11:18.725955+08:00", "elapsed": 210.277, "source": "ESP1", "line": "DIAG event=BOOT epoch_s=0 uptime_ms=21 reset_reason=1"}
+{"at": "2026-09-26T11:11:18.726154+08:00", "elapsed": 210.277, "source": "ESP1", "line": "DIAG event=WIFI_UP epoch_s=0 uptime_ms=8609 reconnect_ms=na"}
+{"at": "2026-09-26T11:11:18.726217+08:00", "elapsed": 210.277, "source": "ESP1", "line": "DIAG event=EXT_FIRST_PACKET epoch_s=0 uptime_ms=14047 sequence=17065"}
+{"at": "2026-09-26T11:11:18.726261+08:00", "elapsed": 210.277, "source": "ESP1", "line": "DIAG event=GRASS_FIRST_PACKET epoch_s=1790392016 uptime_ms=29404 sequence=1"}
+{"at": "2026-09-26T11:11:18.751459+08:00", "elapsed": 210.302, "source": "ESP1", "line": "DIAG event=GRASS_SENDER_SESSION epoch_s=1790392099 uptime_ms=112326 first_sequence=1"}
+{"at": "2026-09-26T11:11:18.751597+08:00", "elapsed": 210.302, "source": "ESP1", "line": "DIAG firmware=esp1-wifi-ps-none-20260925.1 counters_scope=boot"}
+{"at": "2026-09-26T11:11:18.751636+08:00", "elapsed": 210.302, "source": "ESP1", "line": "DIAG wifi_power_save=none"}
+{"at": "2026-09-26T11:11:18.751683+08:00", "elapsed": 210.302, "source": "ESP1", "line": "DIAG_RX source=ESP2 received=28 accepted=28 rejected=0"}
+{"at": "2026-09-26T11:11:18.751741+08:00", "elapsed": 210.302, "source": "ESP1", "line": "DIAG_RX source=ESP3 received=8 accepted=8 rejected=0"}
+{"at": "2026-09-26T11:11:18.751777+08:00", "elapsed": 210.302, "source": "ESP1", "line": "DIAG_END"}
+{"at": "2026-09-26T11:11:19.618244+08:00", "elapsed": 211.169, "source": "ESP3", "line": "ESP3_TX seq=7 uptime_ms=210958 result=ok"}
+{"at": "2026-09-26T11:11:19.664393+08:00", "elapsed": 211.215, "source": "UDP", "seq": 7, "uptime_ms": 210342}
+{"at": "2026-09-26T11:11:19.903777+08:00", "elapsed": 211.455, "source": "ESP1", "line": "GRASS_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:11:21.114557+08:00", "elapsed": 212.665, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:11:31.235369+08:00", "elapsed": 222.786, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:11:41.097767+08:00", "elapsed": 232.648, "source": "ESP1", "line": "EXTENSION_LAN_PACKET_ACCEPTED"}
+{"at": "2026-09-26T11:11:48.462189+08:00", "elapsed": 240.013, "source": "END", "duration": 240}
