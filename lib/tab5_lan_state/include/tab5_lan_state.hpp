@@ -25,12 +25,16 @@ struct LanState {
   std::array<ThermalState, 3> auxiliary_thermal_state{
       ThermalState::no_signal, ThermalState::no_signal,
       ThermalState::no_signal};
+  std::int16_t grass_centi_c{kMissingTemperature};
+  std::uint8_t grass_remaining_fresh_seconds{};
 };
 LanState make_lan_state(
     const TemperatureSample& sample,
     const std::array<std::optional<double>, 3>& auxiliary_c,
     const std::array<ThermalState, 3>& auxiliary_thermal_state,
-    const ActiveEventSnapshot& active);
+    const ActiveEventSnapshot& active,
+    const std::optional<double>& grass_c = std::nullopt,
+    std::uint64_t grass_remaining_fresh_ms = 0U);
 std::array<std::uint8_t, kPacketSize> encode_packet(
     const LanState& state, std::uint64_t source_id, std::uint32_t sequence,
     const std::array<std::uint8_t, 32>& key);

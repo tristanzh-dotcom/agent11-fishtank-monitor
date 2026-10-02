@@ -7,6 +7,20 @@ using aquarium::extension_lan::State;
 using aquarium::extension_lan::ThermalState;
 
 int main() {
+  State water_source{};
+  water_source.water_temperature_c = 26.3F;
+  water_source.water_state = aquarium::extension_lan::WaterDisplayState::active;
+  std::array<std::uint8_t, 32> water_key{};
+  Reducer water_reducer{};
+  const auto water_packet = aquarium::extension_lan::encode(water_source, 8U, 1U, water_key);
+  assert(aquarium::extension_lan::accept(&water_reducer, water_packet, 1000U, water_key));
+  const auto water_fresh = aquarium::extension_lan::freshState(water_reducer, 1000U);
+  assert(*water_fresh.water_temperature_c == 26.3F);
+  assert(water_fresh.water_state == aquarium::extension_lan::WaterDisplayState::active);
+  const auto water_stale = aquarium::extension_lan::freshState(water_reducer, 76001U);
+  assert(water_stale.water_temperature_c.has_value());
+  assert(water_stale.water_state == aquarium::extension_lan::WaterDisplayState::unknown);
+
   std::array<std::uint8_t, 32> key{};
   State source{};
   source.sampled_at_ms = 1000U;

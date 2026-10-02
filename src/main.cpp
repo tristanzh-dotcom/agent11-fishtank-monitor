@@ -389,11 +389,19 @@ std::array<aquarium::tab5::ThermalState, 3> auxiliary_thermal_states(
 }
 
 void publish_tab5_lan_state(
-    const aquarium::firmware::Ds18b20Reader::TemperatureReadings& readings) {
+    const aquarium::firmware::Ds18b20Reader::TemperatureReadings& readings,
+    std::uint64_t now_ms) {
   if (WiFi.status() != WL_CONNECTED) return;
+  // Relay only a fresh ESP3 sample, with its remaining source lifetime.
+  const auto grass = aquarium::grass_lan::snapshot(now_ms);
+  const std::uint64_t age_ms = grass.has_packet && now_ms >= grass.received_at_ms
+                                  ? now_ms - grass.received_at_ms : 75000U;
+  const auto remaining_ms = grass.fresh && age_ms < 75000U ? 75000U - age_ms : 0U;
   const auto state = aquarium::tab5::make_lan_state(
       readings.primary, readings.auxiliary_c, auxiliary_thermal_states(readings),
-      active_events);
+      active_events, grass.temperature_c[0].has_value()
+          ? std::optional<double>{*grass.temperature_c[0]} : std::nullopt,
+      remaining_ms);
   const auto packet = aquarium::tab5::encode_packet(
       state, tab5_source_id, ++tab5_sequence, tab5_lan_key());
   if (!tab5_lan_udp.beginPacket(IPAddress(255, 255, 255, 255), kTab5LanPort)) {
@@ -775,7 +783,7 @@ void loop() {
   const auto events = engine.ingest(sample);
   active_events.apply(events);
 #if !defined(AQUARIUM_DISABLE_TAB5_LAN)
-  publish_tab5_lan_state(readings);
+  publish_tab5_lan_state(readings, monotonic_millis());
 #endif
   for (const auto& event : events) {
     delivery.enqueue(event, event_time);
@@ -848,12 +856,22 @@ void loop() {
     std::optional<aquarium::heartbeat::TemperatureSnapshot>
         temperature_snapshot;
     if (sampled_at >= 1700000000) {
+      // Sensor/Bark work may have crossed the extension freshness deadline.
+      const auto query_extension_state =
+          aquarium::extension_lan::snapshot(monotonic_millis());
       const aquarium::transport::DailyTemperatureSummary summary{
           0U, aquarium::transport::DailySlot::morning,
           daily_snapshot(readings, sampled_at)};
       temperature_snapshot = aquarium::heartbeat::TemperatureSnapshot{
           static_cast<std::uint64_t>(sampled_at) * 1000ULL,
-          aquarium::transport::daily_summary_body(summary)};
+          aquarium::transport::temperature_query_body(
+              summary, aquarium::transport::WaterQueryReading{
+                  query_extension_state.water_temperature_c.has_value()
+                      ? std::optional<double>{*query_extension_state.water_temperature_c}
+                      : std::nullopt,
+                  query_extension_state.fresh,
+                  static_cast<aquarium::transport::WaterQueryState>(
+                      query_extension_state.water_state)})};
     }
     const bool delivered = heartbeat.notify(sample, active_events, now_ms,
                                             temperature_snapshot);

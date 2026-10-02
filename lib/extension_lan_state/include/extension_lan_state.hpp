@@ -16,6 +16,7 @@ constexpr std::uint64_t kFreshnessMs = 75'000U;
 constexpr std::int16_t kMissingTemperature = -32768;
 
 enum class ThermalState : std::uint8_t { normal, high, low, no_signal };
+enum class WaterDisplayState : std::uint8_t { unknown, active, inactive };
 
 struct State {
   std::uint64_t sampled_at_ms{};
@@ -33,6 +34,8 @@ struct State {
   std::array<std::optional<float>, kSlotCount> temperature_c{};
   std::array<ThermalState, kSlotCount> thermal_state{
       ThermalState::no_signal, ThermalState::no_signal};
+  std::optional<float> water_temperature_c{};
+  WaterDisplayState water_state{WaterDisplayState::unknown};
 };
 
 enum class ConnectivityEvent : std::uint8_t { none, offline, recovered };

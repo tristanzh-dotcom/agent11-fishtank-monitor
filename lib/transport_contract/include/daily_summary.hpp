@@ -86,6 +86,15 @@ class DailySummaryScheduler {
 };
 
 std::string daily_summary_body(const DailyTemperatureSummary& summary);
+enum class WaterQueryState { unknown, active, inactive };
+struct WaterQueryReading {
+  std::optional<double> temperature_c{};
+  bool fresh{};
+  WaterQueryState state{WaterQueryState::unknown};
+};
+// Query-only suffix. Scheduled Bark summaries keep their existing template.
+std::string temperature_query_body(const DailyTemperatureSummary& summary,
+                                   const WaterQueryReading& water);
 TemperatureReadingStatus temperature_reading_status(
     const std::optional<double>& value, const TemperaturePolicy& policy);
 BarkMessage daily_summary_message(const DailyTemperatureSummary& summary,

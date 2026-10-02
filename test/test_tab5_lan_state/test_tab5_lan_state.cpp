@@ -76,9 +76,26 @@ void test_encoder_marks_valid_primary_without_events_as_normal() {
   assert(!state.sensor_fault);
 }
 
+void test_grass_relay_carries_remaining_source_freshness() {
+  aquarium::ActiveEventSnapshot active;
+  auto state = aquarium::tab5::make_lan_state(
+      aquarium::TemperatureSample{1000U, 26.0, 26.2}, {}, {}, active,
+      28.0, 5999U);
+  const auto packet = aquarium::tab5::encode_packet(state, 7U, 1U, kTestKey);
+  assert(packet[27] == 0xA1U);
+  assert(packet[37] == 0x0AU && packet[38] == 0xF0U);
+  assert(packet[39] == 5U);
+  state = aquarium::tab5::make_lan_state(
+      aquarium::TemperatureSample{1000U, 26.0, 26.2}, {}, {}, active,
+      28.0, 0U);
+  const auto expired = aquarium::tab5::encode_packet(state, 7U, 2U, kTestKey);
+  assert(expired[37] == 0x80U && expired[38] == 0U && expired[39] == 0U);
+}
+
 }  // namespace
 
 int main() {
+  test_grass_relay_carries_remaining_source_freshness();
   test_encoder_uses_active_thermal_result_without_thresholds();
   test_encoder_marks_missing_or_fault_as_no_signal();
   test_encoder_marks_valid_primary_without_events_as_normal();

@@ -171,9 +171,34 @@ void test_daily_summary_marks_retained_extension_value_as_not_updated() {
   assert(body.find("南美异形缸：无有效读数") == std::string::npos);
 }
 
+void test_phone_query_appends_only_water_and_keeps_daily_bark_unchanged() {
+  using aquarium::transport::WaterQueryReading;
+  using aquarium::transport::WaterQueryState;
+  const aquarium::transport::DailyTemperatureSummary summary{0U, DailySlot::morning, snapshot()};
+  WaterQueryReading water{26.3, true, WaterQueryState::active};
+  const auto original = aquarium::transport::daily_summary_body(summary);
+  assert(aquarium::transport::temperature_query_body(summary, water) ==
+         original + "\n养水缸：26.3°C（养水中）");
+  water.state = WaterQueryState::inactive;
+  assert(aquarium::transport::temperature_query_body(summary, water) ==
+         original + "\n养水缸：26.3°C（未养水）");
+  water.fresh = false;
+  assert(aquarium::transport::temperature_query_body(summary, water) ==
+         original + "\n养水缸：26.3°C（数据暂未更新）（状态未知）");
+  water.fresh = true;
+  water.state = WaterQueryState::active;
+  water.temperature_c.reset();
+  assert(aquarium::transport::temperature_query_body(summary, water) ==
+         original + "\n养水缸：无有效读数（养水中）");
+  assert(aquarium::transport::daily_summary_message(summary, "esp1").body.find("养水缸") == std::string::npos);
+  assert(aquarium::transport::temperature_query_body(summary, water).size() <=
+         aquarium::heartbeat::kMaxTemperatureSummaryBytes);
+}
+
 }  // namespace
 
 int main() {
+  test_phone_query_appends_only_water_and_keeps_daily_bark_unchanged();
   test_daily_summary_windows_and_expiry();
   test_daily_summary_rejects_invalid_time_and_handles_slot_order();
   test_daily_summary_body_reports_all_five_channels_and_states();

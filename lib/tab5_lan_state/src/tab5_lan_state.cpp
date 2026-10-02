@@ -167,8 +167,14 @@ LanState make_lan_state(
     const TemperatureSample& sample,
     const std::array<std::optional<double>, 3>& auxiliary_c,
     const std::array<ThermalState, 3>& auxiliary_thermal_state,
-    const ActiveEventSnapshot& active) {
+    const ActiveEventSnapshot& active,
+    const std::optional<double>& grass_c,
+    std::uint64_t grass_remaining_fresh_ms) {
   LanState output{};
+  output.grass_remaining_fresh_seconds = static_cast<std::uint8_t>(
+      std::min<std::uint64_t>(grass_remaining_fresh_ms / 1000U, 75U));
+  if (output.grass_remaining_fresh_seconds > 0U)
+    output.grass_centi_c = centi(grass_c);
   output.main_centi_c = centi(sample.display_c);
   output.sump_centi_c = centi(sample.return_c);
   output.thermal_state = output.main_centi_c == kMissingTemperature
@@ -222,6 +228,10 @@ std::array<std::uint8_t, kPacketSize> encode_packet(
     packet[34U + index] =
         static_cast<std::uint8_t>(state.auxiliary_thermal_state[index]);
   }
+  // ESP2 consumes the grass extension; current Tab5 ignores these bytes.
+  packet[27] = 0xA1U;
+  put16(packet.data() + 37U, state.grass_centi_c);
+  packet[39] = state.grass_remaining_fresh_seconds;
   const auto tag = hmac_sha256(packet.data(), kSignedBytes, key);
   std::memcpy(packet.data() + kTagOffset, tag.data(), tag.size());
   return packet;

@@ -196,6 +196,19 @@ std::string daily_summary_body(const DailyTemperatureSummary& summary) {
   return body;
 }
 
+std::string temperature_query_body(const DailyTemperatureSummary& summary,
+                                   const WaterQueryReading& water) {
+  std::string temperature = temperature_text(
+      water.temperature_c, TemperatureReadingStatus::normal);
+  if (water.temperature_c.has_value() && !water.fresh)
+    temperature += "（数据暂未更新）";
+  const auto state = water.fresh ? water.state : WaterQueryState::unknown;
+  const char* label = state == WaterQueryState::active
+                          ? "养水中"
+                          : state == WaterQueryState::inactive ? "未养水" : "状态未知";
+  return daily_summary_body(summary) + "\n养水缸：" + temperature + "（" + label + "）";
+}
+
 BarkMessage daily_summary_message(const DailyTemperatureSummary& summary,
                                   const std::string& aquarium_id) {
   const auto& sampled_at = summary.snapshot.sampled_at;

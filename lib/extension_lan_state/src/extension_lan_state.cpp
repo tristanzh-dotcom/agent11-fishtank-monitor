@@ -120,6 +120,9 @@ std::array<std::uint8_t, kPacketSize> encode(
     packet[32U + index] =
         static_cast<std::uint8_t>(state.thermal_state[index]);
   }
+  packet[34] = 0xA1U;
+  put16(packet.data() + 35U, encodeTemperature(state.water_temperature_c));
+  packet[37] = static_cast<std::uint8_t>(state.water_state);
   const auto tag = hmac(packet.data(), kSignedBytes, key);
   std::memcpy(packet.data() + kTagOffset, tag.data(), tag.size());
   return packet;
@@ -167,6 +170,16 @@ bool accept(Reducer* reducer,
     state.thermal_state[index] =
         static_cast<ThermalState>(packet[32U + index]);
   }
+  if (packet[34] == 0xA1U) {
+    const auto water = get16(packet.data() + 35U);
+    if (!validTemperature(water) ||
+        packet[37] > static_cast<std::uint8_t>(WaterDisplayState::inactive)) {
+      return false;
+    }
+    if (water != kMissingTemperature)
+      state.water_temperature_c = static_cast<float>(water) / 100.0F;
+    state.water_state = static_cast<WaterDisplayState>(packet[37]);
+  }
   reducer->has_packet = true;
   reducer->source_id = source_id;
   reducer->sequence = sequence;
@@ -186,6 +199,7 @@ State freshState(const Reducer& reducer, std::uint64_t now_ms) {
   state.thermal_state[kReservedNoSignalSlot] = ThermalState::no_signal;
   if (now_ms - reducer.accepted_at_ms > kFreshnessMs) {
     state.fresh = false;
+    state.water_state = WaterDisplayState::unknown;
   }
   return state;
 }
