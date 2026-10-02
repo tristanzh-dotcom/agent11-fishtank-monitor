@@ -296,9 +296,39 @@ void test_auxiliary_engines_are_independent_without_gradient_events() {
   assert(maomao.ingest(TemperatureSample{300000, 25.0, std::nullopt}).empty());
 }
 
+void test_open_critical_reminds_until_recovery_finishes() {
+  for (const bool high : {true, false}) {
+    TemperatureEngine engine;
+    const auto type = high ? EventType::high_temperature_critical
+                           : EventType::low_temperature_critical;
+    engine.ingest({0, high ? 28.6 : 22.4, std::nullopt});
+    engine.ingest({300000, high ? 28.6 : 22.4, std::nullopt});
+    unsigned reminders = 0;
+    unsigned resolved = 0;
+    for (std::uint64_t t = 330000; t <= 7500000; t += 30000) {
+      for (const auto& e : engine.ingest({t, high ? 28.0 : 23.0, std::nullopt})) {
+        if (e.type != type) continue;
+        reminders += e.state == EventState::reminder;
+        resolved += e.state == EventState::resolved;
+        assert(e.severity == Severity::n3);
+      }
+    }
+    assert(reminders == 2 && resolved == 0);
+    for (std::uint64_t t = 7530000; t <= 8430000; t += 30000) {
+      for (const auto& e : engine.ingest({t, high ? 27.5 : 23.5, std::nullopt})) {
+        if (e.type == type && e.state == EventState::resolved) ++resolved;
+      }
+    }
+    assert(resolved == 1);
+    for (const auto& e : engine.ingest({12030000, high ? 27.5 : 23.5, std::nullopt}))
+      assert(e.type != type || e.state != EventState::reminder);
+  }
+}
+
 }  // namespace
 
 int main() {
+  test_open_critical_reminds_until_recovery_finishes();
   test_high_temperature_opens_only_after_15_minutes();
   test_high_temperature_escalates_after_5_minutes();
   test_high_temperature_resolves_at_attention_threshold_after_15_minutes();

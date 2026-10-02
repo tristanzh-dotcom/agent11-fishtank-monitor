@@ -39,17 +39,22 @@ void queue_grass(unsigned sequence) {
 }
 struct {
   std::vector<aquarium::transport::BarkMessage> messages;
+  bool fail = false;
+  bool wait = true;
   bool notify(const aquarium::transport::BarkMessage& message) {
     messages.push_back(message);
     // Only the external HTTP wait is substituted. Receiver, HMAC, state
     // transitions, message creation and main-loop ordering are production code.
-    if (messages.size() == 1) {
+    if (wait && messages.size() == 1) {
       clock_ms = 91000;
       queue_grass(4);
     }
-    return true;
+    return !fail;
   }
 } bark;
+
+#include "connectivity_notice_globals.inc"
+#include "connectivity_notice_send.inc"
 
 void connectivity_pass() {
   std::uint64_t now_ms = monotonic_millis();
@@ -91,5 +96,54 @@ int main() {
   assert(std::strstr(Serial.last_rssi_marker, "rssi_dbm=-61") != nullptr);
   connectivity_pass();
   assert(bark.messages.size() == 3U);
-  std::puts("PASS main_loop_packet_during_bark_and_real_outage");
+  bark.wait = false;
+  bark.fail = true;
+  // Both sources have new genuine outages; failure cannot consume delivery.
+  const auto p2 = ext::encode(s, 7, 2, {});
+  WiFiUDP::queues[35112].push_back({p2.begin(), p2.end()});
+  connectivity_pass();
+  bark.messages.clear();
+  clock_ms = 260001;
+  const auto before = bark.messages.size();
+  connectivity_pass();
+  const auto initial = bark.messages.size();
+  assert(initial == before + 2U);
+  clock_ms += 1000;
+  connectivity_pass();
+  assert(bark.messages.size() == initial);
+  clock_ms += 29000;
+  connectivity_pass();
+  assert(bark.messages.size() == initial + 2U);
+  clock_ms += 30000;
+  connectivity_pass();
+  assert(bark.messages.size() == initial + 4U);
+  for (unsigned i = 0; i < 10; ++i) {
+    clock_ms += 30000;
+    connectivity_pass();
+  }
+  assert(bark.messages.size() == initial + 4U);
+  // A recovery supersedes exhausted/failed stale notices and successful
+  // delivery clears its own pending state without changing tracker truth.
+  queue_grass(8);
+  bark.fail = false;
+  connectivity_pass();
+  assert(grass_state.fresh);
+  const auto recovered = bark.messages.size();
+  connectivity_pass();
+  assert(bark.messages.size() == recovered);
+  // Recover during the retry window: never send an obsolete offline notice.
+  bark.fail = true;
+  clock_ms += 76000;
+  connectivity_pass();
+  const auto failed_outage = bark.messages.size();
+  queue_grass(9);
+  bark.fail = false;
+  connectivity_pass();
+  assert(bark.messages.size() == failed_outage + 1U);
+  assert(bark.messages.back().fingerprint.find("recovered") != std::string::npos);
+  const auto recovered_pending = bark.messages.size();
+  clock_ms += 30000;
+  connectivity_pass();
+  assert(bark.messages.size() == recovered_pending);
+  std::puts("PASS main_loop_packet_during_bark_and_bounded_connectivity_retry");
 }

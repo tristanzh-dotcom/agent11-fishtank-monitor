@@ -20,7 +20,7 @@ namespace rx = aquarium::extension_lan;
 namespace {
 constexpr std::array<std::uint8_t, 32> kKey{};
 std::uint32_t test_now_ms{};
-std::uint32_t millis() { return test_now_ms; }
+std::uint64_t monotonic_millis() { return test_now_ms; }
 ext::LegacyLanReducer legacy_reducer{};
 ext::Snapshot local_snapshot{};
 constexpr std::uint64_t kTemperatureFreshnessMs = 75000U;

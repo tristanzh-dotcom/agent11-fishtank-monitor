@@ -72,14 +72,6 @@ std::vector<TemperatureEvent> TemperatureEngine::ingest(
       events.push_back({EventType::high_temperature_critical, EventState::opened,
                         Severity::n3, sample.at_ms, display_c});
     }
-    if (high_critical_open_ && high_critical_last_notified_at_ms_.has_value() &&
-        has_elapsed(sample.at_ms, *high_critical_last_notified_at_ms_,
-                    policy_.reminder_interval_ms)) {
-      high_critical_last_notified_at_ms_ = sample.at_ms;
-      events.push_back({EventType::high_temperature_critical,
-                        EventState::reminder, Severity::n3, sample.at_ms,
-                        display_c});
-    }
   } else {
     high_critical_candidate_started_at_ms_.reset();
   }
@@ -131,6 +123,15 @@ std::vector<TemperatureEvent> TemperatureEngine::ingest(
     high_recovery_started_at_ms_.reset();
   }
 
+  if (high_critical_open_ && high_critical_last_notified_at_ms_.has_value() &&
+      has_elapsed(sample.at_ms, *high_critical_last_notified_at_ms_,
+                  policy_.reminder_interval_ms)) {
+    high_critical_last_notified_at_ms_ = sample.at_ms;
+    events.push_back({EventType::high_temperature_critical,
+                      EventState::reminder, Severity::n3, sample.at_ms,
+                      display_c});
+  }
+
   if (display_c < policy_.low_critical_c) {
     if (!low_critical_candidate_started_at_ms_.has_value()) {
       low_critical_candidate_started_at_ms_ = sample.at_ms;
@@ -143,14 +144,6 @@ std::vector<TemperatureEvent> TemperatureEngine::ingest(
       low_critical_last_notified_at_ms_ = sample.at_ms;
       events.push_back({EventType::low_temperature_critical, EventState::opened,
                         Severity::n3, sample.at_ms, display_c});
-    }
-    if (low_critical_open_ && low_critical_last_notified_at_ms_.has_value() &&
-        has_elapsed(sample.at_ms, *low_critical_last_notified_at_ms_,
-                    policy_.reminder_interval_ms)) {
-      low_critical_last_notified_at_ms_ = sample.at_ms;
-      events.push_back({EventType::low_temperature_critical,
-                        EventState::reminder, Severity::n3, sample.at_ms,
-                        display_c});
     }
   } else {
     low_critical_candidate_started_at_ms_.reset();
@@ -201,6 +194,15 @@ std::vector<TemperatureEvent> TemperatureEngine::ingest(
     }
   } else {
     low_recovery_started_at_ms_.reset();
+  }
+
+  if (low_critical_open_ && low_critical_last_notified_at_ms_.has_value() &&
+      has_elapsed(sample.at_ms, *low_critical_last_notified_at_ms_,
+                  policy_.reminder_interval_ms)) {
+    low_critical_last_notified_at_ms_ = sample.at_ms;
+    events.push_back({EventType::low_temperature_critical,
+                      EventState::reminder, Severity::n3, sample.at_ms,
+                      display_c});
   }
 
   while (!display_history_.empty() &&

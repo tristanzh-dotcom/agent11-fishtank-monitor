@@ -70,6 +70,16 @@ aquarium::grass_lan::State grass_state{};
 aquarium::grass_lan::ConnectivityTracker grass_connectivity_tracker{};
 bool auxiliary_turn = false;
 bool time_sync_completed = false;
+// One bounded delivery slot per connectivity source. A new transition
+// supersedes an unsent older state; receive/connectivity truth stays independent.
+struct ConnectivityNoticePending {
+  std::optional<aquarium::transport::ExtensionConnectivityEvent> event;
+  std::optional<std::time_t> event_time;
+  std::uint8_t attempts{};
+  std::uint64_t next_attempt_ms{};
+};
+ConnectivityNoticePending extension_notice_pending{}, grass_notice_pending{};
+
 aquarium::RetryBackoff wifi_backoff(1000U, 60000U);
 aquarium::heartbeat::HeartbeatSchedule heartbeat_schedule(
     runtime_config.heartbeat_interval_ms, 5000U,
@@ -423,6 +433,29 @@ std::uint64_t monotonic_millis() {
   return epoch + current;
 }
 
+void send_connectivity_notice(ConnectivityNoticePending& pending,
+                              bool grass_source) {
+  const auto now_ms = monotonic_millis();
+  if (!pending.event || now_ms < pending.next_attempt_ms) return;
+  const auto epoch = std::time(nullptr);
+  const auto send_time = epoch >= kMinimumReasonableEpochSeconds
+      ? std::optional<std::time_t>{epoch} : std::nullopt;
+  const auto message = aquarium::transport::extension_connectivity_message(
+      *pending.event, grass_source ? 75000U : aquarium::extension_lan::kFreshnessMs,
+      pending.event_time, send_time,
+      grass_source ? "南美草缸" : "南美异形缸",
+      grass_source ? "ESP3" : "温控ESP2号", grass_source ? "esp3" : "esp2");
+  const bool delivered = bark.notify(message);
+  ++pending.attempts;
+  Serial.println(delivered ? "connectivity bark delivered"
+                           : "connectivity bark failed");
+  if (delivered || pending.attempts >= 3U) {
+    pending.event.reset();
+  } else {
+    pending.next_attempt_ms = monotonic_millis() + 30000U;
+  }
+}
+
 void observe_time_sync() {
   if (sntp_get_sync_status() == SNTP_SYNC_STATUS_COMPLETED) {
     time_sync_completed = true;
@@ -700,13 +733,9 @@ void loop() {
           transition == aquarium::extension_lan::ConnectivityEvent::offline
               ? aquarium::transport::ExtensionConnectivityEvent::offline
               : aquarium::transport::ExtensionConnectivityEvent::recovered;
-      const auto message = aquarium::transport::extension_connectivity_message(
-          event_type, aquarium::extension_lan::kFreshnessMs, event_time,
-          event_time);
-      const bool delivered = bark.notify(message);
-      Serial.println(delivered ? "extension connectivity bark delivered"
-                               : "extension connectivity bark failed");
+      extension_notice_pending = {event_type, event_time, 0U, 0U};
     }
+    send_connectivity_notice(extension_notice_pending, false);
   }
   // The ESP2 Bark request above is synchronous. Poll ESP3 after it returns,
   // using the current clock, before making this source's connectivity decision.
@@ -753,13 +782,9 @@ void loop() {
           grass_transition == aquarium::grass_lan::ConnectivityEvent::offline
               ? aquarium::transport::ExtensionConnectivityEvent::offline
               : aquarium::transport::ExtensionConnectivityEvent::recovered;
-      const auto message = aquarium::transport::extension_connectivity_message(
-          event_type, 75000U, event_time, event_time, "南美草缸", "ESP3",
-          "esp3");
-      const bool delivered = bark.notify(message);
-      Serial.println(delivered ? "ESP3 connectivity bark delivered"
-                               : "ESP3 connectivity bark failed");
+      grass_notice_pending = {event_type, event_time, 0U, 0U};
     }
+    send_connectivity_notice(grass_notice_pending, true);
   }
 
   // Account for elapsed notification time before sampling and summary freshness.

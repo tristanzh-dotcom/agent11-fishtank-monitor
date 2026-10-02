@@ -23,6 +23,12 @@ source = Path(os.environ.get('LAN_MAIN_SOURCE', 'src/main.cpp')).read_text()
 start = source.index('  connect_wifi(now_ms);', source.index('void loop()'))
 end = source.index('  if (now_ms - last_sample_at_ms < runtime_config.sample_interval_ms)', start)
 Path('.build/lan_main_pass.inc').write_text(source[start:end])
+a = source.index('struct ConnectivityNoticePending {')
+b = source.index('aquarium::RetryBackoff wifi_backoff', a)
+c = source.index('void send_connectivity_notice(')
+d = source.index('void observe_time_sync()', c)
+Path('.build/connectivity_notice_globals.inc').write_text(source[a:b])
+Path('.build/connectivity_notice_send.inc').write_text(source[c:d])
 PY
 c++ -std=c++17 -Wall -Wextra -Werror -DARDUINO \
   -Itest/lan_runtime_stubs -I.build -Ilib/temperature_engine/include \
